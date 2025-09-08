@@ -1,0 +1,63 @@
+# OS & Editor
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.idea/
+.vscode/
+*.iml
+
+# Node / Vite / Vue (UI)
+node_modules/
+UI/node_modules/
+dist/
+UI/dist/
+UI/.vite/
+UI/.cache/
+UI/.temp/
+UI/coverage/
+
+# Local env files
+.env
+.env.*
+!.env.example
+UI/.env
+UI/.env.*
+!UI/.env.example
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+UI/*.log
+
+# Java / Maven (backend)
+backend/target/
+target/
+.mvn/wrapper/maven-wrapper.jar
+hs_err_pid*
+replay_pid*
+
+# Spring Boot specific
+*.orig
+
+# Coverage / Reports
+coverage/
+reports/
+
+# Build outputs / caches
+.cache/
+.out/
+build/
+UI/build/
+
+# Project specific
+.tasks/
+secrets/
+UI/prototype/*.zip
+
+# Lockfiles (optional ignore)
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
