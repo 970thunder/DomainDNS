@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Cloudflare 账户 - DomainDNS</title>
+    <link rel="stylesheet" href="./styles.css">
+</head>
+
+<body>
+    <header class="header">
+        <div class="header-inner container">
+            <div class="brand">DomainDNS • Admin</div>
+            <nav class="nav">
+                <a href="./admin-dashboard.html">仪表板</a>
+                <a class="active" href="./admin-cf-accounts.html">Cloudflare账户</a>
+                <a href="./admin-zones.html">域名与同步</a>
+                <a href="./admin-dns-records.html">DNS记录</a>
+                <a href="./admin-users.html">用户管理</a>
+                <a href="./admin-invites.html">邀请管理</a>
+                <a href="./admin-cards.html">卡密管理</a>
+                <a href="./admin-settings.html">系统设置</a>
+                <a href="./user-login.html">切换到用户端</a>
+            </nav>
+        </div>
+    </header>
+    <main class="main container">
+        <div class="card">
+            <h3>添加 Cloudflare 账户</h3>
+            <div class="form">
+                <div class="input-row">
+                    <label class="label">账户名称</label>
+                    <input class="input" placeholder="例如：主账号">
+                </div>
+                <div class="input-row">
+                    <label class="label">邮箱</label>
+                    <input class="input" placeholder="name@example.com">
+                </div>
+                <div class="input-row">
+                    <label class="label">认证类型</label>
+                    <select class="select">
+                        <option>GLOBAL_KEY</option>
+                        <option>API_TOKEN</option>
+                    </select>
+                </div>
+                <div class="input-row">
+                    <label class="label">API Key / Token</label>
+                    <input class="input" placeholder="仅原型，后端将加密存储">
+                </div>
+                <div class="row">
+                    <button class="btn primary">保存账户</button>
+                    <button class="btn outline">测试连接</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" style="margin-top:16px;">
+            <h3>账户列表</h3>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>名称</th>
+                        <th>邮箱</th>
+                        <th>类型</th>
+                        <th>状态</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>主账号</td>
+                        <td>admin@example.com</td>
+                        <td>GLOBAL_KEY</td>
+                        <td><span class="badge success">启用</span></td>
+                        <td class="row"><button class="btn outline">禁用</button><button class="btn outline">同步
+                                Zones</button></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+    <footer class="container footer">© 2025 DomainDNS</footer>
+</body>
+
+</html>

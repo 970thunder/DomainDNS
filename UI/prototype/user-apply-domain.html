@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>申请二级域名 - DomainDNS</title>
+    <link rel="stylesheet" href="./styles.css">
+</head>
+
+<body>
+    <header class="header">
+        <div class="header-inner container">
+            <div class="brand">DomainDNS • User</div>
+            <nav class="nav">
+                <a href="./user-dashboard.html">主页</a>
+                <a class="active" href="./user-apply-domain.html">申请域名</a>
+                <a href="./user-my-domains.html">我的域名</a>
+                <a href="./user-invite.html">邀请</a>
+                <a href="./user-recharge.html">充值</a>
+                <a href="./user-login.html">退出</a>
+            </nav>
+        </div>
+    </header>
+    <main class="main container">
+        <div class="card">
+            <h3>申请二级域名</h3>
+            <div class="form">
+                <div class="input-row">
+                    <label class="label">选择主域名（可分发）</label>
+                    <select class="select">
+                        <option>example.com</option>
+                        <option>example.net</option>
+                    </select>
+                </div>
+                <div class="input-row">
+                    <label class="label">子域名前缀</label>
+                    <input class="input" placeholder="例如：app，将生成 app.example.com">
+                </div>
+                <div class="grid cols-3">
+                    <div class="input-row">
+                        <label class="label">记录类型</label>
+                        <select class="select">
+                            <option>A</option>
+                            <option>AAAA</option>
+                            <option>CNAME</option>
+                        </select>
+                    </div>
+                    <div class="input-row">
+                        <label class="label">记录值</label>
+                        <input class="input" placeholder="例如：1.2.3.4 或 目标域名">
+                    </div>
+                    <div class="input-row">
+                        <label class="label">TTL</label>
+                        <input class="input" placeholder="默认 120">
+                    </div>
+                </div>
+                <div class="input-row">
+                    <label class="label">备注</label>
+                    <textarea class="textarea" placeholder="用途说明，方便管理"></textarea>
+                </div>
+                <div class="row">
+                    <button class="btn primary">提交申请（扣除 5 积分）</button>
+                    <a class="btn outline" href="./user-dashboard.html">返回</a>
+                </div>
+            </div>
+        </div>
+    </main>
+    <footer class="container footer">© 2025 DomainDNS</footer>
+</body>
+
+</html>

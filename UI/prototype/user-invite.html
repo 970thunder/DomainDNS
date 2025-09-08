@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>邀请 - DomainDNS</title>
+    <link rel="stylesheet" href="./styles.css">
+</head>
+
+<body>
+    <header class="header">
+        <div class="header-inner container">
+            <div class="brand">DomainDNS • User</div>
+            <nav class="nav">
+                <a href="./user-dashboard.html">主页</a>
+                <a href="./user-apply-domain.html">申请域名</a>
+                <a href="./user-my-domains.html">我的域名</a>
+                <a class="active" href="./user-invite.html">邀请</a>
+                <a href="./user-recharge.html">充值</a>
+                <a href="./user-login.html">退出</a>
+            </nav>
+        </div>
+    </header>
+    <main class="main container">
+        <div class="card">
+            <h3>我的邀请码</h3>
+            <div class="row">
+                <input class="input" style="max-width:240px;" value="ABCD1234">
+                <button class="btn outline">生成/重置</button>
+                <button class="btn primary">复制邀请链接</button>
+            </div>
+            <p class="small muted">新用户使用你的邀请码注册，你与对方均可获得积分（默认 3 点，可由管理员配置）。</p>
+        </div>
+
+        <div class="card" style="margin-top:16px;">
+            <h3>邀请明细</h3>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>用户</th>
+                        <th>时间</th>
+                        <th>奖励积分</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>new_user_1</td>
+                        <td>2025-09-01</td>
+                        <td>+3</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+    <footer class="container footer">© 2025 DomainDNS</footer>
+</body>
+
+</html>

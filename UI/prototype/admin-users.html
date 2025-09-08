@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>用户管理 - DomainDNS</title>
+    <link rel="stylesheet" href="./styles.css">
+</head>
+
+<body>
+    <header class="header">
+        <div class="header-inner container">
+            <div class="brand">DomainDNS • Admin</div>
+            <nav class="nav">
+                <a href="./admin-dashboard.html">仪表板</a>
+                <a href="./admin-cf-accounts.html">Cloudflare账户</a>
+                <a href="./admin-zones.html">域名与同步</a>
+                <a href="./admin-dns-records.html">DNS记录</a>
+                <a class="active" href="./admin-users.html">用户管理</a>
+                <a href="./admin-invites.html">邀请管理</a>
+                <a href="./admin-cards.html">卡密管理</a>
+                <a href="./admin-settings.html">系统设置</a>
+                <a href="./user-login.html">切换到用户端</a>
+            </nav>
+        </div>
+    </header>
+    <main class="main container">
+        <div class="card">
+            <h3>用户列表</h3>
+            <div class="row" style="margin-bottom:12px;">
+                <input class="input" style="max-width:240px;" placeholder="搜索用户名/邮箱">
+                <select class="select" style="max-width:160px;">
+                    <option>全部角色</option>
+                    <option>USER</option>
+                    <option>ADMIN</option>
+                </select>
+                <button class="btn outline">筛选</button>
+                <span class="spacer"></span>
+                <button class="btn primary">创建管理员</button>
+            </div>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>用户名</th>
+                        <th>邮箱</th>
+                        <th>积分</th>
+                        <th>角色</th>
+                        <th>状态</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>alice</td>
+                        <td>alice@example.com</td>
+                        <td>8</td>
+                        <td>USER</td>
+                        <td><span class="badge success">启用</span></td>
+                        <td class="row"><button class="btn outline">加/减积分</button><button
+                                class="btn outline">设为ADMIN</button><button class="btn danger">禁用</button></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+    <footer class="container footer">© 2025 DomainDNS</footer>
+</body>
+
+</html>

@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>域名与同步 - DomainDNS</title>
+    <link rel="stylesheet" href="./styles.css">
+</head>
+
+<body>
+    <header class="header">
+        <div class="header-inner container">
+            <div class="brand">DomainDNS • Admin</div>
+            <nav class="nav">
+                <a href="./admin-dashboard.html">仪表板</a>
+                <a href="./admin-cf-accounts.html">Cloudflare账户</a>
+                <a class="active" href="./admin-zones.html">域名与同步</a>
+                <a href="./admin-dns-records.html">DNS记录</a>
+                <a href="./user-login.html">切换到用户端</a>
+            </nav>
+        </div>
+    </header>
+    <main class="main container">
+        <div class="card">
+            <h3>Zones 列表（选择启用分发）</h3>
+            <div class="row" style="margin-bottom:12px;">
+                <button class="btn outline">刷新列表</button>
+                <button class="btn primary">手动同步所有 Zones</button>
+                <span class="spacer"></span>
+                <input class="input" style="max-width:260px;" placeholder="搜索域名...">
+            </div>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>域名</th>
+                        <th>Zone ID</th>
+                        <th>状态</th>
+                        <th>同步时间</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>example.com</td>
+                        <td>abcd1234</td>
+                        <td><span class="badge success">启用</span></td>
+                        <td>2025-09-01 12:30</td>
+                        <td class="row"><button class="btn outline">禁用</button><a class="btn outline"
+                                href="./admin-dns-records.html">查看记录</a><button class="btn primary">同步记录</button></td>
+                    </tr>
+                    <tr>
+                        <td>example.net</td>
+                        <td>efgh5678</td>
+                        <td><span class="badge">禁用</span></td>
+                        <td>2025-08-31 20:10</td>
+                        <td class="row"><button class="btn outline">启用</button><a class="btn outline"
+                                href="./admin-dns-records.html">查看记录</a><button class="btn primary">同步记录</button></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+    <footer class="container footer">© 2025 DomainDNS</footer>
+</body>
+
+</html>
