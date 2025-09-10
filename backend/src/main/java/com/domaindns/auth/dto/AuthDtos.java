@@ -12,6 +12,8 @@ public class AuthDtos {
         @NotBlank(message = "密码必填")
         public String password;
         public String inviteCode;
+        @NotBlank(message = "邮箱验证码必填")
+        public String emailCode;
     }
 
     public static class RegisterResp {
@@ -44,5 +46,11 @@ public class AuthDtos {
         public String code;
         @NotBlank(message = "新密码必填")
         public String newPassword;
+    }
+
+    public static class SendRegisterCodeReq {
+        @Email(message = "邮箱格式不正确")
+        @NotBlank(message = "邮箱必填")
+        public String email;
     }
 }

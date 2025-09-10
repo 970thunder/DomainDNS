@@ -7,6 +7,7 @@ import com.domaindns.auth.dto.AuthDtos.RegisterResp;
 import com.domaindns.auth.entity.User;
 import com.domaindns.auth.mapper.UserMapper;
 import com.domaindns.common.RateLimiter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -26,6 +27,9 @@ public class AuthService {
     private final RateLimiter rateLimiter;
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
+    @Value("${spring.mail.username:}")
+    private String mailFrom;
+
     public AuthService(UserMapper userMapper, JwtService jwtService, JavaMailSender mailSender,
             StringRedisTemplate redis, RateLimiter rateLimiter) {
         this.userMapper = userMapper;
@@ -35,9 +39,34 @@ public class AuthService {
         this.rateLimiter = rateLimiter;
     }
 
+    public void sendRegisterCode(String email) {
+        // 限流：每邮箱每分钟最多 3 次
+        boolean allowed = rateLimiter.tryConsume("rl:regcode:" + email, 3, Duration.ofMinutes(1));
+        if (!allowed)
+            throw new IllegalArgumentException("请求过于频繁，请稍后再试");
+        String code = String.format("%06d", new Random().nextInt(1_000_000));
+        redis.opsForValue().set("regcode:" + email, code, Duration.ofMinutes(10));
+        SimpleMailMessage message = new SimpleMailMessage();
+        if (mailFrom != null && !mailFrom.isBlank())
+            message.setFrom(mailFrom);
+        message.setTo(email);
+        message.setSubject("DomainDNS 注册验证码");
+        message.setText("您的注册验证码为：" + code + "，10分钟内有效。");
+        mailSender.send(message);
+    }
+
     @Transactional
     public RegisterResp registerUser(RegisterReq req) {
-        return doRegister(req, "USER");
+        // 校验邮箱验证码
+        if (req.email == null || req.email.isBlank())
+            throw new IllegalArgumentException("邮箱必填");
+        String key = "regcode:" + req.email;
+        String expect = redis.opsForValue().get(key);
+        if (expect == null || !expect.equals(req.emailCode))
+            throw new IllegalArgumentException("邮箱验证码无效或已过期");
+        RegisterResp resp = doRegister(req, "USER");
+        redis.delete(key);
+        return resp;
     }
 
     @Transactional
@@ -111,9 +140,11 @@ public class AuthService {
         if (!allowed)
             throw new IllegalArgumentException("请求过于频繁，请稍后再试");
         String code = String.format("%06d", new Random().nextInt(1_000_000));
-        String key = "pwdreset:" + email;
-        redis.opsForValue().set(key, code, Duration.ofMinutes(10));
+        String key2 = "pwdreset:" + email;
+        redis.opsForValue().set(key2, code, Duration.ofMinutes(10));
         SimpleMailMessage message = new SimpleMailMessage();
+        if (mailFrom != null && !mailFrom.isBlank())
+            message.setFrom(mailFrom);
         message.setTo(email);
         message.setSubject("DomainDNS 密码重置");
         message.setText("您的验证码为：" + code + "，10分钟内有效。");

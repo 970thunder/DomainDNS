@@ -36,3 +36,8 @@ server:
   port: 8080
 cors:
   allow-origins: "http://localhost:5173,http://127.0.0.1:5173"
+
+jwt:
+  secret: "Rm9yRGV2VGVzdEFWaWVyeUxvbmdBbmRTdHJvbmdTRUNSRVRLZXlTdWl0YWJsZUF0TGVhc3QyNTZCaXRzIQ=="
+  issuer: "domaindns"
+  expire-minutes: 120

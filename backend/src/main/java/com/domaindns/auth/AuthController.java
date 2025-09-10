@@ -6,6 +6,7 @@ import com.domaindns.auth.dto.AuthDtos.LoginResp;
 import com.domaindns.auth.dto.AuthDtos.RegisterReq;
 import com.domaindns.auth.dto.AuthDtos.RegisterResp;
 import com.domaindns.auth.dto.AuthDtos.ResetPasswordReq;
+import com.domaindns.auth.dto.AuthDtos.SendRegisterCodeReq;
 import com.domaindns.auth.service.AuthService;
 import com.domaindns.auth.service.JwtService;
 import com.domaindns.common.ApiResponse;
@@ -29,6 +30,13 @@ public class AuthController {
         this.authService = authService;
         this.jwtService = jwtService;
         this.redis = redis;
+    }
+
+    // ---------------- 注册验证码 ----------------
+    @PostMapping("/register/send-code")
+    public ApiResponse<Void> sendRegisterCode(@Valid @RequestBody SendRegisterCodeReq req) {
+        authService.sendRegisterCode(req.email);
+        return ApiResponse.ok(null);
     }
 
     // ---------------- 用户 ----------------
