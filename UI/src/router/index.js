@@ -14,6 +14,8 @@ const routes = [
             { path: 'recharge', component: () => import('../views/user/Recharge.vue') },
         ]
     },
+    // Admin login (separate)
+    { path: '/admin/login', component: () => import('../views/admin/AdminLogin.vue') },
     // Admin
     {
         path: '/admin', component: () => import('../views/admin/Layout.vue'), children: [

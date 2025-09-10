@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.domaindns.auth.mapper.UserMapper">
+	<resultMap id="UserMap" type="com.domaindns.auth.entity.User">
+		<id property="id" column="id" />
+		<result property="username" column="username" />
+		<result property="email" column="email" />
+		<result property="passwordHash" column="password_hash" />
+		<result property="displayName" column="display_name" />
+		<result property="inviteCode" column="invite_code" />
+		<result property="inviterId" column="inviter_id" />
+		<result property="points" column="points" />
+		<result property="role" column="role" />
+		<result property="status" column="status" />
+		<result property="createdAt" column="created_at" />
+		<result property="updatedAt" column="updated_at" />
+	</resultMap>
+
+	<select id="findByUsername" parameterType="string" resultMap="UserMap">
+		SELECT * FROM users WHERE username = #{username}
+	</select>
+
+	<select id="findByEmail" parameterType="string" resultMap="UserMap">
+		SELECT * FROM users WHERE email = #{email}
+	</select>
+
+	<select id="countByRole" parameterType="string" resultType="int">
+		SELECT COUNT(1) FROM users WHERE role = #{role}
+	</select>
+
+	<insert id="insert" parameterType="com.domaindns.auth.entity.User" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO users(username, email, password_hash, display_name, invite_code, inviter_id, points, role, status)
+		VALUES(#{username}, #{email}, #{passwordHash}, #{displayName}, #{inviteCode}, #{inviterId}, #{points}, #{role}, #{status})
+	</insert>
+
+	<update id="updatePassword">
+		UPDATE users SET password_hash = #{passwordHash} WHERE id = #{id}
+	</update>
+</mapper>

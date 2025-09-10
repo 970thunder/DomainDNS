@@ -4,7 +4,7 @@
 			<div class="app-header-inner container">
 				<div class="brand">DomainDNS • User</div>
 				<div class="spacer"></div>
-				<el-button text @click="$router.push('/admin/dashboard')">切换到管理端</el-button>
+				<el-button text @click="$router.push('/admin/login')">管理端登录</el-button>
 			</div>
 		</header>
 		<div class="container" style="padding-top:16px;">

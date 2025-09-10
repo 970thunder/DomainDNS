@@ -1,0 +1,38 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/domaindns?useSSL=false&serverTimezone=UTC&characterEncoding=utf8
+    username: hyper
+    password: 1010411661
+  jackson:
+    serialization:
+      WRITE_DATES_AS_TIMESTAMPS: false
+  mail:
+    host: smtp.qq.com
+    port: 587
+    username: 1010411661@qq.com
+    password: twrhmnwlvoxgbfji
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          socketFactory:
+            class: javax.net.ssl.SSLSocketFactory
+            port: 587
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 6379
+      database: 0
+logging:
+  level:
+    root: INFO
+    com.domaindns: DEBUG
+    org.mybatis: DEBUG
+  pattern:
+    console: "%d{HH:mm:ss} %-5level %logger{36} - %msg%n"
+server:
+  port: 8080
+cors:
+  allow-origins: "http://localhost:5173,http://127.0.0.1:5173"
