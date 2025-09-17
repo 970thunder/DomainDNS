@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.domaindns.cf.mapper.DnsRecordMapper">
+	<resultMap id="RecMap" type="com.domaindns.cf.model.DnsRecord">
+		<id property="id" column="id" />
+		<result property="zoneId" column="zone_id" />
+		<result property="cfRecordId" column="cf_record_id" />
+		<result property="name" column="name" />
+		<result property="type" column="type" />
+		<result property="content" column="content" />
+		<result property="ttl" column="ttl" />
+		<result property="proxied" column="proxied" />
+		<result property="createdAt" column="created_at" />
+		<result property="updatedAt" column="updated_at" />
+	</resultMap>
+
+	<insert id="upsert" parameterType="com.domaindns.cf.model.DnsRecord">
+		INSERT INTO dns_records(zone_id,cf_record_id,name,type,content,ttl,proxied)
+		VALUES(#{zoneId},#{cfRecordId},#{name},#{type},#{content},#{ttl},#{proxied})
+		ON DUPLICATE KEY UPDATE
+		name=VALUES(name),type=VALUES(type),content=VALUES(content),ttl=VALUES(ttl),proxied=VALUES(proxied)
+	</insert>
+
+	<select id="listByZone" resultMap="RecMap">
+		SELECT * FROM dns_records WHERE zone_id=#{zoneId}
+		<if test="type!=null and type!=''"> AND type=#{type}</if>
+		<if test="name!=null and name!=''"> AND name LIKE CONCAT('%',#{name},'%')</if>
+		ORDER BY id DESC
+	</select>
+</mapper>

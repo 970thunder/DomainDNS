@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.domaindns.cf.mapper.CfAccountMapper">
+	<resultMap id="AccMap" type="com.domaindns.cf.model.CfAccount">
+		<id property="id" column="id" />
+		<result property="name" column="name" />
+		<result property="email" column="email" />
+		<result property="apiKey" column="api_key" />
+		<result property="apiType" column="api_type" />
+		<result property="enabled" column="enabled" />
+		<result property="createdAt" column="created_at" />
+	</resultMap>
+
+	<insert id="insert" parameterType="com.domaindns.cf.model.CfAccount" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO cf_accounts(name,email,api_key,api_type,enabled)
+		VALUES(#{name},#{email},#{apiKey},#{apiType},#{enabled})
+	</insert>
+
+	<update id="update" parameterType="com.domaindns.cf.model.CfAccount">
+		UPDATE cf_accounts
+		<set>
+			<if test="name!=null">name=#{name},</if>
+			<if test="email!=null">email=#{email},</if>
+			<if test="apiKey!=null">api_key=#{apiKey},</if>
+			<if test="apiType!=null">api_type=#{apiType},</if>
+			<if test="enabled!=null">enabled=#{enabled},</if>
+		</set>
+		WHERE id=#{id}
+	</update>
+
+	<delete id="delete">
+		DELETE FROM cf_accounts WHERE id=#{id}
+	</delete>
+
+	<select id="findById" resultMap="AccMap">
+		SELECT * FROM cf_accounts WHERE id=#{id}
+	</select>
+
+	<select id="findAll" resultMap="AccMap">
+		SELECT * FROM cf_accounts
+		<where>
+			<if test="enabled!=null">enabled=#{enabled}</if>
+		</where>
+		ORDER BY id DESC
+	</select>
+
+	<select id="findByEmailAndType" resultMap="AccMap">
+		SELECT * FROM cf_accounts WHERE email=#{email} AND api_type=#{apiType} LIMIT 1
+	</select>
+</mapper>
