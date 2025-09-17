@@ -139,7 +139,7 @@
 { "code": 0, "message": "ok", "data": { "token": "<JWT>", "role": "ADMIN" } }
 ```
 
-#### 2.3 Cloudflare 账户
+#### 2.3 Cloudflare 账户✅
 - 新增：POST `/api/admin/cf-accounts`
 
 请求参数：
@@ -152,12 +152,12 @@
 | apiKey | string | 是 | API 凭证（加密存储，不回显） |
 | enabled | boolean | 否 | 是否启用 |
 
-- 列表：GET `/api/admin/cf-accounts`
-- 更新：PUT `/api/admin/cf-accounts/{id}`（字段可选传，`apiKey` 不变更可不传）
-- 删除：DELETE `/api/admin/cf-accounts/{id}`（若未来有关联 zone 建议阻止删除）
-- 启用：POST `/api/admin/cf-accounts/{id}/enable`
-- 禁用：POST `/api/admin/cf-accounts/{id}/disable`
-- 测试连接：POST `/api/admin/cf-accounts/{id}/test`
+- 列表：GET `/api/admin/cf-accounts`✅
+- 更新：PUT `/api/admin/cf-accounts/{id}`（字段可选传，`apiKey` 不变更可不传）✅
+- 删除：DELETE `/api/admin/cf-accounts/{id}`（若未来有关联 zone 建议阻止删除）✅
+- 启用：POST `/api/admin/cf-accounts/{id}/enable`✅
+- 禁用：POST `/api/admin/cf-accounts/{id}/disable`✅
+- 测试连接：POST `/api/admin/cf-accounts/{id}/test`✅
 
 更新示例（仅修改名称/启用状态）：
 ```bash
@@ -172,21 +172,21 @@ curl -X DELETE http://localhost:8080/api/admin/cf-accounts/1 \
   -H "Authorization: Bearer <admin_token>"
 ```
 
-#### 2.4 Zones 管理
+#### 2.4 Zones 管理✅
 - 手动同步：POST `/api/admin/zones/sync`（可选传 `cfAccountId`）
 - 列表：GET `/api/admin/zones?enabled=&name=&cfAccountId=`
-- 启用/禁用分发：
+- 启用/禁用分发：✅
   - 启用：POST `/api/admin/zones/{id}/enable`
   - 禁用：POST `/api/admin/zones/{id}/disable`
 
 #### 2.5 DNS 记录
-- 同步某 zone 记录：POST `/api/admin/zones/{zoneId}/sync-records`（注意：这里的 `zoneId` 为本地数据库 zone 主键 `zones.id`）
-- 列表：GET `/api/admin/zones/{zoneId}/records?type=&name=`
-- 新增：POST `/api/admin/zones/{zoneId}/records`
+- 同步某 zone 记录：POST `/api/admin/zones/{zoneId}/sync-records`（注意：这里的 `zoneId` 为本地数据库 zone 主键 `zones.id`）✅
+- 列表：GET `/api/admin/zones/{zoneId}/records?type=&name=`✅
+- 新增：POST `/api/admin/zones/{zoneId}/records`✅
 - 更新：PUT `/api/admin/zones/{zoneId}/records/{recordId}`（`recordId` 为 Cloudflare 的记录 ID）
 - 删除：DELETE `/api/admin/zones/{zoneId}/records/{recordId}`
 
-新增/更新请求体（直接传 Cloudflare 记录 JSON，示例）：
+新增/更新请求体（直接传 Cloudflare 记录 JSON，示例）：✅
 
 | 字段 | 类型 | 必填 | 说明 |
 |---|---|---|---|
@@ -196,21 +196,21 @@ curl -X DELETE http://localhost:8080/api/admin/cf-accounts/1 \
 | ttl | int | 否 | 默认 120 |
 | proxied | boolean | 否 | 仅部分类型支持 |
 
-示例（新增 A 记录）：
+示例（新增 A 记录）：✅
 ```bash
 curl -X POST http://localhost:8080/api/admin/zones/1/records \
   -H "Authorization: Bearer <admin_token>" -H "Content-Type: application/json" \
   -d '{"type":"A","name":"a.example.com","content":"1.2.3.4","ttl":120,"proxied":false}'
 ```
 
-示例（更新 TTL/代理）：
+示例（更新 TTL/代理）：✅
 ```bash
 curl -X PUT http://localhost:8080/api/admin/zones/1/records/<cf_record_id> \
   -H "Authorization: Bearer <admin_token>" -H "Content-Type: application/json" \
   -d '{"ttl":300,"proxied":true}'
 ```
 
-示例（删除）：
+示例（删除）：✅
 ```bash
 curl -X DELETE http://localhost:8080/api/admin/zones/1/records/<cf_record_id> \
   -H "Authorization: Bearer <admin_token>"
@@ -220,31 +220,112 @@ curl -X DELETE http://localhost:8080/api/admin/zones/1/records/<cf_record_id> \
 - 写操作先请求 Cloudflare 成功后，再 upsert 到本地；删除暂依赖后续同步清理（可扩展本地删除）。
 - 若 Cloudflare 返回 `success=false`，接口将返回错误并包含 `errors`。
 
-#### 2.6 系统设置
+#### 2.6 系统设置✅
 - 获取：GET `/api/admin/settings`
 - 更新：PUT `/api/admin/settings`
 
-请求参数（示例字段）：
+请求参数（PUT 为整体或部分键值对，均以字符串提交）：
 
 | 字段 | 类型 | 说明 |
 |---|---|---|
-| initial_register_points | int | 注册赠送积分 |
-| invitee_points | int | 被邀请人奖励积分 |
-| inviter_points | int | 邀请人奖励积分 |
-| domain_cost_points | int | 申请域名消耗积分 |
-| max_domains_per_user | int | 单用户域名上限 |
-| default_ttl | int | 默认 TTL |
-| sync_cron_expression | string | 同步 cron |
+| initial_register_points | string(int) | 注册赠送积分（默认 1） |
+| invitee_points | string(int) | 被邀请人奖励积分（默认 3） |
+| inviter_points | string(int) | 邀请人奖励积分（默认 3） |
+| domain_cost_points | string(int) | 申请域名消耗积分（默认 5） |
+| max_domains_per_user | string(int) | 单用户域名上限 |
+| default_ttl | string(int) | 默认 TTL（如 120） |
+| sync_cron_expression | string | 同步 cron 表达式 |
 
-#### 2.7 用户与审计
-- 用户列表：GET `/api/admin/users?page=&size=&status=&role=`
-- 积分调整：POST `/api/admin/users/{id}/points` `{delta:int, remark:string}`
-- 审计日志：GET `/api/admin/audit?page=&size=&action=`
+返回（GET）：
+```json
+{
+  "code": 0,
+  "data": {
+    "initial_register_points": "1",
+    "invitee_points": "3",
+    "inviter_points": "3",
+    "domain_cost_points": "5",
+    "default_ttl": "120",
+    "max_domains_per_user": "5",
+    "sync_cron_expression": "0 */5 * * * *"
+  }
+}
+```
 
-#### 2.8 邀请/卡密/支付
-- 邀请码：GET `/api/admin/invites`、POST `/api/admin/invites` 生成
-- 卡密：GET `/api/admin/cards`、POST `/api/admin/cards/generate`
-- 订单：GET `/api/admin/orders`
+#### 2.7 用户与审计✅
+- 用户列表：GET `/api/admin/users?page=&size=&status=&role=`✅
+- 积分调整：POST `/api/admin/users/{id}/points` `{delta:int, remark:string}✅`
+- 审计日志：GET `/api/admin/audit?page=&size=&action=`✅
+
+#### 2.8 邀请/卡密/支付✅
+
+##### 2.8.1 邀请码（ADMIN）✅
+- 列表：GET `/api/admin/invites?ownerUserId=&page=&size=`
+
+请求参数：
+
+| 字段 | 类型 | 必填 | 说明 |
+|---|---|---|---|
+| ownerUserId | long | 否 | 归属用户 ID（为空返回全部） |
+| page | int | 否 | 页码（默认 1） |
+| size | int | 否 | 每页大小（默认 20） |
+
+响应：`{ code:0, data: { list,total,page,size } }`
+
+- 生成：POST `/api/admin/invites`
+
+请求体：
+
+| 字段 | 类型 | 必填 | 说明 |
+|---|---|---|---|
+| ownerUserId | long | 否 | 归属用户 ID（为空表示通用码） |
+| maxUses | int | 否 | 最多可使用次数（默认 0=不限制） |
+| validDays | int | 否 | 有效天数（为空则不过期） |
+
+响应：`{ code:0, data: { code } }`
+
+说明：生成后默认为 `status=ACTIVE`，`used_count=0`，若传入 `validDays` 则计算 `expired_at`。
+
+##### 2.8.2 卡密（ADMIN）
+- 列表：GET `/api/admin/cards?status=&page=&size=`
+
+请求参数：
+
+| 字段 | 类型 | 必填 | 说明 |
+|---|---|---|---|
+| status | string | 否 | 过滤状态（如 ACTIVE/USED/EXPIRED） |
+| page | int | 否 | 页码（默认 1） |
+| size | int | 否 | 每页大小（默认 20） |
+
+响应：`{ code:0, data: { list,total,page,size } }`
+
+- 批量生成：POST `/api/admin/cards/generate`
+
+请求体：
+
+| 字段 | 类型 | 必填 | 说明 |
+|---|---|---|---|
+| count | int | 是 | 生成数量 |
+| points | int | 是 | 每张卡密可充值积分数 |
+| validDays | int | 否 | 有效天数（为空则不过期） |
+
+响应：`{ code:0, data: { count } }`
+
+说明：卡密一经生成即为 `ACTIVE`，被用户兑换后变为 `USED`，过期后为 `EXPIRED`（状态字段以实现为准）。
+
+##### 2.8.3 订单（ADMIN）
+- 列表：GET `/api/admin/orders?status=&userId=&page=&size=`
+
+请求参数：
+
+| 字段 | 类型 | 必填 | 说明 |
+|---|---|---|---|
+| status | string | 否 | 订单状态（如 CREATED/PAID/CLOSED/FAILED） |
+| userId | long | 否 | 用户 ID |
+| page | int | 否 | 页码（默认 1） |
+| size | int | 否 | 每页大小（默认 20） |
+
+响应：`{ code:0, data: { list,total,page,size } }`
 
 ---
 
@@ -287,6 +368,16 @@ curl -X DELETE http://localhost:8080/api/admin/zones/1/records/<cf_record_id> \
 #### 3.6 充值
 - POST `/api/user/recharge`：创建订单（返回支付链接/二维码）
 - GET `/api/user/orders`：查看我的订单
+
+请求体（创建订单）：
+
+| 字段 | 类型 | 必填 | 说明 |
+|---|---|---|---|
+| amount | number | 是 | 金额（元）或根据套餐选择 |
+| points | int | 否 | 期望获得积分（与金额对应，后端校验） |
+| provider | string | 否 | 支付渠道（如 mock/alipay/wechat，视实现） |
+
+响应（创建）：`{ code:0, data:{ orderNo, payUrl? } }`
 
 ---
 
@@ -477,6 +568,48 @@ curl -X GET "http://localhost:8080/api/admin/zones/1/records?type=A&name=a" \
 ```
 
 ---
+
+### 12) Admin - 邀请码
+
+- 列表：
+```bash
+curl -X GET "http://localhost:8080/api/admin/invites?page=1&size=20" \
+  -H "Authorization: Bearer <admin_token>"
+```
+
+- 生成：
+```bash
+curl -X POST http://localhost:8080/api/admin/invites \
+  -H "Authorization: Bearer <admin_token>" -H "Content-Type: application/json" \
+  -d '{"ownerUserId":1,"maxUses":10,"validDays":30}'
+```
+
+---
+
+### 13) Admin - 卡密
+
+- 列表：
+```bash
+curl -X GET "http://localhost:8080/api/admin/cards?status=ACTIVE&page=1&size=20" \
+  -H "Authorization: Bearer <admin_token>"
+```
+
+- 批量生成：
+```bash
+curl -X POST http://localhost:8080/api/admin/cards/generate \
+  -H "Authorization: Bearer <admin_token>" -H "Content-Type: application/json" \
+  -d '{"count":50,"points":5,"validDays":365}'
+```
+
+---
+
+### 14) Admin - 订单
+
+- 列表：
+```bash
+curl -X GET "http://localhost:8080/api/admin/orders?status=PAID&page=1&size=20" \
+  -H "Authorization: Bearer <admin_token>"
+```
 
 ##  三、通用约定
 

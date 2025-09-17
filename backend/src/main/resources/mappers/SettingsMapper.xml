@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.domaindns.settings.SettingsMapper">
+	<resultMap id="SettingsMap" type="com.domaindns.settings.SettingsRow">
+		<id property="k" column="k" />
+		<result property="v" column="v" />
+	</resultMap>
+
+	<select id="findAll" resultMap="SettingsMap">
+		SELECT k, v FROM system_settings
+	</select>
+
+	<insert id="upsert" parameterType="com.domaindns.settings.SettingsRow">
+		INSERT INTO system_settings(k, v) VALUES(#{k}, #{v})
+		ON DUPLICATE KEY UPDATE v=VALUES(v)
+	</insert>
+</mapper>

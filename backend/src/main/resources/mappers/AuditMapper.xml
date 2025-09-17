@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.domaindns.admin.mapper.AuditMapper">
+	<resultMap id="AuditMap" type="com.domaindns.admin.model.AuditLog">
+		<id property="id" column="id" />
+		<result property="actorId" column="actor_id" />
+		<result property="action" column="action" />
+		<result property="target" column="target" />
+		<result property="detail" column="detail" />
+		<result property="ip" column="ip" />
+		<result property="createdAt" column="created_at" />
+	</resultMap>
+
+	<select id="list" resultMap="AuditMap">
+		SELECT id,actor_id,action,target,detail,ip,created_at FROM audit_logs
+		<where>
+			<if test="action!=null and action!=''">action=#{action}</if>
+		</where>
+		ORDER BY id DESC
+		<if test="size!=null"> LIMIT #{offset}, #{size}</if>
+	</select>
+
+	<select id="count" resultType="int">
+		SELECT COUNT(1) FROM audit_logs
+		<where>
+			<if test="action!=null and action!=''">action=#{action}</if>
+		</where>
+	</select>
+</mapper>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.domaindns.admin.mapper.InviteMapper">
+	<resultMap id="InviteMap" type="com.domaindns.admin.model.InviteCode">
+		<id property="id" column="id" />
+		<result property="code" column="code" />
+		<result property="ownerUserId" column="owner_user_id" />
+		<result property="maxUses" column="max_uses" />
+		<result property="usedCount" column="used_count" />
+		<result property="status" column="status" />
+		<result property="createdAt" column="created_at" />
+		<result property="expiredAt" column="expired_at" />
+	</resultMap>
+
+	<select id="list" resultMap="InviteMap">
+		SELECT * FROM invite_codes
+		<where>
+			<if test="ownerUserId!=null">owner_user_id=#{ownerUserId}</if>
+		</where>
+		ORDER BY id DESC
+		<if test="size!=null"> LIMIT #{offset}, #{size}</if>
+	</select>
+
+	<select id="count" resultType="int">
+		SELECT COUNT(1) FROM invite_codes
+		<where>
+			<if test="ownerUserId!=null">owner_user_id=#{ownerUserId}</if>
+		</where>
+	</select>
+
+	<insert id="insert">
+		INSERT INTO invite_codes(code,owner_user_id,max_uses,used_count,status,expired_at)
+		VALUES(#{code},#{ownerUserId},#{maxUses},0,'ACTIVE',#{expiredAt})
+	</insert>
+</mapper>
