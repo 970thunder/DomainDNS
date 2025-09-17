@@ -20,6 +20,15 @@ public class AuthDtos {
         public Long userId;
     }
 
+    public static class AdminRegisterReq {
+        @NotBlank(message = "用户名必填")
+        public String username;
+        @Email(message = "邮箱格式不正确")
+        public String email;
+        @NotBlank(message = "密码必填")
+        public String password;
+    }
+
     public static class LoginReq {
         public String username;
         public String email;

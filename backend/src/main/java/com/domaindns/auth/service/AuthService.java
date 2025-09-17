@@ -40,7 +40,6 @@ public class AuthService {
     }
 
     public void sendRegisterCode(String email) {
-        // 限流：每邮箱每分钟最多 3 次
         boolean allowed = rateLimiter.tryConsume("rl:regcode:" + email, 3, Duration.ofMinutes(1));
         if (!allowed)
             throw new IllegalArgumentException("请求过于频繁，请稍后再试");
@@ -57,14 +56,13 @@ public class AuthService {
 
     @Transactional
     public RegisterResp registerUser(RegisterReq req) {
-        // 校验邮箱验证码
         if (req.email == null || req.email.isBlank())
             throw new IllegalArgumentException("邮箱必填");
         String key = "regcode:" + req.email;
         String expect = redis.opsForValue().get(key);
         if (expect == null || !expect.equals(req.emailCode))
             throw new IllegalArgumentException("邮箱验证码无效或已过期");
-        RegisterResp resp = doRegister(req, "USER");
+        RegisterResp resp = doRegister(req.username, req.email, req.password, "USER");
         redis.delete(key);
         return resp;
     }
@@ -75,7 +73,16 @@ public class AuthService {
         if (adminCount > 0) {
             throw new IllegalArgumentException("管理员已存在，禁止再次注册，请使用账号密码登录或通过邮箱找回密码");
         }
-        return doRegister(req, "ADMIN");
+        return doRegister(req.username, req.email, req.password, "ADMIN");
+    }
+
+    @Transactional
+    public RegisterResp registerAdminSimple(String username, String email, String password) {
+        int adminCount = userMapper.countByRole("ADMIN");
+        if (adminCount > 0) {
+            throw new IllegalArgumentException("管理员已存在，禁止再次注册，请使用账号密码登录或通过邮箱找回密码");
+        }
+        return doRegister(username, email, password, "ADMIN");
     }
 
     public LoginResp loginUser(LoginReq req) {
@@ -86,20 +93,20 @@ public class AuthService {
         return doLogin(req, "ADMIN");
     }
 
-    private RegisterResp doRegister(RegisterReq req, String role) {
-        if (req.username == null || req.username.isBlank())
+    private RegisterResp doRegister(String username, String email, String password, String role) {
+        if (username == null || username.isBlank())
             throw new IllegalArgumentException("用户名必填");
-        if (req.password == null || req.password.isBlank())
+        if (password == null || password.isBlank())
             throw new IllegalArgumentException("密码必填");
-        if (userMapper.findByUsername(req.username) != null)
+        if (userMapper.findByUsername(username) != null)
             throw new IllegalArgumentException("用户名已存在");
-        if (req.email != null && !req.email.isBlank() && userMapper.findByEmail(req.email) != null)
+        if (email != null && !email.isBlank() && userMapper.findByEmail(email) != null)
             throw new IllegalArgumentException("邮箱已存在");
         User u = new User();
-        u.setUsername(req.username);
-        u.setEmail(req.email);
-        u.setPasswordHash(encoder.encode(req.password));
-        u.setDisplayName(req.username);
+        u.setUsername(username);
+        u.setEmail(email);
+        u.setPasswordHash(encoder.encode(password));
+        u.setDisplayName(username);
         u.setInviteCode(null);
         u.setInviterId(null);
         u.setPoints(0);
@@ -135,7 +142,6 @@ public class AuthService {
         User u = userMapper.findByEmail(email);
         if (u == null)
             throw new IllegalArgumentException("邮箱不存在");
-        // 限流：每邮箱每分钟最多 3 次
         boolean allowed = rateLimiter.tryConsume("rl:reset:" + email, 3, Duration.ofMinutes(1));
         if (!allowed)
             throw new IllegalArgumentException("请求过于频繁，请稍后再试");

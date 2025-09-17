@@ -7,6 +7,7 @@ import com.domaindns.auth.dto.AuthDtos.RegisterReq;
 import com.domaindns.auth.dto.AuthDtos.RegisterResp;
 import com.domaindns.auth.dto.AuthDtos.ResetPasswordReq;
 import com.domaindns.auth.dto.AuthDtos.SendRegisterCodeReq;
+import com.domaindns.auth.dto.AuthDtos.AdminRegisterReq;
 import com.domaindns.auth.service.AuthService;
 import com.domaindns.auth.service.JwtService;
 import com.domaindns.common.ApiResponse;
@@ -54,8 +55,8 @@ public class AuthController {
 
     // ---------------- 管理员 ----------------
     @PostMapping("/admin/register")
-    public ApiResponse<RegisterResp> adminRegister(@Valid @RequestBody RegisterReq req) {
-        RegisterResp resp = authService.registerAdmin(req);
+    public ApiResponse<RegisterResp> adminRegister(@Valid @RequestBody AdminRegisterReq req) {
+        RegisterResp resp = authService.registerAdminSimple(req.username, req.email, req.password);
         return ApiResponse.ok(resp);
     }
 
