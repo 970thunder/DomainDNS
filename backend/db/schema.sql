@@ -184,6 +184,22 @@ CREATE TABLE IF NOT EXISTS payment_orders (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ------------------------------------------------------------
+-- 扩展表：cards（卡密：积分兑换卡）
+-- ------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS cards (
+	id BIGINT AUTO_INCREMENT PRIMARY KEY,
+	code VARCHAR(64) NOT NULL UNIQUE,
+	points INT NOT NULL,
+	status ENUM('ACTIVE','USED','EXPIRED') DEFAULT 'ACTIVE',
+	expired_at TIMESTAMP NULL,
+	used_by BIGINT NULL,
+	used_at TIMESTAMP NULL,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	INDEX idx_cards_status (status),
+	INDEX idx_cards_used_by (used_by)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ------------------------------------------------------------
 -- 扩展表：sync_jobs（同步任务记录，Zones/Records）
 -- ------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS sync_jobs (

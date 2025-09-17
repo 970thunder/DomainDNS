@@ -12,4 +12,8 @@ public interface OrderMapper {
             @Param("offset") Integer offset, @Param("size") Integer size);
 
     int count(@Param("status") String status, @Param("userId") Long userId);
+
+    int insert(@Param("userId") Long userId, @Param("orderNo") String orderNo,
+            @Param("amountDecimal") Double amountDecimal, @Param("points") Integer points,
+            @Param("provider") String provider);
 }

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.domaindns.admin.mapper.CardMapper">
+	<resultMap id="CardMap" type="com.domaindns.admin.model.Card">
+		<id property="id" column="id" />
+		<result property="code" column="code" />
+		<result property="points" column="points" />
+		<result property="status" column="status" />
+		<result property="expiredAt" column="expired_at" />
+		<result property="usedBy" column="used_by" />
+		<result property="usedAt" column="used_at" />
+		<result property="createdAt" column="created_at" />
+	</resultMap>
+
+	<select id="list" resultMap="CardMap">
+		SELECT * FROM cards
+		<where>
+			<if test="status!=null and status!=''">status=#{status}</if>
+		</where>
+		ORDER BY id DESC
+		<if test="size!=null"> LIMIT #{offset}, #{size}</if>
+	</select>
+
+	<select id="count" resultType="int">
+		SELECT COUNT(1) FROM cards
+		<where>
+			<if test="status!=null and status!=''">status=#{status}</if>
+		</where>
+	</select>
+
+	<insert id="insert">
+		INSERT INTO cards(code,points,status,expired_at)
+		VALUES(#{code},#{points},'ACTIVE',#{expiredAt})
+	</insert>
+</mapper>

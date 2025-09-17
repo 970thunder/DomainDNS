@@ -36,4 +36,9 @@
 			</if>
 		</where>
 	</select>
+
+	<insert id="insert">
+		INSERT INTO payment_orders(user_id,order_no,amount_decimal,points,status,provider)
+		VALUES(#{userId},#{orderNo},#{amountDecimal},#{points},'PENDING',#{provider})
+	</insert>
 </mapper>
