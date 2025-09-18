@@ -336,9 +336,18 @@ curl -X DELETE http://localhost:8080/api/admin/zones/1/records/<cf_record_id> \
 
 #### 3.1.1 子域名可用性搜索（公开）✅
 - GET `/api/domains/search?prefix=abc`
-- 说明：输入子域名前缀，返回所有已启用分发的 `zones` 下可拼接的候选完整域名列表（不校验积分，不鉴权）。
+- 说明：输入子域名前缀，返回所有已启用分发的 `zones` 下候选完整域名，并标注是否可用（基于本地镜像 DNS 记录判断占用）。
 
-响应：`{ code:0, data: ["abc.example.com","abc.hyper99.top", ...] }`
+响应示例：
+```json
+{
+  "code": 0,
+  "data": [
+    { "domain": "abc.example.com", "available": true },
+    { "domain": "abc.hyper99.shop", "available": false, "reason": "occupied" }
+  ]
+}
+```
 
 #### 3.2 申请子域名✅（含可用性校验与积分扣减）
 - POST `/api/user/domains/apply`
@@ -394,9 +403,9 @@ curl -X POST http://localhost:8080/api/user/domains/apply \
   }'
 ```
 
-#### 3.3 我的域名
-- GET `/api/user/domains`：分页查询
-- DELETE `/api/user/domains/{id}`：释放子域名
+#### 3.3 我的域名✅
+- GET `/api/user/domains`：分页查询我的子域名
+- DELETE `/api/user/domains/{id}`：释放子域名（删除对应 DNS 记录），并返还 50% 创建时消耗的积分
 
 #### 3.4 积分✅
 - GET `/api/user/points`：返回当前积分余额与积分流水（分页）
@@ -487,14 +496,14 @@ curl -X GET "http://localhost:8080/api/user/orders?status=PAID&page=1&size=20" \
 
 ---
 
-##  二、Postman 测试样例（含 curl）
+##  二、Postman 测试样例（含 curl）✅
 
 准备：
 - 基础地址：`http://localhost:8080`
 - Content-Type：`application/json`
 - 登录后将返回的 `token` 放到 Postman 的 `Authorization: Bearer <token>`
 
-### 1) 发送注册验证码
+### 1) 发送注册验证码✅
 
 ```bash
 curl -X POST http://localhost:8080/api/auth/register/send-code \
@@ -502,7 +511,7 @@ curl -X POST http://localhost:8080/api/auth/register/send-code \
   -d '{"email":"alice@example.com"}'
 ```
 
-#### 2) 用户注册（带邮箱验证码）
+#### 2) 用户注册（带邮箱验证码）✅
 
 ```bash
 curl -X POST http://localhost:8080/api/auth/register \
@@ -510,7 +519,7 @@ curl -X POST http://localhost:8080/api/auth/register \
   -d '{"username":"alice","email":"alice@example.com","password":"User@123","emailCode":"123456"}'
 ```
 
-#### 3) 用户登录
+#### 3) 用户登录✅
 
 ```bash
 curl -X POST http://localhost:8080/api/auth/login \
@@ -518,7 +527,7 @@ curl -X POST http://localhost:8080/api/auth/login \
   -d '{"username":"alice","password":"User@123"}'
 ```
 
-#### 4) 找回密码-发送验证码（限流）
+#### 4) 找回密码-发送验证码（限流）✅
 
 ```bash
 curl -X POST http://localhost:8080/api/auth/forgot \
@@ -526,7 +535,7 @@ curl -X POST http://localhost:8080/api/auth/forgot \
   -d '{"email":"alice@example.com"}'
 ```
 
-#### 5) 找回密码-重置
+#### 5) 找回密码-重置✅
 
 ```bash
 curl -X POST http://localhost:8080/api/auth/reset \
@@ -534,7 +543,7 @@ curl -X POST http://localhost:8080/api/auth/reset \
   -d '{"email":"alice@example.com","code":"123456","newPassword":"User@456"}'
 ```
 
-#### 6) 管理员首次注册（仅当系统无 ADMIN）
+#### 6) 管理员首次注册（仅当系统无 ADMIN）✅
 
 ```bash
 curl -X POST http://localhost:8080/api/auth/admin/register \
@@ -542,7 +551,7 @@ curl -X POST http://localhost:8080/api/auth/admin/register \
   -d '{"username":"admin","email":"admin@example.com","password":"Admin@123"}'
 ```
 
-#### 7) 管理员登录
+#### 7) 管理员登录✅
 
 ```bash
 curl -X POST http://localhost:8080/api/auth/admin/login \
@@ -550,7 +559,7 @@ curl -X POST http://localhost:8080/api/auth/admin/login \
   -d '{"username":"admin","password":"Admin@123"}'
 ```
 
-#### 8) 注销（写入 JWT 黑名单）
+#### 8) 注销（写入 JWT 黑名单）✅
 
 ```bash
 curl -X POST http://localhost:8080/api/auth/logout \
@@ -559,7 +568,7 @@ curl -X POST http://localhost:8080/api/auth/logout \
 
 ---
 
-### 9) Admin - Cloudflare 账户（cf-accounts）
+### 9) Admin - Cloudflare 账户（cf-accounts）✅
 
 - 创建（GLOBAL_KEY）：✅
 ```bash
@@ -595,7 +604,7 @@ curl -X POST http://localhost:8080/api/admin/cf-accounts/1/test \
 
 ---
 
-### 10) Admin - Zones
+### 10) Admin - Zones✅
 
 - 手动同步（所有启用账户）：
 ```bash
@@ -631,7 +640,7 @@ curl -X POST http://localhost:8080/api/admin/zones/1/disable \
 
 ---
 
-### 11) Admin - DNS 记录
+### 11) Admin - DNS 记录✅
 
 - 同步某 Zone 记录：
 ```bash
@@ -647,7 +656,7 @@ curl -X GET "http://localhost:8080/api/admin/zones/1/records?type=A&name=a" \
 
 ---
 
-### 12) Admin - 邀请码
+### 12) Admin - 邀请码✅
 
 - 列表：
 ```bash
@@ -664,7 +673,7 @@ curl -X POST http://localhost:8080/api/admin/invites \
 
 ---
 
-### 13) Admin - 卡密
+### 13) Admin - 卡密✅
 
 - 列表：
 ```bash
@@ -681,7 +690,7 @@ curl -X POST http://localhost:8080/api/admin/cards/generate \
 
 ---
 
-### 14) Admin - 订单
+### 14) Admin - 订单✅
 
 - 列表：
 ```bash
@@ -691,7 +700,7 @@ curl -X GET "http://localhost:8080/api/admin/orders?status=PAID&page=1&size=20" 
 
 ---
 
-### 15) User - 充值/订单
+### 15) User - 充值/订单✅
 
 - 创建订单：
 ```bash

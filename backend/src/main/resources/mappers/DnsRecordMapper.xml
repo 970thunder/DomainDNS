@@ -31,4 +31,20 @@
 	<select id="countByZoneAndName" resultType="int">
 		SELECT COUNT(1) FROM dns_records WHERE zone_id=#{zoneId} AND name=#{name}
 	</select>
+
+	<select id="findOneByZoneAndName" resultMap="RecMap">
+		SELECT * FROM dns_records WHERE zone_id=#{zoneId} AND name=#{name} ORDER BY id DESC LIMIT 1
+	</select>
+
+	<select id="findById" resultMap="RecMap">
+		SELECT * FROM dns_records WHERE id=#{id}
+	</select>
+
+	<delete id="deleteByZoneAndCfRecordId">
+		DELETE FROM dns_records WHERE zone_id=#{zoneId} AND cf_record_id=#{cfRecordId}
+	</delete>
+
+	<delete id="deleteByZoneAndName">
+		DELETE FROM dns_records WHERE zone_id=#{zoneId} AND name=#{name}
+	</delete>
 </mapper>

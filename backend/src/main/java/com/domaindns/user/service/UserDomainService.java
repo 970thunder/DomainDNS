@@ -66,18 +66,78 @@ public class UserDomainService {
         // Cloudflare 侧是否已有记录（本地镜像）
         if (dnsRecordMapper.countByZoneAndName(z.getId(), fullDomain) > 0)
             throw new IllegalArgumentException("该子域名已被占用");
+        Long localDnsRecordId;
         try {
             dnsRecordService.create(z.getId(), bodyJson);
+            // 读取本地镜像以获取刚刚创建的记录 id
+            localDnsRecordId = fetchLocalDnsRecordId(z.getId(), fullDomain);
         } catch (Exception e) {
             throw new IllegalStateException("创建 DNS 记录失败: " + e.getMessage());
         }
 
-        userDomainMapper.insert(userId, z.getId(), null, prefix, fullDomain, remark);
+        userDomainMapper.insert(userId, z.getId(), localDnsRecordId, prefix, fullDomain, remark);
 
         // 扣积分并记录流水
         pointsMapper.adjust(userId, -cost);
         pointsMapper.insertTxn(userId, -cost, null, "DOMAIN_APPLY",
                 "申请域名 " + fullDomain + " 扣除 " + cost + " 积分", null);
+    }
+
+    public Map<String, Object> listUserDomains(Long userId, Integer page, Integer size) {
+        int offset = (Math.max(page, 1) - 1) * Math.max(size, 1);
+        java.util.List<com.domaindns.user.model.UserDomain> list = userDomainMapper.listByUser(userId, offset, size);
+        int total = userDomainMapper.countByUser(userId);
+        java.util.HashMap<String, Object> m = new java.util.HashMap<>();
+        m.put("list", list);
+        m.put("total", total);
+        m.put("page", page);
+        m.put("size", size);
+        return m;
+    }
+
+    @Transactional
+    public void releaseDomain(Long userId, Long id) {
+        com.domaindns.user.model.UserDomain ud = userDomainMapper.findByIdAndUser(id, userId);
+        if (ud == null)
+            throw new IllegalArgumentException("记录不存在");
+        // 删除 Cloudflare 记录（若本地有 dns_record_id）
+        // 删除 Cloudflare 及本地记录
+        Zone zForDelete = zoneMapper.findById(ud.getZoneId());
+        if (zForDelete != null) {
+            com.domaindns.cf.model.DnsRecord r = null;
+            if (ud.getDnsRecordId() != null) {
+                r = dnsRecordMapper.findById(ud.getDnsRecordId());
+            }
+            if (r == null) {
+                r = dnsRecordMapper.findOneByZoneAndName(zForDelete.getId(), ud.getFullDomain());
+            }
+            if (r != null) {
+                try {
+                    dnsRecordService.delete(zForDelete.getId(), r.getCfRecordId());
+                } catch (Exception ignored) {
+                }
+                // 先断开外键再删除本地镜像
+                userDomainMapper.updateDnsRecordId(ud.getId(), null);
+                dnsRecordMapper.deleteByZoneAndCfRecordId(zForDelete.getId(), r.getCfRecordId());
+            } else {
+                // 未找到镜像，直接删除 user_domain，再按名称兜底清理本地
+                userDomainMapper.deleteByIdAndUser(id, userId);
+                dnsRecordMapper.deleteByZoneAndName(zForDelete.getId(), ud.getFullDomain());
+                // 积分返还逻辑继续
+            }
+        }
+        // 若尚未删除 user_domain，这里删除（常规路径）
+        userDomainMapper.deleteByIdAndUser(id, userId);
+
+        // 返还 50% 创建时消耗的积分（按当前规则重算成本的一半）
+        Zone z = zoneMapper.findById(ud.getZoneId());
+        int baseCost = getBaseCost();
+        double multiplier = z != null ? tldMultiplier(z.getName()) : 1.0;
+        int cost = (int) Math.ceil(baseCost * multiplier);
+        int refund = Math.max(1, cost / 2);
+        pointsMapper.adjust(userId, refund);
+        pointsMapper.insertTxn(userId, refund, null, "DOMAIN_RELEASE",
+                "释放域名 " + ud.getFullDomain() + " 返还 " + refund + " 积分", id);
     }
 
     private Zone resolveZone(Object zoneIdOrKey) {
@@ -114,6 +174,11 @@ public class UserDomainService {
         if (lower.endsWith(".top"))
             return 1.5;
         return 1.0;
+    }
+
+    private Long fetchLocalDnsRecordId(Long zoneId, String fullDomain) {
+        com.domaindns.cf.model.DnsRecord r = dnsRecordMapper.findOneByZoneAndName(zoneId, fullDomain);
+        return r == null ? null : r.getId();
     }
 
     private String buildCfRecordJson(String name, String type, String value, Integer ttl) {

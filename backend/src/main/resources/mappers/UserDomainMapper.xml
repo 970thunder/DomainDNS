@@ -1,6 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.domaindns.user.mapper.UserDomainMapper">
+    <resultMap id="UDMap" type="com.domaindns.user.model.UserDomain">
+        <id property="id" column="id" />
+        <result property="userId" column="user_id" />
+        <result property="zoneId" column="zone_id" />
+        <result property="dnsRecordId" column="dns_record_id" />
+        <result property="subdomainPrefix" column="subdomain_prefix" />
+        <result property="fullDomain" column="full_domain" />
+        <result property="status" column="status" />
+        <result property="remark" column="remark" />
+        <result property="createdAt" column="created_at" />
+        <result property="updatedAt" column="updated_at" />
+    </resultMap>
     <insert id="insert">
         INSERT INTO user_domains(user_id, zone_id, dns_record_id, subdomain_prefix, full_domain, remark)
         VALUES(#{userId}, #{zoneId}, #{dnsRecordId}, #{prefix}, #{fullDomain}, #{remark})
@@ -9,6 +21,28 @@
     <select id="countByUserAndDomain" resultType="int">
         SELECT COUNT(1) FROM user_domains WHERE user_id=#{userId} AND full_domain=#{fullDomain}
     </select>
+
+    <select id="listByUser" resultMap="UDMap">
+        SELECT * FROM user_domains WHERE user_id=#{userId}
+        ORDER BY id DESC
+        <if test="size!=null"> LIMIT #{offset}, #{size}</if>
+    </select>
+
+    <select id="countByUser" resultType="int">
+        SELECT COUNT(1) FROM user_domains WHERE user_id=#{userId}
+    </select>
+
+    <select id="findByIdAndUser" resultMap="UDMap">
+        SELECT * FROM user_domains WHERE id=#{id} AND user_id=#{userId}
+    </select>
+
+    <update id="updateDnsRecordId">
+        UPDATE user_domains SET dns_record_id=#{dnsRecordId} WHERE id=#{id}
+    </update>
+
+    <delete id="deleteByIdAndUser">
+        DELETE FROM user_domains WHERE id=#{id} AND user_id=#{userId}
+    </delete>
 </mapper>
 
 

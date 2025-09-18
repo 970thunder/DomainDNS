@@ -34,6 +34,22 @@ public class UserDomainController {
         return ApiResponse.ok(Map.of("status", "ok"));
     }
 
+    @GetMapping
+    public ApiResponse<Map<String, Object>> myDomains(@RequestHeader("Authorization") String authorization,
+            @RequestParam(value = "page", defaultValue = "1") Integer page,
+            @RequestParam(value = "size", defaultValue = "20") Integer size) {
+        long userId = currentUserId(authorization);
+        return ApiResponse.ok(service.listUserDomains(userId, page, size));
+    }
+
+    @DeleteMapping("/{id}")
+    public ApiResponse<Map<String, Object>> release(@RequestHeader("Authorization") String authorization,
+            @PathVariable("id") Long id) {
+        long userId = currentUserId(authorization);
+        service.releaseDomain(userId, id);
+        return ApiResponse.ok(Map.of("status", "ok"));
+    }
+
     private long currentUserId(String authorization) {
         if (authorization == null || !authorization.startsWith("Bearer "))
             throw new RuntimeException("未登录");
