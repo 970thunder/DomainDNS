@@ -5,6 +5,10 @@
         INSERT INTO user_domains(user_id, zone_id, dns_record_id, subdomain_prefix, full_domain, remark)
         VALUES(#{userId}, #{zoneId}, #{dnsRecordId}, #{prefix}, #{fullDomain}, #{remark})
     </insert>
+
+    <select id="countByUserAndDomain" resultType="int">
+        SELECT COUNT(1) FROM user_domains WHERE user_id=#{userId} AND full_domain=#{fullDomain}
+    </select>
 </mapper>
 
 

@@ -334,18 +334,24 @@ curl -X DELETE http://localhost:8080/api/admin/zones/1/records/<cf_record_id> \
 #### 3.1 可分发域名✅
 - GET `/api/zones`：返回已启用分发的 zone 列表
 
-#### 3.2 申请子域名
+#### 3.1.1 子域名可用性搜索（公开）✅
+- GET `/api/domains/search?prefix=abc`
+- 说明：输入子域名前缀，返回所有已启用分发的 `zones` 下可拼接的候选完整域名列表（不校验积分，不鉴权）。
+
+响应：`{ code:0, data: ["abc.example.com","abc.hyper99.top", ...] }`
+
+#### 3.2 申请子域名✅（含可用性校验与积分扣减）
 - POST `/api/user/domains/apply`
 
 请求参数：
 
 | 字段 | 类型 | 必填 | 说明 |
 |---|---|---|---|
-| zoneId | long | 是 | 目标 zone ID |
+| zoneId | string | 是 | 目标 Zone（支持：本地 `zones.id`、Cloudflare `zone_id`、或域名 `name`） |
 | prefix | string | 是 | 子域名前缀 |
 | type | string | 是 | 记录类型（A/AAAA/CNAME/TXT...） |
 | value | string | 是 | 记录值（IP/域名/文本） |
-| ttl | int | 否 | TTL（默认系统设置） |
+| ttl | int | 否 | TTL（默认取系统设置 `default_ttl`，如未传） |
 | remark | string | 否 | 备注 |
 
 响应（同步成功示例）：
@@ -354,12 +360,71 @@ curl -X DELETE http://localhost:8080/api/admin/zones/1/records/<cf_record_id> \
 { "code": 0, "message": "ok", "data": { "domainId": 1001, "status": "ACTIVE" } }
 ```
 
+说明与规则：
+- 申请前置校验：
+  - 若该用户已申请过相同完整域名（前缀+zone）→ 返回错误 `你已申请过该子域名`。
+  - 若该完整域名在 Cloudflare 已存在 DNS 记录（以本地镜像为准）→ 返回错误 `该子域名已被占用`。
+- 记录创建：先在 Cloudflare 成功创建 DNS 记录后，才会扣减积分与落库。
+- TTL：未传 `ttl` 时，使用系统设置 `default_ttl`（默认 120）。
+- 记录校验：`A` 记录需为 IPv4；`AAAA` 记录需为 IPv6；`CNAME/TXT` 简要校验。
+- 积分消耗：以系统设置 `domain_cost_points` 为基准（默认 10 分）。根据 TLD 乘数扣减：
+  - `.cn` / `.com`：2.0 倍（20 分）
+  - `.top`：1.5 倍（15 分）
+  - 其它：1.0 倍（10 分）
+- 余额保护：若余额不足扣减所需积分，直接返回错误 `积分不足`，不会创建记录或写入流水。
+
+错误示例：
+```json
+{ "code": 40001, "message": "你已申请过该子域名" }
+{ "code": 40001, "message": "该子域名已被占用" }
+{ "code": 40001, "message": "积分不足" }
+{ "code": 50000, "message": "{Cloudflare 错误响应体}" }
+```
+
+示例（申请 A 记录）：
+```bash
+curl -X POST http://localhost:8080/api/user/domains/apply \
+  -H "Authorization: Bearer <user_token>" -H "Content-Type: application/json" \
+  -d '{
+    "zoneId":"c7ff25782f8f4054c9fa25d570d56f6a",
+    "prefix":"abc",
+    "type":"A",
+    "value":"1.1.1.1",
+    "remark":"我的测试记录"
+  }'
+```
+
 #### 3.3 我的域名
 - GET `/api/user/domains`：分页查询
 - DELETE `/api/user/domains/{id}`：释放子域名
 
-#### 3.4 积分
-- GET `/api/user/points`：余额 + 流水
+#### 3.4 积分✅
+- GET `/api/user/points`：返回当前积分余额与积分流水（分页）
+
+响应示例：
+```json
+{
+  "code": 0,
+  "data": {
+    "balance": 85,
+    "list": [
+      {
+        "id": 123,
+        "userId": 1,
+        "changeAmount": -15,
+        "balanceAfter": null,
+        "type": "DOMAIN_APPLY",
+        "remark": "申请域名 abc.hyper99.top 扣除 15 积分",
+        "relatedId": null,
+        "createdAt": "2025-09-18T06:18:00"
+      }
+    ],
+    "total": 1,
+    "page": 1,
+    "size": 20
+  }
+}
+```
 
 #### 3.5 邀请
 - POST `/api/user/invite/generate`：生成/重置邀请码

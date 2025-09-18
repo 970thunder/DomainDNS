@@ -3,6 +3,7 @@ package com.domaindns.user.service;
 import com.domaindns.cf.mapper.ZoneMapper;
 import com.domaindns.cf.model.Zone;
 import com.domaindns.cf.service.DnsRecordService;
+import com.domaindns.cf.mapper.DnsRecordMapper;
 import com.domaindns.auth.mapper.UserMapper;
 import com.domaindns.auth.entity.User;
 import com.domaindns.user.mapper.PointsMapper;
@@ -22,15 +23,18 @@ public class UserDomainService {
     private final SettingsService settingsService;
     private final UserMapper userMapper;
     private final DnsRecordService dnsRecordService;
+    private final DnsRecordMapper dnsRecordMapper;
 
     public UserDomainService(ZoneMapper zoneMapper, PointsMapper pointsMapper, UserDomainMapper userDomainMapper,
-            SettingsService settingsService, UserMapper userMapper, DnsRecordService dnsRecordService) {
+            SettingsService settingsService, UserMapper userMapper, DnsRecordService dnsRecordService,
+            DnsRecordMapper dnsRecordMapper) {
         this.zoneMapper = zoneMapper;
         this.pointsMapper = pointsMapper;
         this.userDomainMapper = userDomainMapper;
         this.settingsService = settingsService;
         this.userMapper = userMapper;
         this.dnsRecordService = dnsRecordService;
+        this.dnsRecordMapper = dnsRecordMapper;
     }
 
     @Transactional
@@ -54,13 +58,20 @@ public class UserDomainService {
         int ttlToUse = ttl != null ? ttl : getDefaultTtl();
         validateRecord(type, value);
         String bodyJson = buildCfRecordJson(prefix + "." + z.getName(), type, value, ttlToUse);
+        String fullDomain = prefix + "." + z.getName();
+
+        // 前置重复校验：同用户是否已申请过该域名
+        if (userDomainMapper.countByUserAndDomain(userId, fullDomain) > 0)
+            throw new IllegalArgumentException("你已申请过该子域名");
+        // Cloudflare 侧是否已有记录（本地镜像）
+        if (dnsRecordMapper.countByZoneAndName(z.getId(), fullDomain) > 0)
+            throw new IllegalArgumentException("该子域名已被占用");
         try {
             dnsRecordService.create(z.getId(), bodyJson);
         } catch (Exception e) {
             throw new IllegalStateException("创建 DNS 记录失败: " + e.getMessage());
         }
 
-        String fullDomain = prefix + "." + z.getName();
         userDomainMapper.insert(userId, z.getId(), null, prefix, fullDomain, remark);
 
         // 扣积分并记录流水

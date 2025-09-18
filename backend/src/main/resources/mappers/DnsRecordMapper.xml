@@ -27,4 +27,8 @@
 		<if test="name!=null and name!=''"> AND name LIKE CONCAT('%',#{name},'%')</if>
 		ORDER BY id DESC
 	</select>
+
+	<select id="countByZoneAndName" resultType="int">
+		SELECT COUNT(1) FROM dns_records WHERE zone_id=#{zoneId} AND name=#{name}
+	</select>
 </mapper>
