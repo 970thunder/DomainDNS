@@ -9,6 +9,7 @@ import com.domaindns.cf.model.Zone;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import java.util.List;
 
@@ -74,7 +75,14 @@ public class DnsRecordService {
     public void create(Long zoneDbId, String bodyJson) throws Exception {
         Zone z = zoneById(zoneDbId);
         CfAccount acc = accById(z.getCfAccountId());
-        String resp = client.createDnsRecord(acc, z.getZoneId(), bodyJson).block();
+        String resp;
+        try {
+            resp = client.createDnsRecord(acc, z.getZoneId(), bodyJson).block();
+        } catch (WebClientResponseException wex) {
+            String body = wex.getResponseBodyAsString();
+            throw new IllegalStateException(body != null && !body.isEmpty() ? body
+                    : (wex.getStatusCode() + " " + wex.getStatusText()));
+        }
         JsonNode root = objectMapper.readTree(resp);
         if (!root.path("success").asBoolean(false))
             throw new IllegalStateException(root.path("errors").toString());

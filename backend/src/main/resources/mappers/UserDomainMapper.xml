@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.domaindns.user.mapper.UserDomainMapper">
+    <insert id="insert">
+        INSERT INTO user_domains(user_id, zone_id, dns_record_id, subdomain_prefix, full_domain, remark)
+        VALUES(#{userId}, #{zoneId}, #{dnsRecordId}, #{prefix}, #{fullDomain}, #{remark})
+    </insert>
+</mapper>
+
+

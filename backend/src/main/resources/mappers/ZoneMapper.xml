@@ -38,4 +38,16 @@
 	<update id="setEnabled">
 		UPDATE zones SET enabled=#{enabled} WHERE id=#{id}
 	</update>
+
+	<select id="findById" parameterType="long" resultMap="ZoneMap">
+		SELECT * FROM zones WHERE id=#{id}
+	</select>
+
+	<select id="findByCfZoneId" parameterType="string" resultMap="ZoneMap">
+		SELECT * FROM zones WHERE zone_id=#{zoneId}
+	</select>
+
+	<select id="findByName" parameterType="string" resultMap="ZoneMap">
+		SELECT * FROM zones WHERE name=#{name}
+	</select>
 </mapper>

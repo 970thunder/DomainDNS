@@ -14,4 +14,10 @@ public interface ZoneMapper {
             @Param("cfAccountId") Long cfAccountId);
 
     int setEnabled(@Param("id") Long id, @Param("enabled") Integer enabled);
+
+    Zone findById(@Param("id") Long id);
+
+    Zone findByCfZoneId(@Param("zoneId") String zoneId);
+
+    Zone findByName(@Param("name") String name);
 }

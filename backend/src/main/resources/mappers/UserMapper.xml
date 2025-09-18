@@ -24,6 +24,10 @@
 		SELECT * FROM users WHERE email = #{email}
 	</select>
 
+	<select id="findById" parameterType="long" resultMap="UserMap">
+		SELECT * FROM users WHERE id = #{id}
+	</select>
+
 	<select id="countByRole" parameterType="string" resultType="int">
 		SELECT COUNT(1) FROM users WHERE role = #{role}
 	</select>

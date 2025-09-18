@@ -286,7 +286,7 @@ curl -X DELETE http://localhost:8080/api/admin/zones/1/records/<cf_record_id> \
 
 说明：生成后默认为 `status=ACTIVE`，`used_count=0`，若传入 `validDays` 则计算 `expired_at`。
 
-##### 2.8.2 卡密（ADMIN）
+##### 2.8.2 卡密（ADMIN）✅
 - 列表：GET `/api/admin/cards?status=&page=&size=`
 
 请求参数：
@@ -313,14 +313,14 @@ curl -X DELETE http://localhost:8080/api/admin/zones/1/records/<cf_record_id> \
 
 说明：卡密一经生成即为 `ACTIVE`，被用户兑换后变为 `USED`，过期后为 `EXPIRED`（状态字段以实现为准）。
 
-##### 2.8.3 订单（ADMIN）
+##### 2.8.3 订单（ADMIN）✅
 - 列表：GET `/api/admin/orders?status=&userId=&page=&size=`
 
 请求参数：
 
 | 字段 | 类型 | 必填 | 说明 |
 |---|---|---|---|
-| status | string | 否 | 订单状态（如 CREATED/PAID/CLOSED/FAILED） |
+| status | string | 否 | 订单状态（PENDING/PAID/CANCELLED/FAILED） |
 | userId | long | 否 | 用户 ID |
 | page | int | 否 | 页码（默认 1） |
 | size | int | 否 | 每页大小（默认 20） |
@@ -331,7 +331,7 @@ curl -X DELETE http://localhost:8080/api/admin/zones/1/records/<cf_record_id> \
 
 ### 3. 用户（USER）
 
-#### 3.1 可分发域名
+#### 3.1 可分发域名✅
 - GET `/api/zones`：返回已启用分发的 zone 列表
 
 #### 3.2 申请子域名
@@ -378,6 +378,19 @@ curl -X DELETE http://localhost:8080/api/admin/zones/1/records/<cf_record_id> \
 | provider | string | 否 | 支付渠道（如 mock/alipay/wechat，视实现） |
 
 响应（创建）：`{ code:0, data:{ orderNo, payUrl? } }`
+
+示例（创建订单）：
+```bash
+curl -X POST http://localhost:8080/api/user/recharge \
+  -H "Authorization: Bearer <user_token>" -H "Content-Type: application/json" \
+  -d '{"amount":9.9,"points":10,"provider":"mock"}'
+```
+
+示例（我的订单）：
+```bash
+curl -X GET "http://localhost:8080/api/user/orders?status=PAID&page=1&size=20" \
+  -H "Authorization: Bearer <user_token>"
+```
 
 ---
 
@@ -609,6 +622,23 @@ curl -X POST http://localhost:8080/api/admin/cards/generate \
 ```bash
 curl -X GET "http://localhost:8080/api/admin/orders?status=PAID&page=1&size=20" \
   -H "Authorization: Bearer <admin_token>"
+```
+
+---
+
+### 15) User - 充值/订单
+
+- 创建订单：
+```bash
+curl -X POST http://localhost:8080/api/user/recharge \
+  -H "Authorization: Bearer <user_token>" -H "Content-Type: application/json" \
+  -d '{"amount":9.9,"points":10,"provider":"mock"}'
+```
+
+- 我的订单：
+```bash
+curl -X GET "http://localhost:8080/api/user/orders?status=&page=1&size=20" \
+  -H "Authorization: Bearer <user_token>"
 ```
 
 ##  三、通用约定

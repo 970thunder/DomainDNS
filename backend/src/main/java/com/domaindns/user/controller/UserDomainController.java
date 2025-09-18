@@ -1,0 +1,44 @@
+package com.domaindns.user.controller;
+
+import com.domaindns.common.ApiResponse;
+import com.domaindns.user.service.UserDomainService;
+import com.domaindns.auth.service.JwtService;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
+
+@RestController
+@RequestMapping("/api/user/domains")
+public class UserDomainController {
+    private final UserDomainService service;
+    private final JwtService jwtService;
+
+    public UserDomainController(UserDomainService service, JwtService jwtService) {
+        this.service = service;
+        this.jwtService = jwtService;
+    }
+
+    @PostMapping("/apply")
+    public ApiResponse<Map<String, Object>> apply(@RequestHeader("Authorization") String authorization,
+            @RequestBody Map<String, Object> body) {
+        long userId = currentUserId(authorization);
+        Object zoneKey = body.get("zoneId");
+        String prefix = String.valueOf(body.get("prefix"));
+        String type = String.valueOf(body.get("type"));
+        String value = String.valueOf(body.get("value"));
+        Integer ttl = body.get("ttl") == null ? null : Integer.valueOf(body.get("ttl").toString());
+        String remark = body.get("remark") == null ? null : String.valueOf(body.get("remark"));
+        service.applySubdomain(userId, zoneKey, prefix, type, value, ttl, remark);
+        return ApiResponse.ok(Map.of("status", "ok"));
+    }
+
+    private long currentUserId(String authorization) {
+        if (authorization == null || !authorization.startsWith("Bearer "))
+            throw new RuntimeException("未登录");
+        String token = authorization.substring(7);
+        Jws<Claims> jws = jwtService.parse(token);
+        return Long.parseLong(jws.getBody().getSubject());
+    }
+}
