@@ -2,7 +2,7 @@
 	<div class="admin-layout">
 		<header class="app-header">
 			<div class="app-header-inner container">
-				<div class="brand">DomainDNS • Admin</div>
+				<div class="brand">HyperNym</div>
 				<nav class="nav">
 					<el-menu mode="horizontal" :router="true" :default-active="$route.path" :ellipsis="false"
 						class="nav-menu">
@@ -25,7 +25,7 @@
 			<router-view />
 		</main>
 		<footer class="footer container">
-			© 2025 DomainDNS
+			© 2025 HyperNym-DomainDNS
 		</footer>
 	</div>
 </template>

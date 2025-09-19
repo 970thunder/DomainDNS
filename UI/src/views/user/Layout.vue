@@ -2,7 +2,7 @@
 	<div>
 		<header class="app-header">
 			<div class="app-header-inner container">
-				<div class="brand">DomainDNS • User</div>
+				<div class="brand">HyperNym</div>
 				<div class="spacer"></div>
 				<el-button text @click="$router.push('/admin/login')">管理端登录</el-button>
 			</div>
@@ -20,6 +20,9 @@
 				<router-view />
 			</div>
 		</div>
+		<footer class="footer container">
+			© 2025 HyperNym-DomainDNS
+		</footer>
 	</div>
 </template>
 
@@ -27,4 +30,16 @@
 </script>
 
 <style scoped>
+.footer {
+	padding: 16px;
+	color: #64748b;
+	font-size: 14px;
+	text-align: center;
+	border-top: 1px solid #e2e8f0;
+}
+
+.container {
+	max-width: 1200px;
+	margin: 0 auto;
+}
 </style>

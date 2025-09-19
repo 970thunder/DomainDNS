@@ -150,4 +150,44 @@ const detail = (r) => { }
 	color: #065f46;
 	border-color: #a7f3d0;
 }
+
+/* 响应式：移动端适配 */
+@media (max-width: 768px) {
+	.card {
+		padding: 12px;
+	}
+
+	.input {
+		width: 100%;
+	}
+
+	.row {
+		flex-wrap: wrap;
+		gap: 8px;
+	}
+
+	/* 表格在小屏可横向滚动，避免溢出 */
+	.table {
+		display: block;
+		overflow-x: auto;
+		-webkit-overflow-scrolling: touch;
+	}
+
+	.table th,
+	.table td {
+		padding: 10px 8px;
+		font-size: 13px;
+	}
+
+	/* 操作列按钮堆叠并占满宽度 */
+	.table td.row {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	/* 移动端表单区域与操作列按钮全宽显示，避免换行挤压 */
+	.row .btn {
+		width: 100%;
+	}
+}
 </style>

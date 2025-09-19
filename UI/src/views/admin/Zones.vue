@@ -165,4 +165,36 @@ const toggle = (r) => { r.status = r.status === '启用' ? '禁用' : '启用' }
 	color: #065f46;
 	border-color: #a7f3d0;
 }
+
+/* 响应式：窄屏优化 */
+@media (max-width: 768px) {
+	.card {
+		padding: 12px;
+	}
+
+	.input {
+		width: 100%;
+	}
+
+	.row {
+		flex-wrap: wrap;
+		gap: 8px;
+	}
+
+	.table th,
+	.table td {
+		padding: 10px 8px;
+		font-size: 13px;
+	}
+
+	/* 将操作按钮堆叠显示，避免溢出 */
+	.table td.row {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.table td.row .btn {
+		width: 100%;
+	}
+}
 </style>

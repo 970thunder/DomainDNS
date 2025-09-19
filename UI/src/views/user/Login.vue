@@ -183,4 +183,13 @@ const goRegister = () => router.push('/user/register')
 .btn:hover {
 	border: 1px solid #2d79f3;
 }
+
+/* 响应式：窄屏表单宽度适配 */
+@media (max-width: 520px) {
+	.form {
+		width: 100%;
+		border-radius: 0;
+		padding: 20px;
+	}
+}
 </style>

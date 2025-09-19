@@ -184,4 +184,49 @@ const remove = (r) => { }
 	color: #065f46;
 	border-color: #a7f3d0;
 }
+
+/* 响应式：移动端友好 */
+@media (max-width: 768px) {
+	.card {
+		padding: 12px;
+	}
+
+	.input,
+	.select {
+		width: 100%;
+	}
+
+	.row {
+		flex-wrap: wrap;
+		gap: 8px;
+	}
+
+	/* 表格在小屏可横向滚动，避免内容溢出 */
+	.table {
+		display: block;
+		overflow-x: auto;
+		-webkit-overflow-scrolling: touch;
+	}
+
+	.table th,
+	.table td {
+		padding: 10px 8px;
+		font-size: 13px;
+	}
+
+	/* 操作列按钮纵向排列，避免横向滚动 */
+	.table td.row {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.table td.row .btn {
+		width: 100%;
+	}
+
+	/* 顶部工具栏按钮在小屏占满宽度，避免溢出 */
+	.row .btn {
+		width: 100%;
+	}
+}
 </style>

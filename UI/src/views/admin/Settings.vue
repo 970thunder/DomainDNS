@@ -157,4 +157,21 @@ const reset = () => { points.initial_register_points = 5; points.inviter_points 
 .btn.outline:hover {
 	background: #f8fafc;
 }
+
+/* 响应式：两列网格在窄屏改为单列 */
+@media (max-width: 960px) {
+	.grid.cols-2 {
+		grid-template-columns: 1fr;
+	}
+}
+
+@media (max-width: 768px) {
+	.card {
+		padding: 12px;
+	}
+
+	.form {
+		max-width: 100%;
+	}
+}
 </style>

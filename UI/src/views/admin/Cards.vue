@@ -180,4 +180,27 @@ const exportCsv = () => { }
 	color: #065f46;
 	border-color: #a7f3d0;
 }
+
+/* 响应式：窄屏优化 */
+@media (max-width: 960px) {
+	.grid.cols-3 {
+		grid-template-columns: 1fr;
+	}
+}
+
+@media (max-width: 768px) {
+	.card {
+		padding: 12px;
+	}
+
+	.form {
+		max-width: 100%;
+	}
+
+	.table th,
+	.table td {
+		padding: 10px 8px;
+		font-size: 13px;
+	}
+}
 </style>

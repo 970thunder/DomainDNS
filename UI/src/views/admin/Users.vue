@@ -179,4 +179,50 @@ const toggleStatus = (u) => { u.status = u.status === 1 ? 0 : 1 }
 	color: #065f46;
 	border-color: #a7f3d0;
 }
+
+/* 响应式：表格与筛选区域在移动端更友好 */
+@media (max-width: 768px) {
+	.card {
+		padding: 12px;
+	}
+
+	.row {
+		flex-wrap: wrap;
+		gap: 8px;
+	}
+
+	.input,
+	.select {
+		width: 100%;
+		max-width: none;
+	}
+
+	/* 表格在小屏可横向滚动，避免溢出 */
+	.table {
+		display: block;
+		overflow-x: auto;
+		-webkit-overflow-scrolling: touch;
+	}
+
+	.table th,
+	.table td {
+		padding: 10px 8px;
+		font-size: 13px;
+	}
+
+	/* 操作列按钮堆叠 */
+	.table td.row {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.table td.row .btn {
+		width: 100%;
+	}
+
+	/* 顶部筛选区按钮在小屏占满宽度，避免溢出 */
+	.row .btn {
+		width: 100%;
+	}
+}
 </style>
