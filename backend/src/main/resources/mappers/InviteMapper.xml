@@ -45,4 +45,12 @@
 	<delete id="deleteByOwnerUserId">
 		DELETE FROM invite_codes WHERE owner_user_id=#{ownerUserId}
 	</delete>
+
+	<select id="findByCode" resultMap="InviteMap">
+		SELECT * FROM invite_codes WHERE code=#{code}
+	</select>
+
+	<update id="incrementUsedCount">
+		UPDATE invite_codes SET used_count = used_count + 1 WHERE code=#{code}
+	</update>
 </mapper>

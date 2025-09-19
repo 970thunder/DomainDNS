@@ -7,6 +7,10 @@ import com.domaindns.auth.dto.AuthDtos.RegisterResp;
 import com.domaindns.auth.entity.User;
 import com.domaindns.auth.mapper.UserMapper;
 import com.domaindns.common.RateLimiter;
+import com.domaindns.settings.SettingsService;
+import com.domaindns.user.mapper.PointsMapper;
+import com.domaindns.admin.mapper.InviteMapper;
+import com.domaindns.admin.model.InviteCode;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.mail.SimpleMailMessage;
@@ -25,18 +29,25 @@ public class AuthService {
     private final JavaMailSender mailSender;
     private final StringRedisTemplate redis;
     private final RateLimiter rateLimiter;
+    private final SettingsService settingsService;
+    private final PointsMapper pointsMapper;
+    private final InviteMapper inviteMapper;
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
     @Value("${spring.mail.username:}")
     private String mailFrom;
 
     public AuthService(UserMapper userMapper, JwtService jwtService, JavaMailSender mailSender,
-            StringRedisTemplate redis, RateLimiter rateLimiter) {
+            StringRedisTemplate redis, RateLimiter rateLimiter, SettingsService settingsService,
+            PointsMapper pointsMapper, InviteMapper inviteMapper) {
         this.userMapper = userMapper;
         this.jwtService = jwtService;
         this.mailSender = mailSender;
         this.redis = redis;
         this.rateLimiter = rateLimiter;
+        this.settingsService = settingsService;
+        this.pointsMapper = pointsMapper;
+        this.inviteMapper = inviteMapper;
     }
 
     public void sendRegisterCode(String email) {
@@ -62,7 +73,7 @@ public class AuthService {
         String expect = redis.opsForValue().get(key);
         if (expect == null || !expect.equals(req.emailCode))
             throw new IllegalArgumentException("邮箱验证码无效或已过期");
-        RegisterResp resp = doRegister(req.username, req.email, req.password, "USER");
+        RegisterResp resp = doRegister(req.username, req.email, req.password, "USER", req.inviteCode);
         redis.delete(key);
         return resp;
     }
@@ -73,7 +84,7 @@ public class AuthService {
         if (adminCount > 0) {
             throw new IllegalArgumentException("管理员已存在，禁止再次注册，请使用账号密码登录或通过邮箱找回密码");
         }
-        return doRegister(req.username, req.email, req.password, "ADMIN");
+        return doRegister(req.username, req.email, req.password, "ADMIN", null);
     }
 
     @Transactional
@@ -82,7 +93,7 @@ public class AuthService {
         if (adminCount > 0) {
             throw new IllegalArgumentException("管理员已存在，禁止再次注册，请使用账号密码登录或通过邮箱找回密码");
         }
-        return doRegister(username, email, password, "ADMIN");
+        return doRegister(username, email, password, "ADMIN", null);
     }
 
     public LoginResp loginUser(LoginReq req) {
@@ -93,7 +104,7 @@ public class AuthService {
         return doLogin(req, "ADMIN");
     }
 
-    private RegisterResp doRegister(String username, String email, String password, String role) {
+    private RegisterResp doRegister(String username, String email, String password, String role, String inviteCode) {
         if (username == null || username.isBlank())
             throw new IllegalArgumentException("用户名必填");
         if (password == null || password.isBlank())
@@ -102,17 +113,58 @@ public class AuthService {
             throw new IllegalArgumentException("用户名已存在");
         if (email != null && !email.isBlank() && userMapper.findByEmail(email) != null)
             throw new IllegalArgumentException("邮箱已存在");
+
+        // 处理邀请码
+        Long inviterId = null;
+        if (inviteCode != null && !inviteCode.isBlank()) {
+            InviteCode invite = inviteMapper.findByCode(inviteCode);
+            if (invite == null || !"ACTIVE".equals(invite.getStatus()))
+                throw new IllegalArgumentException("邀请码无效或已失效");
+            if (invite.getExpiredAt() != null && invite.getExpiredAt().isBefore(java.time.LocalDateTime.now()))
+                throw new IllegalArgumentException("邀请码已过期");
+            if (invite.getMaxUses() != null && invite.getMaxUses() > 0 && invite.getUsedCount() >= invite.getMaxUses())
+                throw new IllegalArgumentException("邀请码使用次数已达上限");
+            inviterId = invite.getOwnerUserId();
+        }
+
+        // 获取系统设置
+        java.util.Map<String, String> settings = settingsService.getAll();
+        int initialPoints = Integer.parseInt(settings.getOrDefault("initial_register_points", "5"));
+        int inviteePoints = Integer.parseInt(settings.getOrDefault("invitee_points", "3"));
+        int inviterPoints = Integer.parseInt(settings.getOrDefault("inviter_points", "3"));
+
+        // 计算积分
+        int totalPoints = initialPoints;
+        if (inviterId != null) {
+            totalPoints += inviteePoints;
+        }
+
         User u = new User();
         u.setUsername(username);
         u.setEmail(email);
         u.setPasswordHash(encoder.encode(password));
         u.setDisplayName(username);
-        u.setInviteCode(null);
-        u.setInviterId(null);
-        u.setPoints(0);
+        u.setInviteCode(null); // 新用户注册时，自己的邀请码字段为空
+        u.setInviterId(inviterId); // 这里存储邀请人的ID
+        u.setPoints(totalPoints);
         u.setRole(role);
         u.setStatus(1);
         userMapper.insert(u);
+
+        // 记录积分流水
+        pointsMapper.insertTxn(u.getId(), initialPoints, totalPoints, "REGISTER", "注册赠送积分", null);
+        if (inviterId != null) {
+            pointsMapper.insertTxn(u.getId(), inviteePoints, totalPoints, "INVITE_CODE", "使用邀请码奖励积分", inviterId);
+
+            // 给邀请人加积分
+            pointsMapper.adjust(inviterId, inviterPoints);
+            pointsMapper.insertTxn(inviterId, inviterPoints, null, "INVITE_REWARD", "邀请用户 " + username + " 获得奖励积分",
+                    u.getId());
+
+            // 更新邀请码使用次数
+            inviteMapper.incrementUsedCount(inviteCode);
+        }
+
         RegisterResp resp = new RegisterResp();
         resp.userId = u.getId();
         return resp;

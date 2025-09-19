@@ -60,6 +60,19 @@
 { "code": 0, "message": "ok", "data": { "userId": 1 } }
 ```
 
+积分奖励规则：
+- **首次注册**：赠送 `initial_register_points` 积分（默认 5 分）
+- **使用邀请码**：被邀请人额外获得 `invitee_points` 积分（默认 3 分），邀请人获得 `inviter_points` 积分（默认 3 分）
+- **邀请码校验**：验证邀请码有效性、状态、过期时间、使用次数限制
+- **积分流水**：所有积分变动都会记录在 `points_transactions` 表中
+
+错误示例：
+```json
+{ "code": 40001, "message": "邀请码无效或已失效" }
+{ "code": 40001, "message": "邀请码已过期" }
+{ "code": 40001, "message": "邀请码使用次数已达上限" }
+```
+
 #### 1.2 登录（用户）✅
 - 方法：POST `/api/auth/login`
 - 说明：用户名或邮箱 + 密码登录，返回 JWT

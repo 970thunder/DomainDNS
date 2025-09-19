@@ -24,4 +24,8 @@ public interface InviteMapper {
                         @Param("maxUses") Integer maxUses, @Param("expiredAt") LocalDateTime expiredAt);
 
         int deleteByOwnerUserId(@Param("ownerUserId") Long ownerUserId);
+
+        InviteCode findByCode(@Param("code") String code);
+
+        int incrementUsedCount(@Param("code") String code);
 }
