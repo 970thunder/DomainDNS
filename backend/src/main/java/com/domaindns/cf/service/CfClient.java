@@ -1,6 +1,7 @@
 package com.domaindns.cf.service;
 
 import com.domaindns.cf.model.CfAccount;
+import com.domaindns.common.SecretCrypto;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -13,14 +14,20 @@ public class CfClient {
             .baseUrl("https://api.cloudflare.com/client/v4")
             .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
             .build();
+    private final SecretCrypto crypto;
+
+    public CfClient(SecretCrypto crypto) {
+        this.crypto = crypto;
+    }
 
     private HttpHeaders buildHeaders(CfAccount acc) {
         HttpHeaders h = new HttpHeaders();
+        String key = crypto.decryptIfEncrypted(acc.getApiKey());
         if ("API_TOKEN".equalsIgnoreCase(acc.getApiType())) {
-            h.add(HttpHeaders.AUTHORIZATION, "Bearer " + acc.getApiKey());
+            h.add(HttpHeaders.AUTHORIZATION, "Bearer " + key);
         } else {
             h.add("X-Auth-Email", acc.getEmail());
-            h.add("X-Auth-Key", acc.getApiKey());
+            h.add("X-Auth-Key", key);
         }
         return h;
     }

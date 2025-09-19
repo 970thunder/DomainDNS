@@ -41,3 +41,6 @@ jwt:
   secret: "Rm9yRGV2VGVzdEFWaWVyeUxvbmdBbmRTdHJvbmdTRUNSRVRLZXlTdWl0YWJsZUF0TGVhc3QyNTZCaXRzIQ=="
   issuer: "domaindns"
   expire-minutes: 120
+
+secrets:
+  aes-key: "Dev-Only-Example-AES-Key-Please-Override-In-Prod"

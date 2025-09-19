@@ -5,6 +5,7 @@ import com.domaindns.cf.dto.CfAccountDtos.ItemResp;
 import com.domaindns.cf.dto.CfAccountDtos.UpdateReq;
 import com.domaindns.cf.mapper.CfAccountMapper;
 import com.domaindns.cf.model.CfAccount;
+import com.domaindns.common.SecretCrypto;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -14,10 +15,12 @@ import java.util.stream.Collectors;
 public class CfAccountService {
     private final CfAccountMapper mapper;
     private final CfClient client;
+    private final SecretCrypto crypto;
 
-    public CfAccountService(CfAccountMapper mapper, CfClient client) {
+    public CfAccountService(CfAccountMapper mapper, CfClient client, SecretCrypto crypto) {
         this.mapper = mapper;
         this.client = client;
+        this.crypto = crypto;
     }
 
     public Long create(CreateReq req) {
@@ -29,7 +32,7 @@ public class CfAccountService {
         a.setName(req.name);
         a.setEmail(req.email);
         a.setApiType(type);
-        a.setApiKey(req.apiKey);
+        a.setApiKey(crypto.encrypt(req.apiKey));
         a.setEnabled(req.enabled == null || req.enabled ? 1 : 0);
         mapper.insert(a);
         return a.getId();
@@ -41,7 +44,7 @@ public class CfAccountService {
         a.setName(req.name);
         a.setEmail(req.email);
         a.setApiType(req.apiType);
-        a.setApiKey(req.apiKey);
+        a.setApiKey(req.apiKey == null ? null : crypto.encrypt(req.apiKey));
         a.setEnabled(req.enabled == null ? null : (req.enabled ? 1 : 0));
         mapper.update(a);
     }
@@ -68,6 +71,9 @@ public class CfAccountService {
 
     public boolean test(Long id) {
         CfAccount a = mapper.findById(id);
+        if (a != null) {
+            a.setApiKey(crypto.decryptIfEncrypted(a.getApiKey()));
+        }
         if (a == null)
             throw new IllegalArgumentException("账户不存在");
         try {

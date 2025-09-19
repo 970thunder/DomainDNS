@@ -12,7 +12,7 @@
 						</path>
 					</g>
 				</svg>
-				<input v-model="email" placeholder="Enter your Email" class="input" type="text">
+				<input v-model="email" placeholder="输入账号" class="input" type="text">
 			</div>
 
 			<div class="flex-column">
@@ -27,7 +27,7 @@
 						d="m304 224c-8.832031 0-16-7.167969-16-16v-80c0-52.929688-43.070312-96-96-96s-96 43.070312-96 96v80c0 8.832031-7.167969 16-16 16s-16-7.167969-16-16v-80c0-70.59375 57.40625-128 128-128s128 57.40625 128 128v80c0 8.832031-7.167969 16-16 16zm0 0">
 					</path>
 				</svg>
-				<input v-model="password" placeholder="Enter your Password" class="input" type="password">
+				<input v-model="password" placeholder="输入密码" class="input" type="password">
 			</div>
 
 			<div class="flex-row">

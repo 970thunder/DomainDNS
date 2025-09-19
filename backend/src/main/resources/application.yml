@@ -41,3 +41,6 @@ jwt:
   secret: "replace-with-strong-secret"
   issuer: "domaindns"
   expire-minutes: 120
+
+secrets:
+  aes-key: ${SECRETS_AES_KEY:}
