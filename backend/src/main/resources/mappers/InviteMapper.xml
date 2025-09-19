@@ -32,4 +32,17 @@
 		INSERT INTO invite_codes(code,owner_user_id,max_uses,used_count,status,expired_at)
 		VALUES(#{code},#{ownerUserId},#{maxUses},0,'ACTIVE',#{expiredAt})
 	</insert>
+
+	<select id="findByOwnerUserId" resultMap="InviteMap">
+		SELECT * FROM invite_codes WHERE owner_user_id=#{ownerUserId} ORDER BY id DESC LIMIT 1
+	</select>
+
+	<update id="updateByOwnerUserId">
+		UPDATE invite_codes SET code=#{code}, max_uses=#{maxUses}, expired_at=#{expiredAt}, used_count=0, status='ACTIVE'
+		WHERE owner_user_id=#{ownerUserId}
+	</update>
+
+	<delete id="deleteByOwnerUserId">
+		DELETE FROM invite_codes WHERE owner_user_id=#{ownerUserId}
+	</delete>
 </mapper>

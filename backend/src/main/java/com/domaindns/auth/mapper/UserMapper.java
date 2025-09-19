@@ -17,4 +17,6 @@ public interface UserMapper {
     int countByRole(@Param("role") String role);
 
     int updatePassword(@Param("id") Long id, @Param("passwordHash") String passwordHash);
+
+    int updateInviteCode(@Param("id") Long id, @Param("inviteCode") String inviteCode);
 }

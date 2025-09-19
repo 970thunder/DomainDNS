@@ -40,4 +40,8 @@
 	<update id="updatePassword">
 		UPDATE users SET password_hash = #{passwordHash} WHERE id = #{id}
 	</update>
+
+	<update id="updateInviteCode">
+		UPDATE users SET invite_code = #{inviteCode} WHERE id = #{id}
+	</update>
 </mapper>

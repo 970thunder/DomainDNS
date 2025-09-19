@@ -435,11 +435,79 @@ curl -X POST http://localhost:8080/api/user/domains/apply \
 }
 ```
 
-#### 3.5 邀请
+#### 3.5 邀请✅
 - POST `/api/user/invite/generate`：生成/重置邀请码
 - GET `/api/user/invite/mycode`：查看我的邀请码与使用情况
 
-#### 3.6 充值
+##### 3.5.1 生成/重置邀请码✅
+- 方法：POST `/api/user/invite/generate`
+- 说明：为当前用户生成或重置邀请码，若已存在则重置为新的邀请码
+
+请求参数（可选）：
+
+| 字段 | 类型 | 必填 | 说明 |
+|---|---|---|---|
+| maxUses | int | 否 | 最多可使用次数（默认不限制） |
+| validDays | int | 否 | 有效天数（默认不过期） |
+
+响应示例：
+```json
+{
+  "code": 0,
+  "data": {
+    "code": "ABC12345",
+    "maxUses": 10,
+    "validDays": 30,
+    "expiredAt": "2024-10-18T06:18:00"
+  }
+}
+```
+
+##### 3.5.2 查看我的邀请码✅
+- 方法：GET `/api/user/invite/mycode`
+- 说明：查看当前用户的邀请码信息与使用情况
+
+响应示例：
+```json
+{
+  "code": 0,
+  "data": {
+    "hasCode": true,
+    "code": "ABC12345",
+    "maxUses": 10,
+    "usedCount": 3,
+    "remainingUses": 7,
+    "status": "ACTIVE",
+    "createdAt": "2024-09-18T06:18:00",
+    "expiredAt": "2024-10-18T06:18:00"
+  }
+}
+```
+
+无邀请码时：
+```json
+{
+  "code": 0,
+  "data": {
+    "hasCode": false
+  }
+}
+```
+
+示例（生成邀请码）：
+```bash
+curl -X POST http://localhost:8080/api/user/invite/generate \
+  -H "Authorization: Bearer <user_token>" -H "Content-Type: application/json" \
+  -d '{"maxUses":10,"validDays":30}'
+```
+
+示例（查看邀请码）：
+```bash
+curl -X GET http://localhost:8080/api/user/invite/mycode \
+  -H "Authorization: Bearer <user_token>"
+```
+
+#### 3.6 充值❌
 - POST `/api/user/recharge`：创建订单（返回支付链接/二维码）
 - GET `/api/user/orders`：查看我的订单
 
