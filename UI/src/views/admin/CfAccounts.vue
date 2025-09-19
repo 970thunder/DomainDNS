@@ -21,8 +21,8 @@
 					<el-input placeholder="仅原型，后端将加密存储" />
 				</el-form-item>
 				<el-form-item>
-					<el-button type="primary">保存账户</el-button>
-					<el-button plain>测试连接</el-button>
+					<el-button type=" btn primary">保存账户</el-button>
+					<el-button plain type=" btn outline">测试连接</el-button>
 				</el-form-item>
 			</el-form>
 		</el-card>
@@ -179,5 +179,35 @@ const tableData = ref([
 .proto-form :deep(.el-form-item__label) {
 	color: #475569;
 	font-size: 12px;
+}
+
+.btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	padding: 10px 14px;
+	border-radius: 10px;
+	border: 1px solid transparent;
+	font-weight: 600;
+	cursor: pointer;
+}
+
+.btn.primary {
+	background: #6366f1;
+	color: #fff;
+}
+
+.btn.primary:hover {
+	background: #4f46e5;
+}
+
+.btn.outline {
+	background: #fff;
+	border-color: #cbd5e1;
+	color: #0f172a;
+}
+
+.btn.outline:hover {
+	background: #f8fafc;
 }
 </style>

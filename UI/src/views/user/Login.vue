@@ -1,19 +1,186 @@
 <template>
 	<div class="container" style="display:grid;place-items:center;min-height:100vh;">
-		<el-card style="width:420px;">
-			<template #header>登录</template>
-			<el-form label-width="100px">
-				<el-form-item label="用户名/邮箱"><el-input placeholder="输入用户名或邮箱" /></el-form-item>
-				<el-form-item label="密码"><el-input type="password" placeholder="输入密码" /></el-form-item>
-				<el-form-item>
-					<el-button type="primary" @click="$router.push('/user/dashboard')">登录</el-button>
-					<el-button @click="$router.push('/user/register')">去注册</el-button>
-				</el-form-item>
-			</el-form>
-		</el-card>
+		<form class="form" @submit.prevent="onSubmit">
+			<div class="flex-column">
+				<label>用户名/邮箱</label>
+			</div>
+			<div class="inputForm">
+				<svg xmlns="http://www.w3.org/2000/svg" width="20" viewBox="0 0 32 32" height="20">
+					<g data-name="Layer 3" id="Layer_3">
+						<path
+							d="m30.853 13.87a15 15 0 0 0 -29.729 4.082 15.1 15.1 0 0 0 12.876 12.918 15.6 15.6 0 0 0 2.016.13 14.85 14.85 0 0 0 7.715-2.145 1 1 0 1 0 -1.031-1.711 13.007 13.007 0 1 1 5.458-6.529 2.149 2.149 0 0 1 -4.158-.759v-10.856a1 1 0 0 0 -2 0v1.726a8 8 0 1 0 .2 10.325 4.135 4.135 0 0 0 7.83.274 15.2 15.2 0 0 0 .823-7.455zm-14.853 8.13a6 6 0 1 1 6-6 6.006 6.006 0 0 1 -6 6z">
+						</path>
+					</g>
+				</svg>
+				<input v-model="account" placeholder="输入用户名或邮箱" class="input" type="text">
+			</div>
+
+			<div class="flex-column">
+				<label>密码</label>
+			</div>
+			<div class="inputForm">
+				<svg xmlns="http://www.w3.org/2000/svg" width="20" viewBox="-64 0 512 512" height="20">
+					<path
+						d="m336 512h-288c-26.453125 0-48-21.523438-48-48v-224c0-26.476562 21.546875-48 48-48h288c26.453125 0 48 21.523438 48 48v224c0 26.476562-21.546875 48-48 48zm-288-288c-8.8125 0-16 7.167969-16 16v224c0 8.832031 7.1875 16 16 16h288c8.8125 0 16-7.167969 16-16v-224c0-8.832031-7.1875-16-16-16zm0 0">
+					</path>
+					<path
+						d="m304 224c-8.832031 0-16-7.167969-16-16v-80c0-52.929688-43.070312-96-96-96s-96 43.070312-96 96v80c0 8.832031-7.167969 16-16 16s-16-7.167969-16-16v-80c0-70.59375 57.40625-128 128-128s128 57.40625 128 128v80c0 8.832031-7.167969 16-16 16zm0 0">
+					</path>
+				</svg>
+				<input v-model="password" placeholder="输入密码" class="input" type="password">
+			</div>
+
+			<div class="flex-row">
+				<div>
+					<input type="checkbox" v-model="remember">
+					<label>记住我</label>
+				</div>
+				<span class="span" @click.prevent="goRegister">没有账号？去注册</span>
+			</div>
+			<button class="button-submit" type="submit">登录</button>
+			<div class="flex-row">
+				<button class="btn github" type="button">
+					<svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
+						fill="currentColor">
+						<path
+							d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.11.82-.26.82-.58 0-.285-.01-1.04-.015-2.04-3.338.725-4.042-1.61-4.042-1.61-.546-1.385-1.333-1.755-1.333-1.755-1.09-.745.082-.73.082-.73 1.205.085 1.84 1.24 1.84 1.24 1.07 1.835 2.807 1.305 3.492.998.107-.775.418-1.305.762-1.605-2.665-.305-5.466-1.332-5.466-5.93 0-1.31.468-2.38 1.235-3.22-.123-.303-.535-1.525.117-3.176 0 0 1.008-.322 3.3 1.23.96-.267 1.99-.4 3.01-.405 1.02.005 2.05.138 3.01.405 2.29-1.552 3.297-1.23 3.297-1.23.654 1.651.242 2.873.12 3.176.77.84 1.233 1.91 1.233 3.22 0 4.61-2.807 5.624-5.48 5.92.43.37.823 1.096.823 2.21 0 1.595-.014 2.883-.014 3.276 0 .322.217.698.825.58C20.565 21.796 24 17.297 24 12 24 5.37 18.63 0 12 0z" />
+					</svg>
+					GitHub
+				</button>
+			</div>
+		</form>
+
 	</div>
 </template>
 <script setup>
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+const account = ref('')
+const password = ref('')
+const remember = ref(false)
+
+const onSubmit = () => {
+	router.push('/user/dashboard')
+}
+const goRegister = () => router.push('/user/register')
 </script>
 <style scoped>
+.form {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	background-color: #ffffff;
+	padding: 30px;
+	width: 450px;
+	border-radius: 20px;
+	box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12), 0 2px 6px rgba(15, 23, 42, 0.06);
+	font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+::placeholder {
+	font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+.form button {
+	align-self: flex-end;
+}
+
+.flex-column>label {
+	color: #151717;
+	font-weight: 600;
+}
+
+.inputForm {
+	border: 1.5px solid #ecedec;
+	border-radius: 10px;
+	height: 50px;
+	display: flex;
+	align-items: center;
+	padding-left: 10px;
+	transition: 0.2s ease-in-out;
+}
+
+.input {
+	margin-left: 10px;
+	border-radius: 10px;
+	border: none;
+	width: 85%;
+	height: 100%;
+}
+
+.input:focus {
+	outline: none;
+}
+
+.inputForm:focus-within {
+	border: 1.5px solid #2d79f3;
+}
+
+.flex-row {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	gap: 10px;
+	justify-content: space-between;
+}
+
+.flex-row>div>label {
+	font-size: 14px;
+	color: black;
+	font-weight: 400;
+}
+
+.span {
+	font-size: 14px;
+	margin-left: 5px;
+	color: #2d79f3;
+	font-weight: 500;
+	cursor: pointer;
+}
+
+.button-submit {
+	margin: 20px 0 10px 0;
+	background-color: #151717;
+	border: none;
+	color: white;
+	font-size: 15px;
+	font-weight: 500;
+	border-radius: 10px;
+	height: 50px;
+	width: 100%;
+	cursor: pointer;
+}
+
+.button-submit:hover {
+	background-color: #252727;
+}
+
+.p {
+	text-align: center;
+	color: black;
+	font-size: 14px;
+	margin: 5px 0;
+}
+
+.btn {
+	margin-top: 10px;
+	width: 100%;
+	height: 50px;
+	border-radius: 10px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	font-weight: 500;
+	gap: 10px;
+	border: 1px solid #ededef;
+	background-color: white;
+	cursor: pointer;
+	transition: 0.2s ease-in-out;
+}
+
+.btn:hover {
+	border: 1px solid #2d79f3;
+}
 </style>

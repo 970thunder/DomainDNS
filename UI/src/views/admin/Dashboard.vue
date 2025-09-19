@@ -53,10 +53,9 @@
 						<span class="badge badge-default">队列长度 {{ syncStatus.queued }}</span>
 					</div>
 					<div class="sync-actions">
-						<el-button @click="$router.push('/admin/zones')">进入同步</el-button>
-						<el-button type="primary" @click="triggerFullSync" :loading="syncLoading">
-							手动全量同步
-						</el-button>
+						<el-button class="btn outline" @click="$router.push('/admin/zones')">进入同步</el-button>
+						<el-button class="btn primary" @click="triggerFullSync"
+							:loading="syncLoading">手动全量同步</el-button>
 					</div>
 				</div>
 			</el-card>
@@ -211,6 +210,36 @@ onMounted(() => {
 	display: flex;
 	flex-direction: column;
 	gap: 16px;
+}
+
+.btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	padding: 10px 14px;
+	border-radius: 10px;
+	border: 1px solid transparent;
+	font-weight: 600;
+	cursor: pointer;
+}
+
+.btn.primary {
+	background: #6366f1;
+	color: #fff;
+}
+
+.btn.primary:hover {
+	background: #4f46e5;
+}
+
+.btn.outline {
+	background: #fff;
+	border-color: #cbd5e1;
+	color: #0f172a;
+}
+
+.btn.outline:hover {
+	background: #f8fafc;
 }
 
 /* 统计卡片样式 - 参照原型图 */
