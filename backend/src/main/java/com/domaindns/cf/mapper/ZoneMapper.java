@@ -20,4 +20,6 @@ public interface ZoneMapper {
     Zone findByCfZoneId(@Param("zoneId") String zoneId);
 
     Zone findByName(@Param("name") String name);
+
+    int count(@Param("enabled") Integer enabled);
 }

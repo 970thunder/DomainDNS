@@ -96,6 +96,10 @@
 import { reactive, ref, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { apiGet, apiPost } from '@/utils/api.js'
+import { useAuthStore } from '@/stores/auth.js'
+
+// 认证store
+const authStore = useAuthStore()
 
 // 响应式数据
 const isLoading = ref(false)
@@ -127,7 +131,7 @@ const loadCards = async () => {
 		params.append('page', filters.page)
 		params.append('size', filters.size)
 
-		const response = await apiGet(`/api/admin/cards?${params.toString()}`)
+		const response = await apiGet(`/api/admin/cards?${params.toString()}`, { token: authStore.adminToken })
 		cards.value = response.data?.list || []
 	} catch (error) {
 		ElMessage.error('加载卡密列表失败: ' + error.message)
@@ -178,7 +182,7 @@ const generateCards = async () => {
 			validDays: form.validDays ? parseInt(form.validDays) : null
 		}
 
-		const response = await apiPost('/api/admin/cards/generate', data)
+		const response = await apiPost('/api/admin/cards/generate', data, { token: authStore.adminToken })
 		ElMessage.success(`成功生成 ${response.data.count} 张卡密`)
 
 		// 清空表单

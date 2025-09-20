@@ -17,7 +17,7 @@
 					</el-menu>
 				</nav>
 				<div class="header-actions">
-					<el-button text @click="$router.push('/user/login')">切换到用户端</el-button>
+					<el-button text @click="logout">退出登录</el-button>
 				</div>
 			</div>
 		</header>
@@ -32,8 +32,39 @@
 
 <script setup>
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth.js'
+import { ElMessageBox } from 'element-plus'
+
+const router = useRouter()
+const authStore = useAuthStore()
 
 const isCollapsed = ref(false)
+
+// 退出登录
+const logout = async () => {
+	try {
+		await ElMessageBox.confirm(
+			'确定要退出登录吗？',
+			'确认退出',
+			{
+				confirmButtonText: '确定',
+				cancelButtonText: '取消',
+				type: 'warning'
+			}
+		)
+
+		// 调用后端注销接口
+		await authStore.logoutAdmin()
+
+		// 跳转到管理员登录页面
+		router.push('/admin/login')
+	} catch (error) {
+		if (error !== 'cancel') {
+			console.error('退出登录失败:', error)
+		}
+	}
+}
 </script>
 
 <style scoped>

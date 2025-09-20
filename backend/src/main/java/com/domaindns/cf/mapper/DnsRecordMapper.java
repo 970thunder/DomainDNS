@@ -21,4 +21,8 @@ public interface DnsRecordMapper {
     int deleteByZoneAndCfRecordId(@Param("zoneId") Long zoneId, @Param("cfRecordId") String cfRecordId);
 
     int deleteByZoneAndName(@Param("zoneId") Long zoneId, @Param("name") String name);
+
+    int countAll();
+
+    java.util.Map<String, Integer> countByType();
 }

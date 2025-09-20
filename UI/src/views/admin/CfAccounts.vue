@@ -23,12 +23,14 @@
 						:disabled="isLoading" show-password />
 				</el-form-item>
 				<el-form-item>
-					<el-button type="primary" :loading="isLoading" @click="handleSubmit">
-						保存账户
-					</el-button>
-					<el-button plain :loading="isLoading" @click="handleTestConnection">
-						测试连接
-					</el-button>
+					<div class="form-actions">
+						<button class="btn primary" :disabled="isLoading" @click="handleSubmit">
+							{{ isLoading ? '保存中...' : '保存账户' }}
+						</button>
+						<button class="btn outline" :disabled="isLoading" @click="handleTestConnection">
+							{{ isLoading ? '测试中...' : '测试连接' }}
+						</button>
+					</div>
 				</el-form-item>
 			</el-form>
 		</el-card>
@@ -37,9 +39,9 @@
 			<template #header>
 				<div class="card-header">
 					<h3 class="card-title">账户列表</h3>
-					<el-button type="primary" size="small" @click="loadAccounts" :loading="isLoading">
-						刷新
-					</el-button>
+					<button class="btn primary small" :disabled="isLoading" @click="loadAccounts">
+						{{ isLoading ? '加载中...' : '刷新' }}
+					</button>
 				</div>
 			</template>
 			<el-table :data="accounts" class="proto-table" v-loading="isLoading">
@@ -60,19 +62,21 @@
 				</el-table-column>
 				<el-table-column label="操作" width="280">
 					<template #default="{ row }">
-						<el-button size="small" :type="row.enabled ? 'warning' : 'success'" @click="toggleAccount(row)"
-							:loading="row.loading">
-							{{ row.enabled ? '禁用' : '启用' }}
-						</el-button>
-						<el-button size="small" plain @click="testConnection(row)" :loading="row.testing">
-							测试
-						</el-button>
-						<el-button size="small" plain @click="editAccount(row)">
-							编辑
-						</el-button>
-						<!-- <el-button size="small" type="danger" plain @click="deleteAccount(row)">
-							删除
-						</el-button> -->
+						<div class="table-actions">
+							<button class="btn small" :class="row.enabled ? 'warning' : 'success'"
+								:disabled="row.loading" @click="toggleAccount(row)">
+								{{ row.loading ? '处理中...' : (row.enabled ? '禁用' : '启用') }}
+							</button>
+							<button class="btn outline small" :disabled="row.testing" @click="testConnection(row)">
+								{{ row.testing ? '测试中...' : '测试' }}
+							</button>
+							<button class="btn outline small" @click="editAccount(row)">
+								编辑
+							</button>
+							<!-- <button class="btn danger small" @click="deleteAccount(row)">
+								删除
+							</button> -->
+						</div>
 					</template>
 				</el-table-column>
 			</el-table>
@@ -98,10 +102,12 @@
 				</el-form-item>
 			</el-form>
 			<template #footer>
-				<el-button @click="editDialogVisible = false">取消</el-button>
-				<el-button type="primary" @click="handleUpdate" :loading="isLoading">
-					保存
-				</el-button>
+				<div class="dialog-actions">
+					<button class="btn outline" @click="editDialogVisible = false">取消</button>
+					<button class="btn primary" :disabled="isLoading" @click="handleUpdate">
+						{{ isLoading ? '保存中...' : '保存' }}
+					</button>
+				</div>
 			</template>
 		</el-dialog>
 	</div>
@@ -110,6 +116,10 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { apiGet, apiPost, apiPut, apiDelete } from '@/utils/api.js'
+import { useAuthStore } from '@/stores/auth.js'
+
+// 认证store
+const authStore = useAuthStore()
 
 // 响应式数据
 const isLoading = ref(false)
@@ -156,10 +166,16 @@ const formRules = {
 const loadAccounts = async () => {
 	try {
 		isLoading.value = true
-		const response = await apiGet('/api/admin/cf-accounts')
+
+		// 调试信息
+		console.log('当前管理员token:', authStore.adminToken)
+		console.log('管理员登录状态:', authStore.isAdminLoggedIn)
+
+		const response = await apiGet('/api/admin/cf-accounts', { token: authStore.adminToken })
 		accounts.value = response.data || []
 	} catch (error) {
 		ElMessage.error('加载账户列表失败: ' + error.message)
+		console.error('API调用错误:', error)
 	} finally {
 		isLoading.value = false
 	}
@@ -171,7 +187,7 @@ const handleSubmit = async () => {
 		await formRef.value.validate()
 		isLoading.value = true
 
-		const response = await apiPost('/api/admin/cf-accounts', formData)
+		const response = await apiPost('/api/admin/cf-accounts', formData, { token: authStore.adminToken })
 
 		ElMessage.success('账户创建成功')
 
@@ -213,7 +229,7 @@ const handleTestConnection = async () => {
 const testConnection = async (account) => {
 	try {
 		account.testing = true
-		const response = await apiPost(`/api/admin/cf-accounts/${account.id}/test`)
+		const response = await apiPost(`/api/admin/cf-accounts/${account.id}/test`, {}, { token: authStore.adminToken })
 		ElMessage.success('连接测试成功')
 	} catch (error) {
 		ElMessage.error('连接测试失败: ' + error.message)
@@ -227,7 +243,7 @@ const toggleAccount = async (account) => {
 	try {
 		account.loading = true
 		const action = account.enabled ? 'disable' : 'enable'
-		await apiPost(`/api/admin/cf-accounts/${account.id}/${action}`)
+		await apiPost(`/api/admin/cf-accounts/${account.id}/${action}`, {}, { token: authStore.adminToken })
 
 		account.enabled = !account.enabled
 		ElMessage.success(`账户已${account.enabled ? '启用' : '禁用'}`)
@@ -267,7 +283,7 @@ const handleUpdate = async () => {
 			updateData.apiKey = editFormData.apiKey
 		}
 
-		await apiPut(`/api/admin/cf-accounts/${editFormData.id}`, updateData)
+		await apiPut(`/api/admin/cf-accounts/${editFormData.id}`, updateData, { token: authStore.adminToken })
 
 		ElMessage.success('账户更新成功')
 		editDialogVisible.value = false
@@ -413,29 +429,37 @@ onMounted(() => {
 	color: #94a3b8;
 }
 
-/* ===== 还原原型按钮样式 ===== */
-.proto-form :deep(.el-button--primary),
-.proto-table :deep(.el-button--primary) {
+/* Element Plus 按钮样式覆盖 - 保持一致性 */
+.proto-form :deep(.el-button),
+.proto-table :deep(.el-button) {
+	border-radius: 8px;
+	font-weight: 500;
+	transition: all 0.2s ease;
+}
+
+.proto-form :deep(.el-button--primary) {
 	background: #6366f1;
 	border-color: #6366f1;
 }
 
-.proto-form :deep(.el-button--primary:hover),
-.proto-table :deep(.el-button--primary:hover) {
+.proto-form :deep(.el-button--primary:hover) {
 	background: #4f46e5;
 	border-color: #4f46e5;
+	transform: translateY(-1px);
+	box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
 }
 
-.proto-form :deep(.el-button.is-plain),
-.proto-table :deep(.el-button.is-plain) {
+.proto-form :deep(.el-button.is-plain) {
 	background: #fff;
 	border-color: #cbd5e1;
-	color: #0f172a;
+	color: #475569;
 }
 
-.proto-form :deep(.el-button.is-plain:hover),
-.proto-table :deep(.el-button.is-plain:hover) {
+.proto-form :deep(.el-button.is-plain:hover) {
 	background: #f8fafc;
+	border-color: #94a3b8;
+	transform: translateY(-1px);
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 /* 表单标签字号颜色对齐原型 */
@@ -444,33 +468,122 @@ onMounted(() => {
 	font-size: 12px;
 }
 
+/* 按钮基础样式 */
 .btn {
 	display: inline-flex;
 	align-items: center;
-	gap: 8px;
-	padding: 10px 14px;
-	border-radius: 10px;
+	justify-content: center;
+	gap: 6px;
+	padding: 10px 16px;
+	border-radius: 8px;
 	border: 1px solid transparent;
-	font-weight: 600;
+	font-weight: 500;
+	font-size: 14px;
 	cursor: pointer;
+	transition: all 0.2s ease;
+	min-height: 36px;
+	white-space: nowrap;
 }
 
+.btn:disabled {
+	opacity: 0.6;
+	cursor: not-allowed;
+}
+
+.btn.small {
+	padding: 6px 12px;
+	font-size: 12px;
+	min-height: 28px;
+}
+
+/* 主要按钮 */
 .btn.primary {
 	background: #6366f1;
 	color: #fff;
+	border-color: #6366f1;
 }
 
-.btn.primary:hover {
+.btn.primary:hover:not(:disabled) {
 	background: #4f46e5;
+	border-color: #4f46e5;
+	transform: translateY(-1px);
+	box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
 }
 
+/* 轮廓按钮 */
 .btn.outline {
 	background: #fff;
 	border-color: #cbd5e1;
-	color: #0f172a;
+	color: #475569;
 }
 
-.btn.outline:hover {
+.btn.outline:hover:not(:disabled) {
 	background: #f8fafc;
+	border-color: #94a3b8;
+	transform: translateY(-1px);
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 成功按钮 */
+.btn.success {
+	background: #10b981;
+	color: #fff;
+	border-color: #10b981;
+}
+
+.btn.success:hover:not(:disabled) {
+	background: #059669;
+	border-color: #059669;
+	transform: translateY(-1px);
+	box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+/* 警告按钮 - 蓝紫色 */
+.btn.warning {
+	background: #8b5cf6;
+	color: #fff;
+	border-color: #8b5cf6;
+}
+
+.btn.warning:hover:not(:disabled) {
+	background: #7c3aed;
+	border-color: #7c3aed;
+	transform: translateY(-1px);
+	box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+/* 危险按钮 */
+.btn.danger {
+	background: #ef4444;
+	color: #fff;
+	border-color: #ef4444;
+}
+
+.btn.danger:hover:not(:disabled) {
+	background: #dc2626;
+	border-color: #dc2626;
+	transform: translateY(-1px);
+	box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+/* 按钮组布局 */
+.form-actions {
+	display: flex;
+	gap: 12px;
+	align-items: center;
+}
+
+.table-actions {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+	flex-wrap: wrap;
+}
+
+.dialog-actions {
+	display: flex;
+	gap: 12px;
+	justify-content: flex-end;
+	align-items: center;
 }
 </style>

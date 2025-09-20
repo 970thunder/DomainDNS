@@ -83,8 +83,12 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { apiGet, apiPost } from '@/utils/api.js'
+import { useAuthStore } from '@/stores/auth.js'
 
 const router = useRouter()
+
+// 认证store
+const authStore = useAuthStore()
 
 // 响应式数据
 const isLoading = ref(false)
@@ -130,7 +134,7 @@ const filteredZones = computed(() => {
 // 加载 Cloudflare 账户列表
 const loadCfAccounts = async () => {
 	try {
-		const response = await apiGet('/api/admin/cf-accounts')
+		const response = await apiGet('/api/admin/cf-accounts', { token: authStore.adminToken })
 		cfAccounts.value = response.data || []
 	} catch (error) {
 		console.error('加载 Cloudflare 账户失败:', error)
@@ -153,7 +157,7 @@ const loadZones = async () => {
 			params.append('cfAccountId', filters.value.cfAccountId)
 		}
 
-		const response = await apiGet(`/api/admin/zones?${params.toString()}`)
+		const response = await apiGet(`/api/admin/zones?${params.toString()}`, { token: authStore.adminToken })
 		zones.value = response.data || []
 	} catch (error) {
 		ElMessage.error('加载 Zones 列表失败: ' + error.message)
@@ -173,7 +177,7 @@ const syncAll = async () => {
 			return
 		}
 
-		await apiPost('/api/admin/zones/sync')
+		await apiPost('/api/admin/zones/sync', {}, { token: authStore.adminToken })
 		ElMessage.success('同步所有 Zones 成功')
 		await loadZones()
 	} catch (error) {
@@ -188,7 +192,7 @@ const syncByAccount = async (cfAccountId) => {
 	try {
 		isLoading.value = true
 
-		await apiPost('/api/admin/zones/sync', { cfAccountId })
+		await apiPost('/api/admin/zones/sync', { cfAccountId }, { token: authStore.adminToken })
 		ElMessage.success('同步指定账户 Zones 成功')
 		await loadZones()
 	} catch (error) {
@@ -204,7 +208,7 @@ const toggleZone = async (zone) => {
 		zone.loading = true
 
 		const action = zone.enabled ? 'disable' : 'enable'
-		await apiPost(`/api/admin/zones/${zone.id}/${action}`)
+		await apiPost(`/api/admin/zones/${zone.id}/${action}`, {}, { token: authStore.adminToken })
 
 		zone.enabled = !zone.enabled
 		ElMessage.success(`Zone "${zone.name}" 已${zone.enabled ? '启用' : '禁用'}`)
@@ -220,7 +224,7 @@ const syncZoneRecords = async (zone) => {
 	try {
 		zone.syncing = true
 
-		await apiPost(`/api/admin/zones/${zone.id}/sync-records`)
+		await apiPost(`/api/admin/zones/${zone.id}/sync-records`, {}, { token: authStore.adminToken })
 		ElMessage.success(`Zone "${zone.name}" 记录同步成功`)
 
 		// 更新同步时间

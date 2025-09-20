@@ -150,8 +150,12 @@ import { ref, computed, reactive, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { apiGet, apiPost, apiPut, apiDelete } from '@/utils/api.js'
+import { useAuthStore } from '@/stores/auth.js'
 
 const route = useRoute()
+
+// 认证store
+const authStore = useAuthStore()
 
 // 响应式数据
 const isLoading = ref(false)
@@ -228,7 +232,7 @@ const loadZones = async () => {
 	try {
 		isLoading.value = true
 
-		const response = await apiGet('/api/admin/zones')
+		const response = await apiGet('/api/admin/zones', { token: authStore.adminToken })
 		zones.value = response.data || []
 
 		// 如果从路由参数指定了 Zone，自动选择
@@ -280,7 +284,7 @@ const loadRecords = async () => {
 			params.append('name', filters.name)
 		}
 
-		const response = await apiGet(`/api/admin/zones/${currentZone.value.id}/records?${params.toString()}`)
+		const response = await apiGet(`/api/admin/zones/${currentZone.value.id}/records?${params.toString()}`, { token: authStore.adminToken })
 		records.value = response.data || []
 	} catch (error) {
 		ElMessage.error('加载 DNS 记录失败: ' + error.message)
@@ -296,7 +300,7 @@ const syncRecords = async () => {
 	try {
 		isLoading.value = true
 
-		await apiPost(`/api/admin/zones/${currentZone.value.id}/sync-records`)
+		await apiPost(`/api/admin/zones/${currentZone.value.id}/sync-records`, {}, { token: authStore.adminToken })
 		ElMessage.success('DNS 记录同步成功')
 		await loadRecords()
 	} catch (error) {
@@ -348,11 +352,11 @@ const saveRecord = async () => {
 
 		if (editingRecord.value) {
 			// 更新记录
-			await apiPut(`/api/admin/zones/${currentZone.value.id}/records/${editingRecord.value.id}`, recordData)
+			await apiPut(`/api/admin/zones/${currentZone.value.id}/records/${editingRecord.value.cfRecordId}`, recordData, { token: authStore.adminToken })
 			ElMessage.success('DNS 记录更新成功')
 		} else {
 			// 添加记录
-			await apiPost(`/api/admin/zones/${currentZone.value.id}/records`, recordData)
+			await apiPost(`/api/admin/zones/${currentZone.value.id}/records`, recordData, { token: authStore.adminToken })
 			ElMessage.success('DNS 记录添加成功')
 		}
 
@@ -379,7 +383,7 @@ const deleteRecord = async (record) => {
 		)
 
 		record.loading = true
-		await apiDelete(`/api/admin/zones/${currentZone.value.id}/records/${record.id}`)
+		await apiDelete(`/api/admin/zones/${currentZone.value.id}/records/${record.cfRecordId}`, { token: authStore.adminToken })
 		ElMessage.success('DNS 记录删除成功')
 		await loadRecords()
 	} catch (error) {

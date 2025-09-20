@@ -101,7 +101,14 @@ public class DnsRecordService {
     public void update(Long zoneDbId, String recordId, String bodyJson) throws Exception {
         Zone z = zoneById(zoneDbId);
         CfAccount acc = accById(z.getCfAccountId());
-        String resp = client.updateDnsRecord(acc, z.getZoneId(), recordId, bodyJson).block();
+        String resp;
+        try {
+            resp = client.updateDnsRecord(acc, z.getZoneId(), recordId, bodyJson).block();
+        } catch (WebClientResponseException wex) {
+            String body = wex.getResponseBodyAsString();
+            throw new IllegalStateException(body != null && !body.isEmpty() ? body
+                    : (wex.getStatusCode() + " " + wex.getStatusText()));
+        }
         JsonNode root = objectMapper.readTree(resp);
         if (!root.path("success").asBoolean(false))
             throw new IllegalStateException(root.path("errors").toString());
@@ -120,7 +127,14 @@ public class DnsRecordService {
     public void delete(Long zoneDbId, String recordId) throws Exception {
         Zone z = zoneById(zoneDbId);
         CfAccount acc = accById(z.getCfAccountId());
-        String resp = client.deleteDnsRecord(acc, z.getZoneId(), recordId).block();
+        String resp;
+        try {
+            resp = client.deleteDnsRecord(acc, z.getZoneId(), recordId).block();
+        } catch (WebClientResponseException wex) {
+            String body = wex.getResponseBodyAsString();
+            throw new IllegalStateException(body != null && !body.isEmpty() ? body
+                    : (wex.getStatusCode() + " " + wex.getStatusText()));
+        }
         JsonNode root = objectMapper.readTree(resp);
         if (!root.path("success").asBoolean(false))
             throw new IllegalStateException(root.path("errors").toString());

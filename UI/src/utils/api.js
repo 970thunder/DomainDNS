@@ -87,10 +87,26 @@ const apiRequest = async (endpoint, options = {}) => {
         data = null,
         token = null,
         timeout = API_CONFIG.TIMEOUT,
+        params = null,
         ...fetchOptions
     } = options
 
-    const url = createApiUrl(endpoint)
+    let url = createApiUrl(endpoint)
+
+    // 处理查询参数
+    if (params && method === 'GET') {
+        const searchParams = new URLSearchParams()
+        Object.keys(params).forEach(key => {
+            if (params[key] !== null && params[key] !== undefined) {
+                searchParams.append(key, params[key])
+            }
+        })
+        const queryString = searchParams.toString()
+        if (queryString) {
+            url += `?${queryString}`
+        }
+    }
+
     const headers = getAuthHeaders(token)
 
     // 请求配置

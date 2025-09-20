@@ -99,6 +99,10 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { apiGet, apiPut, apiPost } from '@/utils/api.js'
+import { useAuthStore } from '@/stores/auth.js'
+
+// 认证store
+const authStore = useAuthStore()
 
 // 响应式数据
 const isLoading = ref(false)
@@ -133,7 +137,7 @@ const loadSettings = async () => {
 	try {
 		isLoading.value = true
 
-		const response = await apiGet('/api/admin/settings')
+		const response = await apiGet('/api/admin/settings', { token: authStore.adminToken })
 		const data = response.data || {}
 
 		// 更新设置
@@ -203,7 +207,7 @@ const saveSettings = async () => {
 			sync_cron_expression: settings.sync_cron_expression
 		}
 
-		await apiPut('/api/admin/settings', settingsData)
+		await apiPut('/api/admin/settings', settingsData, { token: authStore.adminToken })
 		ElMessage.success('设置保存成功')
 	} catch (error) {
 		ElMessage.error('保存设置失败: ' + error.message)
@@ -223,7 +227,7 @@ const triggerSync = async () => {
 	try {
 		isLoading.value = true
 
-		await apiPost('/api/admin/zones/sync')
+		await apiPost('/api/admin/zones/sync', {}, { token: authStore.adminToken })
 		lastSyncTime.value = new Date().toLocaleString('zh-CN')
 		ElMessage.success('同步任务已触发')
 

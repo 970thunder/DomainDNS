@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useAuthStore } from '@/stores/auth.js'
 
 const routes = [
     { path: '/', redirect: '/user/login' },
@@ -34,6 +35,54 @@ const routes = [
 const router = createRouter({
     history: createWebHistory(),
     routes
+})
+
+// 路由守卫
+router.beforeEach((to, from, next) => {
+    const authStore = useAuthStore()
+
+    // 只在首次访问或从登录页跳转时加载状态
+    if (from.path === '/admin/login' || from.path === '/user/login' || !authStore.isAdminLoggedIn) {
+        authStore.loadFromStorage()
+    }
+
+    console.log('路由守卫检查:', {
+        path: to.path,
+        from: from.path,
+        isAdminLoggedIn: authStore.isAdminLoggedIn,
+        adminToken: authStore.adminToken ? '已设置' : '未设置'
+    })
+
+    // 管理员路由需要认证
+    if (to.path.startsWith('/admin') && to.path !== '/admin/login') {
+        if (!authStore.isAdminLoggedIn || !authStore.adminToken) {
+            console.log('管理员未登录，重定向到登录页')
+            next('/admin/login')
+            return
+        }
+    }
+
+    // 用户路由需要认证
+    if (to.path.startsWith('/user') && to.path !== '/user/login' && to.path !== '/user/register') {
+        if (!authStore.isLoggedIn || !authStore.token) {
+            console.log('用户未登录，重定向到登录页')
+            next('/user/login')
+            return
+        }
+    }
+
+    // 已登录用户访问登录页，重定向到对应首页
+    if (to.path === '/admin/login' && authStore.isAdminLoggedIn) {
+        next('/admin/dashboard')
+        return
+    }
+
+    if (to.path === '/user/login' && authStore.isLoggedIn) {
+        next('/user/dashboard')
+        return
+    }
+
+    next()
 })
 
 export default router

@@ -29,6 +29,30 @@
     <select id="count" resultType="int">
         SELECT COUNT(1) FROM points_transactions WHERE user_id=#{userId}
     </select>
+
+    <select id="getTotalPoints" resultType="long">
+        SELECT COALESCE(SUM(points), 0) FROM users
+    </select>
+
+    <select id="getActiveUsersCount" resultType="int">
+        SELECT COUNT(*) FROM users WHERE points > 0
+    </select>
+
+    <select id="getDailyPointsChange" resultType="long">
+        SELECT COALESCE(SUM(change_amount), 0) 
+        FROM points_transactions 
+        WHERE DATE(created_at) = CURDATE()
+    </select>
+
+    <select id="getWeeklyPointsChange" resultType="long">
+        SELECT COALESCE(SUM(change_amount), 0) 
+        FROM points_transactions 
+        WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+    </select>
+
+    <select id="getAverageUserPoints" resultType="double">
+        SELECT COALESCE(AVG(points), 0) FROM users WHERE points > 0
+    </select>
 </mapper>
 
 

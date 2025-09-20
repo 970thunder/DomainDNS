@@ -85,6 +85,10 @@ const onSubmit = async () => {
 			password: password.value
 		})
 
+		console.log('登录结果:', result)
+		console.log('登录后管理员token:', authStore.adminToken)
+		console.log('登录后管理员状态:', authStore.isAdminLoggedIn)
+
 		if (result.success) {
 			// 设置记住我
 			authStore.setRememberMe(remember.value)
@@ -96,6 +100,7 @@ const onSubmit = async () => {
 		}
 	} catch (error) {
 		errorMessage.value = error.message || '登录失败'
+		console.error('登录错误:', error)
 	} finally {
 		isLoading.value = false
 	}

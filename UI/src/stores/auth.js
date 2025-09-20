@@ -39,6 +39,11 @@ export const useAuthStore = defineStore('auth', {
         authHeaders: (state) => {
             const token = state.token || state.adminToken
             return token ? { Authorization: `Bearer ${token}` } : {}
+        },
+
+        // 获取管理员认证头
+        adminAuthHeaders: (state) => {
+            return state.adminToken ? { Authorization: `Bearer ${state.adminToken}` } : {}
         }
     },
 
@@ -114,13 +119,37 @@ export const useAuthStore = defineStore('auth', {
                 const response = await apiPost('/api/auth/admin/login', credentials)
 
                 if (response.code === 0) {
+                    console.log('设置管理员状态前:', {
+                        adminToken: this.adminToken,
+                        admin: this.admin,
+                        isAdminLoggedIn: this.isAdminLoggedIn
+                    })
+
+                    // 分步设置，每步都检查
                     this.admin = { username: credentials.username }
+                    console.log('设置admin后:', { adminToken: this.adminToken, admin: this.admin })
+
                     this.adminToken = response.data.token
+                    console.log('设置adminToken后:', { adminToken: this.adminToken, admin: this.admin })
+
                     this.adminRole = response.data.role
+                    console.log('设置adminRole后:', { adminToken: this.adminToken, admin: this.admin, adminRole: this.adminRole })
+
                     this.isAdminLoggedIn = true
+                    console.log('设置isAdminLoggedIn后:', { adminToken: this.adminToken, admin: this.admin, adminRole: this.adminRole, isAdminLoggedIn: this.isAdminLoggedIn })
 
                     // 保存到本地存储
                     this.saveToStorage()
+
+                    console.log('保存到本地存储后:', {
+                        adminToken: this.adminToken,
+                        admin: this.admin,
+                        isAdminLoggedIn: this.isAdminLoggedIn
+                    })
+
+                    // 立即检查localStorage
+                    const savedToken = localStorage.getItem(STORAGE_CONFIG.TOKEN_KEY)
+                    console.log('localStorage中的token:', savedToken ? savedToken.substring(0, 20) + '...' : 'null')
 
                     return { success: true, data: response.data }
                 } else {
@@ -171,6 +200,12 @@ export const useAuthStore = defineStore('auth', {
         // 保存到本地存储
         saveToStorage() {
             try {
+                console.log('saveToStorage 开始:', {
+                    adminToken: this.adminToken,
+                    admin: this.admin,
+                    adminRole: this.adminRole
+                })
+
                 // 保存用户信息
                 if (this.token && this.user) {
                     localStorage.setItem(STORAGE_CONFIG.USER_TOKEN_KEY, this.token)
@@ -182,6 +217,12 @@ export const useAuthStore = defineStore('auth', {
                     localStorage.setItem(STORAGE_CONFIG.TOKEN_KEY, this.adminToken)
                     localStorage.setItem(STORAGE_CONFIG.ADMIN_ROLE_KEY, this.adminRole)
                     localStorage.setItem(STORAGE_CONFIG.ADMIN_USERNAME_KEY, this.admin.username)
+                    console.log('管理员信息已保存到localStorage')
+                } else {
+                    console.log('管理员信息保存条件不满足:', {
+                        hasAdminToken: !!this.adminToken,
+                        hasAdmin: !!this.admin
+                    })
                 }
 
                 // 保存记住我设置
@@ -222,7 +263,18 @@ export const useAuthStore = defineStore('auth', {
         },
 
         // 管理员登出
-        logoutAdmin() {
+        async logoutAdmin() {
+            try {
+                // 调用后端注销接口
+                if (this.adminToken) {
+                    await apiPost('/api/auth/logout')
+                }
+            } catch (error) {
+                console.error('调用注销接口失败:', error)
+                // 即使后端调用失败，也要清理本地状态
+            }
+
+            // 清理本地状态
             this.admin = null
             this.adminToken = null
             this.adminRole = null

@@ -1,8 +1,18 @@
 <template>
 	<div class="dashboard">
+		<!-- 页面头部 -->
+		<div class="dashboard-header">
+			<h1>控制台</h1>
+			<div class="header-actions">
+				<button class="btn outline" @click="refreshAll" :disabled="isLoading">
+					{{ isLoading ? '刷新中...' : '刷新数据' }}
+				</button>
+			</div>
+		</div>
+
 		<!-- 统计卡片 -->
 		<div class="stats-grid">
-			<el-card class="stat-card" v-for="stat in stats" :key="stat.key">
+			<el-card class="stat-card" v-for="stat in stats" :key="stat.key" v-loading="isLoading">
 				<div class="stat-content">
 					<div class="stat-info">
 						<div class="stat-label">{{ stat.label }}</div>
@@ -29,9 +39,14 @@
 
 		<!-- 详细信息区域 -->
 		<div class="info-grid">
-			<el-card class="info-card">
-				<h3>Top Zones</h3>
-				<el-table :data="topZones" class="zones-table">
+			<el-card class="info-card" v-loading="isLoading">
+				<template #header>
+					<div class="card-header">
+						<h3>Top Zones</h3>
+						<button class="btn small outline" @click="loadTopZones">刷新</button>
+					</div>
+				</template>
+				<el-table :data="topZones" class="zones-table" v-if="topZones.length > 0">
 					<el-table-column prop="name" label="域名" />
 					<el-table-column prop="count" label="记录数" />
 					<el-table-column prop="status" label="状态">
@@ -42,10 +57,18 @@
 						</template>
 					</el-table-column>
 				</el-table>
+				<div v-else class="empty-state">
+					<p>暂无域名数据</p>
+				</div>
 			</el-card>
 
-			<el-card class="info-card">
-				<h3>同步任务与队列</h3>
+			<el-card class="info-card" v-loading="isLoading">
+				<template #header>
+					<div class="card-header">
+						<h3>同步任务与队列</h3>
+						<button class="btn small outline" @click="refreshSyncStatus">刷新</button>
+					</div>
+				</template>
 				<div class="sync-status">
 					<div class="sync-tags">
 						<span class="badge badge-default">运行中任务 {{ syncStatus.running }}</span>
@@ -60,79 +83,85 @@
 				</div>
 			</el-card>
 
-			<el-card class="info-card">
-				<h3>最近操作</h3>
-				<el-table :data="recentActions" class="actions-table">
+			<el-card class="info-card" v-loading="isLoading">
+				<template #header>
+					<div class="card-header">
+						<h3>最近操作</h3>
+						<button class="btn small outline" @click="refreshRecentActions">刷新</button>
+					</div>
+				</template>
+				<el-table :data="recentActions" class="actions-table" v-if="recentActions.length > 0">
 					<el-table-column prop="user" label="用户" />
 					<el-table-column prop="action" label="动作" />
 					<el-table-column prop="detail" label="说明" />
 					<el-table-column prop="time" label="时间" />
 				</el-table>
+				<div v-else class="empty-state">
+					<p>暂无操作记录</p>
+				</div>
 			</el-card>
 		</div>
 	</div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { ElMessage } from 'element-plus'
+import { useAuthStore } from '@/stores/auth.js'
+import { apiGet } from '@/utils/api.js'
+
+// 认证store
+const authStore = useAuthStore()
+
+// 加载状态
+const isLoading = ref(false)
 
 // 统计数据
 const stats = ref([
 	{
 		key: 'users',
 		label: '总用户数',
-		value: '1,024',
-		badge: '本周 +34',
+		value: '0',
+		badge: '本周 +0',
 		badgeClass: 'badge-default'
 	},
 	{
 		key: 'zones',
 		label: '启用分发域名',
-		value: '30',
-		badge: '总域名 45',
+		value: '0',
+		badge: '总域名 0',
 		badgeClass: 'badge-success'
 	},
 	{
 		key: 'records',
 		label: 'DNS 记录总数',
-		value: '2,345',
-		badge: '今日新增 12',
+		value: '0',
+		badge: '今日新增 0',
 		badgeClass: 'badge-default'
 	},
 	{
 		key: 'points',
 		label: '系统总积分',
-		value: '5,120',
-		badge: '活跃用户 120',
+		value: '0',
+		badge: '活跃用户 0',
 		badgeClass: 'badge-default'
 	}
 ])
 
 // Top Zones 数据
-const topZones = ref([
-	{ name: 'example.com', count: 400, status: '启用' },
-	{ name: 'example.net', count: 210, status: '禁用' },
-	{ name: 'test.org', count: 150, status: '启用' },
-	{ name: 'demo.io', count: 89, status: '启用' }
-])
+const topZones = ref([])
 
 // 同步状态
 const syncStatus = ref({
-	running: 2,
-	failed: 1,
-	queued: 3
+	running: 0,
+	failed: 0,
+	queued: 0
 })
 
 const syncLoading = ref(false)
 
 // 最近操作
-const recentActions = ref([
-	{ user: 'admin', action: 'sync_zone', detail: 'example.com', time: '刚刚' },
-	{ user: 'alice', action: 'apply_domain', detail: 'a.example.com', time: '5 分钟前' },
-	{ user: 'bob', action: 'delete_domain', detail: 'b.example.net', time: '10 分钟前' },
-	{ user: 'admin', action: 'update_settings', detail: '系统设置', time: '1 小时前' }
-])
+const recentActions = ref([])
 
 // 获取动作类型
 const getActionType = (action) => {
@@ -159,7 +188,7 @@ const getActionLabel = (action) => {
 // 刷新同步状态
 const refreshSyncStatus = async () => {
 	try {
-		// 这里应该调用API获取同步状态
+		await loadStats()
 		ElMessage.success('同步状态已刷新')
 	} catch (error) {
 		ElMessage.error('刷新失败')
@@ -171,8 +200,11 @@ const triggerFullSync = async () => {
 	syncLoading.value = true
 	try {
 		// 这里应该调用API触发全量同步
-		await new Promise(resolve => setTimeout(resolve, 2000)) // 模拟API调用
+		// 暂时模拟API调用
+		await new Promise(resolve => setTimeout(resolve, 2000))
 		ElMessage.success('全量同步已启动')
+		// 刷新数据
+		await loadStats()
 	} catch (error) {
 		ElMessage.error('同步启动失败')
 	} finally {
@@ -183,20 +215,131 @@ const triggerFullSync = async () => {
 // 刷新最近操作
 const refreshRecentActions = async () => {
 	try {
-		// 这里应该调用API获取最近操作
+		await loadRecentActions()
 		ElMessage.success('最近操作已刷新')
 	} catch (error) {
 		ElMessage.error('刷新失败')
 	}
 }
 
+// 刷新所有数据
+const refreshAll = async () => {
+	await loadDashboardData()
+	ElMessage.success('数据已刷新')
+}
+
+// 加载统计数据
+const loadStats = async () => {
+	try {
+		console.log('开始加载统计数据...')
+		console.log('当前管理员token:', authStore.adminToken ? '已设置' : '未设置')
+		
+		// 调用新的统计API
+		const response = await apiGet('/api/admin/stats/dashboard', { token: authStore.adminToken })
+		console.log('统计API响应:', response)
+
+		const data = response.data || {}
+		
+		// 更新统计数据
+		stats.value[0].value = data.totalUsers?.toString() || '0'
+		stats.value[0].badge = `本周 +${data.weeklyNewUsers || 0}`
+		
+		stats.value[1].value = data.activeZones?.toString() || '0'
+		stats.value[1].badge = `总域名 ${data.totalZones || 0}`
+		
+		stats.value[2].value = data.totalDnsRecords?.toString() || '0'
+		stats.value[2].badge = `今日新增 ${data.dailyNewRecords || 0}`
+		
+		stats.value[3].value = data.totalPoints?.toString() || '0'
+		stats.value[3].badge = `活跃用户 ${data.activeUsers || 0}`
+
+		console.log('统计数据更新完成:', stats.value)
+
+	} catch (error) {
+		console.error('加载统计数据失败:', error)
+		ElMessage.error('加载统计数据失败: ' + error.message)
+	}
+}
+
+// 加载Top Zones数据
+const loadTopZones = async () => {
+	try {
+		console.log('加载Top Zones数据...')
+		const response = await apiGet('/api/admin/zones', { 
+			token: authStore.adminToken, 
+			params: { page: 1, size: 5 } 
+		})
+		
+		console.log('Zones响应:', response)
+		
+		topZones.value = response.data?.list?.map(zone => ({
+			name: zone.name,
+			count: Math.floor(Math.random() * 500), // 临时随机数，实际应该从DNS记录统计
+			status: zone.status === 1 ? '启用' : '禁用'
+		})) || []
+
+		console.log('Top Zones数据:', topZones.value)
+
+	} catch (error) {
+		console.error('加载Top Zones失败:', error)
+		ElMessage.error('加载Top Zones失败: ' + error.message)
+	}
+}
+
+// 加载最近操作
+const loadRecentActions = async () => {
+	try {
+		console.log('加载最近操作数据...')
+		const response = await apiGet('/api/admin/audit', { 
+			token: authStore.adminToken, 
+			params: { page: 1, size: 10 } 
+		})
+		
+		console.log('Audit响应:', response)
+		
+		recentActions.value = response.data?.list?.map(log => ({
+			user: log.username || 'system',
+			action: log.action,
+			detail: log.details || log.action,
+			time: formatTime(log.createdAt)
+		})) || []
+
+		console.log('最近操作数据:', recentActions.value)
+
+	} catch (error) {
+		console.error('加载最近操作失败:', error)
+		ElMessage.error('加载最近操作失败: ' + error.message)
+	}
+}
+
+// 格式化时间
+const formatTime = (timestamp) => {
+	if (!timestamp) return '未知时间'
+	
+	const now = new Date()
+	const time = new Date(timestamp)
+	const diff = now - time
+	
+	if (diff < 60000) return '刚刚'
+	if (diff < 3600000) return `${Math.floor(diff / 60000)} 分钟前`
+	if (diff < 86400000) return `${Math.floor(diff / 3600000)} 小时前`
+	return `${Math.floor(diff / 86400000)} 天前`
+}
+
 // 加载仪表板数据
 const loadDashboardData = async () => {
+	isLoading.value = true
 	try {
-		// 这里应该调用API获取仪表板数据
-		console.log('加载仪表板数据...')
+		await Promise.all([
+			loadStats(),
+			loadTopZones(),
+			loadRecentActions()
+		])
 	} catch (error) {
+		console.error('加载仪表板数据失败:', error)
 		ElMessage.error('数据加载失败')
+	} finally {
+		isLoading.value = false
 	}
 }
 
@@ -210,6 +353,26 @@ onMounted(() => {
 	display: flex;
 	flex-direction: column;
 	gap: 16px;
+}
+
+/* 页面头部样式 */
+.dashboard-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 8px;
+}
+
+.dashboard-header h1 {
+	margin: 0;
+	font-size: 24px;
+	font-weight: 600;
+	color: #0f172a;
+}
+
+.header-actions {
+	display: flex;
+	gap: 8px;
 }
 
 .btn {
@@ -419,6 +582,38 @@ onMounted(() => {
 	margin-top: 12px;
 }
 
+/* 卡片头部样式 */
+.card-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.card-header h3 {
+	margin: 0;
+	font-size: 16px;
+	font-weight: 600;
+	color: #0f172a;
+}
+
+/* 小按钮样式 */
+.btn.small {
+	padding: 6px 12px;
+	font-size: 12px;
+}
+
+/* 空状态样式 */
+.empty-state {
+	text-align: center;
+	padding: 40px 20px;
+	color: #64748b;
+}
+
+.empty-state p {
+	margin: 0;
+	font-size: 14px;
+}
+
 /* 响应式设计 */
 @media (max-width: 960px) {
 	.stats-grid {
@@ -446,6 +641,12 @@ onMounted(() => {
 
 	.sync-actions {
 		flex-direction: column;
+	}
+
+	.dashboard-header {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 12px;
 	}
 }
 </style>

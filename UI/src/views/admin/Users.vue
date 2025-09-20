@@ -110,6 +110,10 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { apiGet, apiPost } from '@/utils/api.js'
+import { useAuthStore } from '@/stores/auth.js'
+
+// 认证store
+const authStore = useAuthStore()
 
 // 响应式数据
 const isLoading = ref(false)
@@ -167,7 +171,7 @@ const loadUsers = async () => {
 		params.append('page', filters.page)
 		params.append('size', filters.size)
 
-		const response = await apiGet(`/api/admin/users?${params.toString()}`)
+		const response = await apiGet(`/api/admin/users?${params.toString()}`, { token: authStore.adminToken })
 		users.value = response.data?.list || []
 	} catch (error) {
 		ElMessage.error('加载用户列表失败: ' + error.message)
@@ -205,7 +209,7 @@ const savePointsAdjustment = async () => {
 		await apiPost(`/api/admin/users/${pointsForm.userId}/points`, {
 			delta: pointsForm.delta,
 			remark: pointsForm.remark
-		})
+		}, { token: authStore.adminToken })
 
 		ElMessage.success('积分调整成功')
 		pointsDialogVisible.value = false

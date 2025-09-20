@@ -2,7 +2,10 @@ package com.domaindns.admin.controller;
 
 import com.domaindns.admin.mapper.OrderMapper;
 import com.domaindns.admin.model.PaymentOrder;
+import com.domaindns.auth.service.JwtService;
 import com.domaindns.common.ApiResponse;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -13,16 +16,21 @@ import java.util.Map;
 @RequestMapping("/api/admin/orders")
 public class OrderController {
     private final OrderMapper mapper;
+    private final JwtService jwtService;
 
-    public OrderController(OrderMapper mapper) {
+    public OrderController(OrderMapper mapper, JwtService jwtService) {
         this.mapper = mapper;
+        this.jwtService = jwtService;
     }
 
     @GetMapping
-    public ApiResponse<Map<String, Object>> list(@RequestParam(value = "status", required = false) String status,
+    public ApiResponse<Map<String, Object>> list(@RequestHeader("Authorization") String authorization,
+            @RequestParam(value = "status", required = false) String status,
             @RequestParam(value = "userId", required = false) Long userId,
             @RequestParam(value = "page", defaultValue = "1") Integer page,
             @RequestParam(value = "size", defaultValue = "20") Integer size) {
+        // 验证管理员权限
+        validateAdminAuth(authorization);
         int offset = (Math.max(page, 1) - 1) * Math.max(size, 1);
         List<PaymentOrder> list = mapper.list(status, userId, offset, size);
         int total = mapper.count(status, userId);
@@ -32,5 +40,22 @@ public class OrderController {
         m.put("page", page);
         m.put("size", size);
         return ApiResponse.ok(m);
+    }
+
+    // 验证管理员权限
+    private void validateAdminAuth(String authorization) {
+        if (authorization == null || !authorization.startsWith("Bearer ")) {
+            throw new RuntimeException("未登录");
+        }
+        String token = authorization.substring(7);
+        try {
+            Jws<Claims> jws = jwtService.parse(token);
+            String role = jws.getBody().get("role", String.class);
+            if (!"ADMIN".equals(role)) {
+                throw new RuntimeException("权限不足，需要管理员权限");
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Token无效或已过期");
+        }
     }
 }

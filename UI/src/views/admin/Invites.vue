@@ -129,6 +129,10 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { apiGet, apiPost } from '@/utils/api.js'
+import { useAuthStore } from '@/stores/auth.js'
+
+// 认证store
+const authStore = useAuthStore()
 
 // 响应式数据
 const isLoading = ref(false)
@@ -184,7 +188,7 @@ const loadInvites = async () => {
 		params.append('page', filters.page)
 		params.append('size', filters.size)
 
-		const response = await apiGet(`/api/admin/invites?${params.toString()}`)
+		const response = await apiGet(`/api/admin/invites?${params.toString()}`, { token: authStore.adminToken })
 		invites.value = response.data?.list || []
 	} catch (error) {
 		ElMessage.error('加载邀请码列表失败: ' + error.message)
@@ -196,7 +200,7 @@ const loadInvites = async () => {
 // 加载用户列表（用于下拉选择）
 const loadUsers = async () => {
 	try {
-		const response = await apiGet('/api/admin/users?page=1&size=1000')
+		const response = await apiGet('/api/admin/users?page=1&size=1000', { token: authStore.adminToken })
 		users.value = response.data?.list || []
 	} catch (error) {
 		console.error('加载用户列表失败:', error)
@@ -233,7 +237,7 @@ const createInvite = async () => {
 			validDays: createForm.validDays
 		}
 
-		const response = await apiPost('/api/admin/invites', data)
+		const response = await apiPost('/api/admin/invites', data, { token: authStore.adminToken })
 		ElMessage.success('邀请码生成成功: ' + response.data.code)
 		createDialogVisible.value = false
 		await loadInvites()

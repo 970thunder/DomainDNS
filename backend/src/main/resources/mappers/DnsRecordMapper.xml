@@ -47,4 +47,14 @@
 	<delete id="deleteByZoneAndName">
 		DELETE FROM dns_records WHERE zone_id=#{zoneId} AND name=#{name}
 	</delete>
+
+	<select id="countAll" resultType="int">
+		SELECT COUNT(*) FROM dns_records
+	</select>
+
+	<select id="countByType" resultType="map">
+		SELECT type, COUNT(*) as count 
+		FROM dns_records 
+		GROUP BY type
+	</select>
 </mapper>
