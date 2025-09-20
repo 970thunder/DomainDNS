@@ -16,6 +16,7 @@ const routes = [
     },
     // Admin login (separate)
     { path: '/admin/login', component: () => import('../views/admin/AdminLogin.vue') },
+    { path: '/admin/setup', component: () => import('../views/admin/AdminSetup.vue') },
     // Admin
     {
         path: '/admin', component: () => import('../views/admin/Layout.vue'), children: [

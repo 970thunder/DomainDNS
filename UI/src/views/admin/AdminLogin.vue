@@ -37,26 +37,106 @@
 				</div>
 				<span class="span" @click.prevent="goForgot">忘记密码？</span>
 			</div>
-			<button class="button-submit" type="submit">登录管理端</button>
+
+			<div class="error-message" v-if="errorMessage">
+				{{ errorMessage }}
+			</div>
+
+			<button class="button-submit" type="submit" :disabled="isLoading">
+				{{ isLoading ? '登录中...' : '登录管理端' }}
+			</button>
 			<p class="p"><span class="span" @click.prevent="goUserLogin">去用户登录</span></p>
 		</form>
 	</div>
 </template>
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
 const email = ref('')
 const password = ref('')
 const remember = ref(false)
+const isLoading = ref(false)
+const errorMessage = ref('')
 
-const onSubmit = () => {
-	// TODO: 接入实际登录API
-	router.push('/admin/dashboard')
+// 检查是否需要初始设置
+const checkInitialSetup = async () => {
+	try {
+		// 尝试访问管理员注册接口，如果返回40901错误说明管理员已存在
+		const response = await fetch('/api/auth/admin/register', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({
+				username: 'test',
+				email: 'test@test.com',
+				password: 'test'
+			})
+		})
+
+		const result = await response.json()
+
+		// 如果返回40901错误，说明管理员已存在，可以正常登录
+		if (result.code === 40901) {
+			// 管理员已存在，继续显示登录界面
+			return
+		}
+
+		// 如果没有40901错误，说明系统需要初始设置
+		router.push('/admin/setup')
+	} catch (error) {
+		// 网络错误或其他错误，继续显示登录界面
+		console.log('检查初始设置时出错:', error)
+	}
 }
+
+// 管理员登录
+const onSubmit = async () => {
+	if (!email.value.trim() || !password.value.trim()) {
+		errorMessage.value = '请输入账号和密码'
+		return
+	}
+
+	isLoading.value = true
+	errorMessage.value = ''
+
+	try {
+		const response = await fetch('/api/auth/admin/login', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({
+				username: email.value,
+				password: password.value
+			})
+		})
+
+		const result = await response.json()
+
+		if (result.code === 0) {
+			// 登录成功，保存token
+			localStorage.setItem('admin_token', result.data.token)
+			router.push('/admin/dashboard')
+		} else {
+			errorMessage.value = result.message || '登录失败'
+		}
+	} catch (error) {
+		errorMessage.value = '网络错误，请稍后重试'
+	} finally {
+		isLoading.value = false
+	}
+}
+
 const goUserLogin = () => router.push('/user/login')
 const goForgot = () => { }
+
+// 组件挂载时检查初始设置
+onMounted(() => {
+	checkInitialSetup()
+})
 </script>
 <style scoped>
 .form {
@@ -143,6 +223,27 @@ const goForgot = () => { }
 	height: 50px;
 	width: 100%;
 	cursor: pointer;
+	transition: background-color 0.2s;
+}
+
+.button-submit:hover:not(:disabled) {
+	background-color: #252727;
+}
+
+.button-submit:disabled {
+	background-color: #9ca3af;
+	cursor: not-allowed;
+}
+
+.error-message {
+	color: #ef4444;
+	font-size: 14px;
+	text-align: center;
+	margin: 10px 0;
+	padding: 8px 12px;
+	background-color: #fef2f2;
+	border: 1px solid #fecaca;
+	border-radius: 8px;
 }
 
 .p {
