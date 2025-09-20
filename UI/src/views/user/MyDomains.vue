@@ -20,7 +20,7 @@
 						d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
 				</svg>
 				<p>暂无域名记录</p>
-				<router-link to="/user/apply-domain" class="btn primary">申请域名</router-link>
+				<router-link to="/user/apply" class="btn primary">申请域名</router-link>
 			</div>
 
 			<table class="table" v-else>
@@ -36,9 +36,9 @@
 				</thead>
 				<tbody>
 					<tr v-for="domain in domains" :key="domain.id">
-						<td data-label="域名">{{ domain.name }}</td>
-						<td data-label="记录类型">{{ domain.type }}</td>
-						<td data-label="记录值">{{ domain.value }}</td>
+						<td data-label="域名">{{ domain.fullDomain }}</td>
+						<td data-label="记录类型">{{ getRecordType(domain) }}</td>
+						<td data-label="记录值">{{ getRecordValue(domain) }}</td>
 						<td data-label="创建时间">{{ formatTime(domain.createdAt) }}</td>
 						<td data-label="状态">
 							<span class="badge" :class="getStatusClass(domain.status)">{{ domain.status }}</span>
@@ -72,7 +72,7 @@
 			<div class="modal-content" @click.stop>
 				<h3>编辑备注</h3>
 				<div class="form-group">
-					<label>域名：{{ editingDomain?.name }}</label>
+					<label>域名：{{ editingDomain?.fullDomain }}</label>
 					<textarea v-model="editRemarkText" placeholder="请输入备注信息" class="textarea"></textarea>
 				</div>
 				<div class="modal-actions">
@@ -164,6 +164,20 @@ const getStatusClass = (status) => {
 	}
 }
 
+// 获取记录类型（暂时显示默认值，需要根据实际API调整）
+const getRecordType = (domain) => {
+	// 这里可以根据domain的其他字段来判断记录类型
+	// 暂时返回默认值，后续需要从API获取
+	return 'A'
+}
+
+// 获取记录值（暂时显示默认值，需要根据实际API调整）
+const getRecordValue = (domain) => {
+	// 这里可以根据domain的其他字段来获取记录值
+	// 暂时返回默认值，后续需要从API获取
+	return '1.2.3.4'
+}
+
 // 编辑备注
 const editRemark = (domain) => {
 	editingDomain.value = domain
@@ -213,7 +227,7 @@ const saveRemark = async () => {
 const releaseDomain = async (domain) => {
 	try {
 		await ElMessageBox.confirm(
-			`确定要释放域名 "${domain.name}" 吗？释放后将删除DNS记录并返还50%积分。`,
+			`确定要释放域名 "${domain.fullDomain}" 吗？释放后将删除DNS记录并返还50%积分。`,
 			'确认释放',
 			{
 				confirmButtonText: '确定',
@@ -386,4 +400,3 @@ onMounted(() => {
 	background-color: #9ca3af;
 }
 </style>
-

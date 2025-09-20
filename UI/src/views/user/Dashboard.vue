@@ -61,8 +61,8 @@
 					</thead>
 					<tbody>
 						<tr v-for="domain in recentDomains" :key="domain.id">
-							<td data-label="域名">{{ domain.name }}</td>
-							<td data-label="记录">{{ domain.name }} → {{ domain.value }}</td>
+							<td data-label="域名">{{ domain.fullDomain }}</td>
+							<td data-label="记录">{{ getRecordType(domain) }} → {{ getRecordValue(domain) }}</td>
 							<td data-label="时间">{{ formatTime(domain.createdAt) }}</td>
 							<td data-label="状态">
 								<span class="badge" :class="getStatusClass(domain.status)">{{ domain.status }}</span>
@@ -250,6 +250,20 @@ const getStatusClass = (status) => {
 		case 'FAILED': return 'danger'
 		default: return ''
 	}
+}
+
+// 获取记录类型（暂时显示默认值，需要根据实际API调整）
+const getRecordType = (domain) => {
+	// 这里可以根据domain的其他字段来判断记录类型
+	// 暂时返回默认值，后续需要从API获取
+	return 'A'
+}
+
+// 获取记录值（暂时显示默认值，需要根据实际API调整）
+const getRecordValue = (domain) => {
+	// 这里可以根据domain的其他字段来获取记录值
+	// 暂时返回默认值，后续需要从API获取
+	return '1.2.3.4'
 }
 
 // 初始化数据

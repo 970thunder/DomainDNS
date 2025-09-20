@@ -321,7 +321,7 @@ const onSubmit = async () => {
 		// 立即进入验证码输入界面，异步发送邮件
 		showEmailVerification.value = true
 		startResendCountdown()
-		
+
 		// 异步发送验证码，不等待结果
 		sendVerificationCode().catch(error => {
 			console.error('发送验证码失败:', error)
