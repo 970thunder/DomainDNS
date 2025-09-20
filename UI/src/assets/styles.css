@@ -1,3 +1,4 @@
+/* Base reset */
 * {
     box-sizing: border-box;
 }
@@ -14,6 +15,7 @@ body {
     background: #f8fafc;
 }
 
+/* Layout */
 .container {
     max-width: 1200px;
     margin: 0 auto;
@@ -45,13 +47,7 @@ body {
     padding: 16px;
 }
 
-.card {
-    background: #fff;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 16px;
-}
-
+/* Grid */
 .grid {
     display: grid;
     gap: 16px;
@@ -69,18 +65,329 @@ body {
     grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
+@media (max-width: 960px) {
+    .grid.cols-4 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 720px) {
+
+    .grid.cols-3,
+    .grid.cols-2 {
+        grid-template-columns: 1fr;
+    }
+
+    .container {
+        padding: 0 12px;
+    }
+
+    .card {
+        padding: 12px;
+    }
+
+    .table th,
+    .table td {
+        padding: 8px 6px;
+        font-size: 13px;
+    }
+
+    .btn {
+        padding: 8px 12px;
+        font-size: 14px;
+    }
+
+    .row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+
+    .row .btn,
+    .row .input,
+    .row .select {
+        width: 100%;
+        max-width: none;
+    }
+}
+
+/* Cards */
+.card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.card h3 {
+    margin-top: 0;
+    font-size: 16px;
+    color: #0f172a;
+}
+
+.stat {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+}
+
+.stat .value {
+    font-size: 28px;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.stat .label {
+    color: #64748b;
+    font-size: 12px;
+}
+
+/* Tables */
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.table th,
+.table td {
+    text-align: left;
+    padding: 12px 10px;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 14px;
+}
+
+.table th {
+    background: #f1f5f9;
+    color: #0f172a;
+}
+
+.table tr:hover td {
+    background: #f8fafc;
+}
+
+/* Forms */
+.form {
+    display: grid;
+    gap: 12px;
+    max-width: 640px;
+}
+
+.input-row {
+    display: grid;
+    gap: 8px;
+}
+
+.label {
+    font-size: 12px;
+    color: #475569;
+}
+
+.input,
+.select,
+.textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    background: #fff;
+    color: #0f172a;
+    outline: none;
+}
+
+.input:focus,
+.select:focus,
+.textarea:focus {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+.textarea {
+    min-height: 96px;
+    resize: vertical;
+}
+
+/* Buttons */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    text-decoration: none;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn.primary {
+    background: #6366f1;
+    color: #fff;
+}
+
+.btn.primary:hover {
+    background: #4f46e5;
+}
+
+.btn.outline {
+    background: #fff;
+    border-color: #cbd5e1;
+    color: #0f172a;
+}
+
+.btn.outline:hover {
+    background: #f8fafc;
+}
+
+.btn.danger {
+    background: #ef4444;
+    color: #fff;
+}
+
+.btn.danger:hover {
+    background: #dc2626;
+}
+
+/* Badges */
 .badge {
     display: inline-flex;
+    align-items: center;
     padding: 4px 8px;
     border-radius: 999px;
+    font-size: 12px;
     border: 1px solid #e2e8f0;
     color: #334155;
     background: #f8fafc;
-    font-size: 12px;
 }
 
 .badge.success {
     background: #ecfdf5;
     color: #065f46;
     border-color: #a7f3d0;
+}
+
+.badge.warn {
+    background: #fff7ed;
+    color: #9a3412;
+    border-color: #fed7aa;
+}
+
+.badge.error {
+    background: #fef2f2;
+    color: #991b1b;
+    border-color: #fecaca;
+}
+
+/* Helper */
+.row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.muted {
+    color: #64748b;
+}
+
+.small {
+    font-size: 12px;
+}
+
+/* Additional responsive styles */
+@media (max-width: 480px) {
+    .container {
+        padding: 0 8px;
+    }
+
+    .card {
+        padding: 8px;
+        border-radius: 8px;
+    }
+
+    .card h3 {
+        font-size: 14px;
+    }
+
+    .stat .value {
+        font-size: 24px;
+    }
+
+    .table {
+        font-size: 12px;
+    }
+
+    .table th,
+    .table td {
+        padding: 6px 4px;
+    }
+
+    .input,
+    .select,
+    .textarea {
+        padding: 8px 10px;
+        font-size: 14px;
+    }
+
+    .btn {
+        padding: 8px 10px;
+        font-size: 13px;
+    }
+
+    .badge {
+        font-size: 11px;
+        padding: 3px 6px;
+    }
+}
+
+/* Table responsive behavior */
+@media (max-width: 640px) {
+    .table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    .table thead,
+    .table tbody,
+    .table th,
+    .table td,
+    .table tr {
+        display: block;
+    }
+
+    .table thead tr {
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+    }
+
+    .table tr {
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        margin-bottom: 8px;
+        padding: 8px;
+    }
+
+    .table td {
+        border: none;
+        position: relative;
+        padding-left: 50%;
+        white-space: normal;
+        text-align: left;
+    }
+
+    .table td:before {
+        content: attr(data-label) ": ";
+        position: absolute;
+        left: 6px;
+        width: 45%;
+        padding-right: 10px;
+        white-space: nowrap;
+        font-weight: 600;
+        color: #475569;
+    }
 }

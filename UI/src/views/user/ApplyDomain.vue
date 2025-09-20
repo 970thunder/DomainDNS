@@ -1,25 +1,47 @@
 <template>
-	<el-card class="card">
-		<template #header>申请二级域名</template>
-		<el-form label-width="140px">
-			<el-form-item label="选择主域名（可分发）">
-				<el-select><el-option label="example.com" value="example.com" /><el-option label="example.net" value="example.net" /></el-select>
-			</el-form-item>
-			<el-form-item label="子域名前缀"><el-input placeholder="例如：app，将生成 app.example.com" /></el-form-item>
-			<el-row :gutter="12">
-				<el-col :span="8"><el-form-item label="记录类型"><el-select><el-option label="A" value="A" /><el-option label="AAAA" value="AAAA" /><el-option label="CNAME" value="CNAME" /></el-select></el-form-item></el-col>
-				<el-col :span="8"><el-form-item label="记录值"><el-input placeholder="例如：1.2.3.4 或 目标域名" /></el-form-item></el-col>
-				<el-col :span="8"><el-form-item label="TTL"><el-input placeholder="默认 120" /></el-form-item></el-col>
-			</el-row>
-			<el-form-item label="备注"><el-input type="textarea" placeholder="用途说明，方便管理" /></el-form-item>
-			<el-form-item>
-				<el-button type="primary">提交申请（扣除 5 积分）</el-button>
-				<el-button @click="$router.push('/user/dashboard')">返回</el-button>
-			</el-form-item>
-		</el-form>
-	</el-card>
+	<div class="card">
+		<h3>申请二级域名</h3>
+		<div class="form">
+			<div class="input-row">
+				<label class="label">选择主域名（可分发）</label>
+				<select class="select">
+					<option>example.com</option>
+					<option>example.net</option>
+				</select>
+			</div>
+			<div class="input-row">
+				<label class="label">子域名前缀</label>
+				<input class="input" placeholder="例如：app，将生成 app.example.com">
+			</div>
+			<div class="grid cols-3">
+				<div class="input-row">
+					<label class="label">记录类型</label>
+					<select class="select">
+						<option>A</option>
+						<option>AAAA</option>
+						<option>CNAME</option>
+					</select>
+				</div>
+				<div class="input-row">
+					<label class="label">记录值</label>
+					<input class="input" placeholder="例如：1.2.3.4 或 目标域名">
+				</div>
+				<div class="input-row">
+					<label class="label">TTL</label>
+					<input class="input" placeholder="默认 120">
+				</div>
+			</div>
+			<div class="input-row">
+				<label class="label">备注</label>
+				<textarea class="textarea" placeholder="用途说明，方便管理"></textarea>
+			</div>
+			<div class="row">
+				<button class="btn primary">提交申请（扣除 5 积分）</button>
+				<router-link class="btn outline" to="/user/dashboard">返回</router-link>
+			</div>
+		</div>
+	</div>
 </template>
 <script setup>
 </script>
-<style scoped>
-</style>
+<style scoped></style>

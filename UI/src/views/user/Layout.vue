@@ -4,18 +4,107 @@
 			<div class="app-header-inner container">
 				<div class="brand">HyperNym</div>
 				<div class="spacer"></div>
-				<el-button text @click="$router.push('/admin/login')">管理端登录</el-button>
+				<button class="mobile-menu-toggle" @click="toggleMobileMenu" v-if="isMobile">
+					<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+						<line x1="3" y1="6" x2="21" y2="6"></line>
+						<line x1="3" y1="12" x2="21" y2="12"></line>
+						<line x1="3" y1="18" x2="21" y2="18"></line>
+					</svg>
+				</button>
+				<button class="btn outline" @click="$router.push('/admin/login')" v-if="!isMobile">管理端登录</button>
 			</div>
 		</header>
+
+		<!-- Mobile Sidebar Overlay -->
+		<div class="mobile-overlay" :class="{ active: mobileMenuOpen }" @click="closeMobileMenu"></div>
+
+		<!-- Mobile Sidebar -->
+		<div class="mobile-sidebar" :class="{ active: mobileMenuOpen }">
+			<div class="mobile-sidebar-header">
+				<div class="brand">HyperNym</div>
+				<button class="close-btn" @click="closeMobileMenu">
+					<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+						<line x1="18" y1="6" x2="6" y2="18"></line>
+						<line x1="6" y1="6" x2="18" y2="18"></line>
+					</svg>
+				</button>
+			</div>
+			<nav class="mobile-nav">
+				<router-link to="/user/dashboard" @click="closeMobileMenu" class="nav-link">
+					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+						<rect x="3" y="3" width="7" height="7"></rect>
+						<rect x="14" y="3" width="7" height="7"></rect>
+						<rect x="14" y="14" width="7" height="7"></rect>
+						<rect x="3" y="14" width="7" height="7"></rect>
+					</svg>
+					主页
+				</router-link>
+				<router-link to="/user/apply" @click="closeMobileMenu" class="nav-link">
+					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+						<path
+							d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z">
+						</path>
+						<polyline points="3.27,6.96 12,12.01 20.73,6.96"></polyline>
+						<line x1="12" y1="22.08" x2="12" y2="12"></line>
+					</svg>
+					申请域名
+				</router-link>
+				<router-link to="/user/domains" @click="closeMobileMenu" class="nav-link">
+					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+						<circle cx="12" cy="12" r="10"></circle>
+						<path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
+						<line x1="9" y1="9" x2="9.01" y2="9"></line>
+						<line x1="15" y1="9" x2="15.01" y2="9"></line>
+					</svg>
+					我的域名
+				</router-link>
+				<router-link to="/user/invite" @click="closeMobileMenu" class="nav-link">
+					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+						<path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+						<circle cx="8.5" cy="7" r="4"></circle>
+						<line x1="20" y1="8" x2="20" y2="14"></line>
+						<line x1="23" y1="11" x2="17" y2="11"></line>
+					</svg>
+					邀请
+				</router-link>
+				<router-link to="/user/recharge" @click="closeMobileMenu" class="nav-link">
+					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+						<line x1="12" y1="1" x2="12" y2="23"></line>
+						<path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+					</svg>
+					充值
+				</router-link>
+				<router-link to="/user/login" @click="closeMobileMenu" class="nav-link">
+					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+						<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+						<polyline points="16,17 21,12 16,7"></polyline>
+						<line x1="21" y1="12" x2="9" y2="12"></line>
+					</svg>
+					退出
+				</router-link>
+			</nav>
+			<div class="mobile-sidebar-footer">
+				<button class="btn outline" @click="$router.push('/admin/login'); closeMobileMenu()">管理端登录</button>
+			</div>
+		</div>
+
 		<div class="container" style="padding-top:16px;">
-			<el-menu mode="horizontal" :router="true" :default-active="$route.path">
-				<el-menu-item index="/user/dashboard">主页</el-menu-item>
-				<el-menu-item index="/user/apply">申请域名</el-menu-item>
-				<el-menu-item index="/user/domains">我的域名</el-menu-item>
-				<el-menu-item index="/user/invite">邀请</el-menu-item>
-				<el-menu-item index="/user/recharge">充值</el-menu-item>
-				<el-menu-item index="/user/login">退出</el-menu-item>
-			</el-menu>
+			<!-- Desktop Navigation -->
+			<nav class="desktop-nav" v-if="!isMobile">
+				<router-link to="/user/dashboard" class="nav-link"
+					:class="{ active: $route.path === '/user/dashboard' }">主页</router-link>
+				<router-link to="/user/apply" class="nav-link"
+					:class="{ active: $route.path === '/user/apply' }">申请域名</router-link>
+				<router-link to="/user/domains" class="nav-link"
+					:class="{ active: $route.path === '/user/domains' }">我的域名</router-link>
+				<router-link to="/user/invite" class="nav-link"
+					:class="{ active: $route.path === '/user/invite' }">邀请</router-link>
+				<router-link to="/user/recharge" class="nav-link"
+					:class="{ active: $route.path === '/user/recharge' }">充值</router-link>
+				<router-link to="/user/login" class="nav-link"
+					:class="{ active: $route.path === '/user/login' }">退出</router-link>
+			</nav>
+
 			<div class="page">
 				<router-view />
 			</div>
@@ -27,6 +116,31 @@
 </template>
 
 <script setup>
+import { ref, onMounted, onUnmounted } from 'vue'
+
+const isMobile = ref(false)
+const mobileMenuOpen = ref(false)
+
+const checkMobile = () => {
+	isMobile.value = window.innerWidth <= 768
+}
+
+const toggleMobileMenu = () => {
+	mobileMenuOpen.value = !mobileMenuOpen.value
+}
+
+const closeMobileMenu = () => {
+	mobileMenuOpen.value = false
+}
+
+onMounted(() => {
+	checkMobile()
+	window.addEventListener('resize', checkMobile)
+})
+
+onUnmounted(() => {
+	window.removeEventListener('resize', checkMobile)
+})
 </script>
 
 <style scoped>
@@ -41,5 +155,173 @@
 .container {
 	max-width: 1200px;
 	margin: 0 auto;
+}
+
+/* Mobile Menu Toggle */
+.mobile-menu-toggle {
+	background: none;
+	border: none;
+	color: #fff;
+	cursor: pointer;
+	padding: 8px;
+	border-radius: 6px;
+	display: none;
+}
+
+.mobile-menu-toggle:hover {
+	background: rgba(255, 255, 255, 0.1);
+}
+
+/* Desktop Navigation */
+.desktop-nav {
+	display: flex;
+	gap: 8px;
+	margin-bottom: 16px;
+	padding: 8px 0;
+	border-bottom: 1px solid #e2e8f0;
+}
+
+.desktop-nav .nav-link {
+	padding: 8px 16px;
+	border-radius: 8px;
+	text-decoration: none;
+	color: #64748b;
+	font-weight: 500;
+	transition: all 0.2s;
+}
+
+.desktop-nav .nav-link:hover,
+.desktop-nav .nav-link.active {
+	background: #f1f5f9;
+	color: #0f172a;
+}
+
+/* Mobile Sidebar */
+.mobile-overlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: rgba(0, 0, 0, 0.5);
+	z-index: 998;
+	opacity: 0;
+	visibility: hidden;
+	transition: all 0.3s ease;
+}
+
+.mobile-overlay.active {
+	opacity: 1;
+	visibility: visible;
+}
+
+.mobile-sidebar {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 280px;
+	height: 100vh;
+	background: #fff;
+	z-index: 999;
+	transform: translateX(-100%);
+	transition: transform 0.3s ease;
+	display: flex;
+	flex-direction: column;
+	box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.mobile-sidebar.active {
+	transform: translateX(0);
+}
+
+.mobile-sidebar-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 16px 20px;
+	border-bottom: 1px solid #e2e8f0;
+	background: #0f172a;
+	color: #fff;
+}
+
+.mobile-sidebar-header .brand {
+	font-weight: 700;
+	font-size: 18px;
+}
+
+.close-btn {
+	background: none;
+	border: none;
+	color: #fff;
+	cursor: pointer;
+	padding: 4px;
+	border-radius: 4px;
+}
+
+.close-btn:hover {
+	background: rgba(255, 255, 255, 0.1);
+}
+
+.mobile-nav {
+	flex: 1;
+	padding: 20px 0;
+	overflow-y: auto;
+}
+
+.mobile-nav .nav-link {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 12px 20px;
+	color: #64748b;
+	text-decoration: none;
+	font-weight: 500;
+	transition: all 0.2s;
+	border-left: 3px solid transparent;
+}
+
+.mobile-nav .nav-link:hover,
+.mobile-nav .nav-link.router-link-active {
+	background: #f8fafc;
+	color: #0f172a;
+	border-left-color: #6366f1;
+}
+
+.mobile-nav .nav-link svg {
+	flex-shrink: 0;
+}
+
+.mobile-sidebar-footer {
+	padding: 20px;
+	border-top: 1px solid #e2e8f0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+	.mobile-menu-toggle {
+		display: block;
+	}
+
+	.desktop-nav {
+		display: none;
+	}
+
+	.container {
+		padding: 0 12px;
+	}
+
+	.page {
+		padding: 12px 0;
+	}
+}
+
+@media (max-width: 480px) {
+	.mobile-sidebar {
+		width: 100%;
+	}
+
+	.container {
+		padding: 0 8px;
+	}
 }
 </style>
