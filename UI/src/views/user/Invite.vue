@@ -37,7 +37,7 @@
 				<p>您还没有邀请码，点击上方按钮生成一个</p>
 			</div>
 
-			<p class="invite-tip">新用户使用你的邀请码注册，你与对方均可获得积分（默认 3 点，可由管理员配置）。</p>
+			<p class="invite-tip">新用户使用你的邀请码注册，你与对方均可获得3点积分。</p>
 		</div>
 
 		<div class="card" style="margin-top:16px;">
