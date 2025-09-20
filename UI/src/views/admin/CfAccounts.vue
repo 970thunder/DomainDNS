@@ -70,9 +70,9 @@
 						<el-button size="small" plain @click="editAccount(row)">
 							编辑
 						</el-button>
-						<el-button size="small" type="danger" plain @click="deleteAccount(row)">
+						<!-- <el-button size="small" type="danger" plain @click="deleteAccount(row)">
 							删除
-						</el-button>
+						</el-button> -->
 					</template>
 				</el-table-column>
 			</el-table>
@@ -279,28 +279,28 @@ const handleUpdate = async () => {
 	}
 }
 
-// 删除账户
-const deleteAccount = async (account) => {
-	try {
-		await ElMessageBox.confirm(
-			`确定要删除账户 "${account.name}" 吗？此操作不可恢复。`,
-			'确认删除',
-			{
-				confirmButtonText: '确定',
-				cancelButtonText: '取消',
-				type: 'warning'
-			}
-		)
+// // 删除账户
+// const deleteAccount = async (account) => {
+// 	try {
+// 		await ElMessageBox.confirm(
+// 			`确定要删除账户 "${account.name}" 吗？此操作不可恢复。`,
+// 			'确认删除',
+// 			{
+// 				confirmButtonText: '确定',
+// 				cancelButtonText: '取消',
+// 				type: 'warning'
+// 			}
+// 		)
 
-		await apiDelete(`/api/admin/cf-accounts/${account.id}`)
-		ElMessage.success('账户删除成功')
-		await loadAccounts()
-	} catch (error) {
-		if (error !== 'cancel') {
-			ElMessage.error('删除账户失败: ' + error.message)
-		}
-	}
-}
+// 		await apiDelete(`/api/admin/cf-accounts/${account.id}`)
+// 		ElMessage.success('账户删除成功')
+// 		await loadAccounts()
+// 	} catch (error) {
+// 		if (error !== 'cancel') {
+// 			ElMessage.error('删除账户失败: ' + error.message)
+// 		}
+// 	}
+// }
 
 // 格式化日期
 const formatDate = (dateString) => {
