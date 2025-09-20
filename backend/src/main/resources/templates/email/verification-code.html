@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>验证码邮件</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8fafc;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        .header p {
+            margin: 8px 0 0 0;
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px 30px;
+        }
+
+        .greeting {
+            font-size: 18px;
+            color: #2d3748;
+            margin-bottom: 20px;
+        }
+
+        .code-container {
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            border: 2px dashed #cbd5e0;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .code-label {
+            font-size: 16px;
+            color: #4a5568;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+
+        .verification-code {
+            font-size: 36px;
+            font-weight: 700;
+            color: #2d3748;
+            letter-spacing: 8px;
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 10px 0;
+        }
+
+        .code-info {
+            font-size: 14px;
+            color: #718096;
+            margin-top: 15px;
+        }
+
+        .warning {
+            background-color: #fef5e7;
+            border-left: 4px solid #f6ad55;
+            padding: 15px 20px;
+            margin: 25px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .warning-title {
+            font-weight: 600;
+            color: #c05621;
+            margin-bottom: 5px;
+        }
+
+        .warning-text {
+            color: #744210;
+            font-size: 14px;
+            margin: 0;
+        }
+
+        .footer {
+            background-color: #f7fafc;
+            padding: 25px 30px;
+            text-align: center;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .footer p {
+            margin: 0 0 10px 0;
+            color: #718096;
+            font-size: 14px;
+        }
+
+        .footer a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent 0%, #e2e8f0 50%, transparent 100%);
+            margin: 25px 0;
+        }
+
+        .security-tips {
+            background-color: #f0fff4;
+            border: 1px solid #9ae6b4;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 25px 0;
+        }
+
+        .security-tips h3 {
+            color: #22543d;
+            margin: 0 0 15px 0;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .security-tips ul {
+            margin: 0;
+            padding-left: 20px;
+            color: #2f855a;
+        }
+
+        .security-tips li {
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                margin: 0;
+                border-radius: 0;
+            }
+
+            .content {
+                padding: 30px 20px;
+            }
+
+            .verification-code {
+                font-size: 28px;
+                letter-spacing: 6px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 th:text="${appName}">DomainDNS</h1>
+            <p th:if="${type == 'register'}">欢迎注册，请验证您的邮箱</p>
+            <p th:if="${type == 'reset'}">密码重置，请验证您的身份</p>
+        </div>
+
+        <div class="content">
+            <div class="greeting">
+                您好！<br>
+                您正在 <span th:text="${appName}">DomainDNS</span> 进行
+                <span th:if="${type == 'register'}">注册</span>
+                <span th:if="${type == 'reset'}">密码重置</span>操作。
+            </div>
+
+            <div class="code-container">
+                <div class="code-label">您的验证码是：</div>
+                <div class="verification-code" th:text="${code}">123456</div>
+                <div class="code-info">
+                    验证码 <span th:text="${expireMinutes}">10</span> 分钟内有效，请及时使用
+                </div>
+            </div>
+
+            <div class="warning">
+                <div class="warning-title">⚠️ 安全提醒</div>
+                <div class="warning-text">
+                    请勿将验证码泄露给他人，工作人员不会向您索要验证码。
+                </div>
+            </div>
+
+            <div class="security-tips">
+                <h3>🔒 安全提示</h3>
+                <ul>
+                    <li>验证码仅用于本次操作，使用后立即失效</li>
+                    <li>如非本人操作，请忽略此邮件</li>
+                    <li>请定期更新您的密码，确保账户安全</li>
+                    <li>如遇到问题，请联系客服支持</li>
+                </ul>
+            </div>
+
+            <div class="divider"></div>
+
+            <p style="color: #718096; font-size: 14px; margin: 0;">
+                此邮件由系统自动发送，请勿回复。如有疑问，请访问
+                <a th:href="${appUrl}" th:text="${appUrl}">官方网站</a> 获取帮助。
+            </p>
+        </div>
+
+        <div class="footer">
+            <p>© 2025 <span th:text="${appName}">DomainDNS</span>. 保留所有权利。</p>
+            <p>
+                访问我们的网站：<a th:href="${appUrl}" th:text="${appUrl}">官方网站</a>
+            </p>
+        </div>
+    </div>
+</body>
+
+</html>

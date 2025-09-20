@@ -82,7 +82,7 @@
 			<div class="verification-card">
 				<div class="verification-header">
 					<h3>邮箱验证</h3>
-					<p class="verification-subtitle">我们已向您的邮箱发送验证码</p>
+					<p class="verification-subtitle">验证码正在发送中，请稍后查收邮箱</p>
 				</div>
 
 				<div class="email-display">
@@ -205,13 +205,17 @@ const sendVerificationCode = async () => {
 		const result = await authStore.sendRegisterCode(formData.value.email)
 
 		if (result.success) {
+			// 立即进入验证码输入界面，不等待邮件发送完成
 			showEmailVerification.value = true
 			startResendCountdown()
 		} else {
 			errorMessage.value = result.message || '发送验证码失败'
 		}
 	} catch (error) {
-		errorMessage.value = '网络错误，请稍后重试'
+		// 即使发送失败，也进入验证码输入界面，让用户可以重试
+		showEmailVerification.value = true
+		startResendCountdown()
+		verificationError.value = '验证码发送中，请稍后重试或检查邮箱'
 	}
 }
 
@@ -314,7 +318,15 @@ const onSubmit = async () => {
 	errorMessage.value = ''
 
 	try {
-		await sendVerificationCode()
+		// 立即进入验证码输入界面，异步发送邮件
+		showEmailVerification.value = true
+		startResendCountdown()
+		
+		// 异步发送验证码，不等待结果
+		sendVerificationCode().catch(error => {
+			console.error('发送验证码失败:', error)
+			verificationError.value = '验证码发送中，请稍后重试或检查邮箱'
+		})
 	} catch (error) {
 		errorMessage.value = '发送验证码失败，请稍后重试'
 	} finally {

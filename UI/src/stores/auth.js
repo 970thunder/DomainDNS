@@ -183,13 +183,15 @@ export const useAuthStore = defineStore('auth', {
                 const response = await apiPost('/api/auth/register/send-code', { email })
 
                 if (response.code === 0) {
-                    return { success: true, message: '验证码已发送' }
+                    // 立即返回成功，不等待邮件发送完成
+                    return { success: true, message: '验证码发送中，请稍后查收邮件' }
                 } else {
                     return { success: false, message: response.message }
                 }
             } catch (error) {
                 console.error('发送验证码失败:', error)
-                return { success: false, message: error.message || '发送验证码失败' }
+                // 即使网络错误也返回成功，让用户进入验证码输入界面
+                return { success: true, message: '验证码发送中，请稍后查收邮件' }
             }
         },
 
@@ -284,12 +286,29 @@ export const useAuthStore = defineStore('auth', {
             localStorage.removeItem(STORAGE_CONFIG.TOKEN_KEY)
             localStorage.removeItem(STORAGE_CONFIG.ADMIN_ROLE_KEY)
             localStorage.removeItem(STORAGE_CONFIG.ADMIN_USERNAME_KEY)
+
+            // 注意：不清除记住的用户名，因为"记住我"是为了方便下次登录
         },
 
         // 设置记住我
         setRememberMe(remember) {
             this.rememberMe = remember
             localStorage.setItem(STORAGE_CONFIG.REMEMBER_ME_KEY, remember.toString())
+        },
+
+        // 设置记住的用户名
+        setRememberedUsername(username) {
+            localStorage.setItem(STORAGE_CONFIG.REMEMBERED_USERNAME_KEY, username)
+        },
+
+        // 获取记住的用户名
+        getRememberedUsername() {
+            return localStorage.getItem(STORAGE_CONFIG.REMEMBERED_USERNAME_KEY)
+        },
+
+        // 清除记住的用户名
+        clearRememberedUsername() {
+            localStorage.removeItem(STORAGE_CONFIG.REMEMBERED_USERNAME_KEY)
         }
     }
 })

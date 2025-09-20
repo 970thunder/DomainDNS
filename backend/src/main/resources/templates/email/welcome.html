@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>欢迎使用 DomainDNS</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8fafc;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 32px;
+            font-weight: 700;
+        }
+
+        .header p {
+            margin: 10px 0 0 0;
+            font-size: 18px;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px 30px;
+        }
+
+        .welcome-message {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .welcome-message h2 {
+            color: #2d3748;
+            font-size: 24px;
+            margin: 0 0 15px 0;
+        }
+
+        .welcome-message p {
+            color: #4a5568;
+            font-size: 16px;
+            margin: 0;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .feature {
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            border-radius: 12px;
+            padding: 25px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+        }
+
+        .feature-icon {
+            font-size: 32px;
+            margin-bottom: 15px;
+        }
+
+        .feature h3 {
+            color: #2d3748;
+            font-size: 18px;
+            margin: 0 0 10px 0;
+        }
+
+        .feature p {
+            color: #4a5568;
+            font-size: 14px;
+            margin: 0;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 16px;
+            margin: 20px 0;
+            transition: transform 0.2s;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+        }
+
+        .quick-start {
+            background-color: #f0fff4;
+            border: 1px solid #9ae6b4;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 30px 0;
+        }
+
+        .quick-start h3 {
+            color: #22543d;
+            margin: 0 0 15px 0;
+            font-size: 18px;
+        }
+
+        .quick-start ol {
+            color: #2f855a;
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        .quick-start li {
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .footer {
+            background-color: #f7fafc;
+            padding: 25px 30px;
+            text-align: center;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .footer p {
+            margin: 0 0 10px 0;
+            color: #718096;
+            font-size: 14px;
+        }
+
+        .footer a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent 0%, #e2e8f0 50%, transparent 100%);
+            margin: 25px 0;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                margin: 0;
+                border-radius: 0;
+            }
+
+            .content {
+                padding: 30px 20px;
+            }
+
+            .features {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎉 欢迎使用 <span th:text="${appName}">DomainDNS</span></h1>
+            <p>您的账户已成功创建</p>
+        </div>
+
+        <div class="content">
+            <div class="welcome-message">
+                <h2>您好，<span th:text="${username}">用户</span>！</h2>
+                <p>感谢您选择 <span th:text="${appName}">DomainDNS</span>，我们很高兴您加入我们的社区！</p>
+            </div>
+
+            <div class="features">
+                <div class="feature">
+                    <div class="feature-icon">🌐</div>
+                    <h3>免费二级域名</h3>
+                    <p>申请免费的二级域名，快速搭建您的项目</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">⚡</div>
+                    <h3>快速解析</h3>
+                    <p>基于 Cloudflare 的全球 CDN 加速</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🔧</div>
+                    <h3>简单易用</h3>
+                    <p>直观的管理界面，轻松管理您的域名</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🎁</div>
+                    <h3>积分奖励</h3>
+                    <p>邀请好友获得积分，享受更多服务</p>
+                </div>
+            </div>
+
+            <div style="text-align: center;">
+                <a th:href="${appUrl + '/user/dashboard'}" class="cta-button">
+                    立即开始使用
+                </a>
+            </div>
+
+            <div class="quick-start">
+                <h3>🚀 快速开始</h3>
+                <ol>
+                    <li>登录您的账户，查看可用域名列表</li>
+                    <li>选择心仪的域名，申请二级域名</li>
+                    <li>配置 DNS 记录，指向您的服务器</li>
+                    <li>享受快速、稳定的域名解析服务</li>
+                </ol>
+            </div>
+
+            <div class="divider"></div>
+
+            <p style="color: #718096; font-size: 14px; margin: 0;">
+                如有任何问题，请随时联系我们的客服团队。祝您使用愉快！
+            </p>
+        </div>
+
+        <div class="footer">
+            <p>© 2025 <span th:text="${appName}">DomainDNS</span>. 保留所有权利。</p>
+            <p>
+                访问我们的网站：<a th:href="${appUrl}" th:text="${appUrl}">官方网站</a>
+            </p>
+        </div>
+    </div>
+</body>
+
+</html>

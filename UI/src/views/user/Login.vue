@@ -31,13 +31,20 @@
 			</div>
 
 			<div class="flex-row">
-				<div>
-					<input type="checkbox" v-model="remember">
-					<label>记住我</label>
+				<div class="remember-me">
+					<input type="checkbox" v-model="remember" id="remember-me">
+					<label for="remember-me">记住我</label>
 				</div>
 				<span class="span" @click.prevent="goRegister">没有账号？去注册</span>
 			</div>
-			<button class="button-submit" type="submit">登录</button>
+
+			<div class="error-message" v-if="errorMessage">
+				{{ errorMessage }}
+			</div>
+
+			<button class="button-submit" type="submit" :disabled="isLoading">
+				{{ isLoading ? '登录中...' : '登录' }}
+			</button>
 			<div class="flex-row">
 				<button class="btn github" type="button">
 					<svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
@@ -53,18 +60,69 @@
 	</div>
 </template>
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth.js'
+import { ElMessage } from 'element-plus'
 
 const router = useRouter()
+const authStore = useAuthStore()
+
 const account = ref('')
 const password = ref('')
 const remember = ref(false)
+const isLoading = ref(false)
+const errorMessage = ref('')
 
-const onSubmit = () => {
-	router.push('/user/dashboard')
+const onSubmit = async () => {
+	if (!account.value.trim() || !password.value.trim()) {
+		errorMessage.value = '请输入用户名和密码'
+		return
+	}
+
+	isLoading.value = true
+	errorMessage.value = ''
+
+	try {
+		const result = await authStore.loginUser({
+			username: account.value.trim(),
+			password: password.value
+		})
+
+		if (result.success) {
+			// 设置记住我
+			authStore.setRememberMe(remember.value)
+
+			// 如果选择了记住我，保存用户名
+			if (remember.value) {
+				authStore.setRememberedUsername(account.value.trim())
+			} else {
+				authStore.clearRememberedUsername()
+			}
+
+			ElMessage.success('登录成功')
+			router.push('/user/dashboard')
+		} else {
+			errorMessage.value = result.message || '登录失败'
+		}
+	} catch (error) {
+		errorMessage.value = error.message || '登录失败'
+		console.error('登录错误:', error)
+	} finally {
+		isLoading.value = false
+	}
 }
+
 const goRegister = () => router.push('/user/register')
+
+// 组件挂载时恢复记住的用户名
+onMounted(() => {
+	const rememberedUsername = authStore.getRememberedUsername()
+	if (rememberedUsername) {
+		account.value = rememberedUsername
+		remember.value = true
+	}
+})
 </script>
 <style scoped>
 .form {
@@ -182,6 +240,40 @@ const goRegister = () => router.push('/user/register')
 
 .btn:hover {
 	border: 1px solid #2d79f3;
+}
+
+.remember-me {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.remember-me input[type="checkbox"] {
+	width: 16px;
+	height: 16px;
+	cursor: pointer;
+	accent-color: #2d79f3;
+}
+
+.remember-me label {
+	cursor: pointer;
+	user-select: none;
+}
+
+.error-message {
+	color: #ef4444;
+	font-size: 14px;
+	text-align: center;
+	margin: 10px 0;
+	padding: 8px 12px;
+	background-color: #fef2f2;
+	border: 1px solid #fecaca;
+	border-radius: 8px;
+}
+
+.button-submit:disabled {
+	background-color: #9ca3af;
+	cursor: not-allowed;
 }
 
 /* 响应式：窄屏表单宽度适配 */

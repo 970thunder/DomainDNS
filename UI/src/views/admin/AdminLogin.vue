@@ -31,9 +31,9 @@
 			</div>
 
 			<div class="flex-row">
-				<div>
-					<input type="checkbox" v-model="remember">
-					<label>记住我</label>
+				<div class="remember-me">
+					<input type="checkbox" v-model="remember" id="remember-me">
+					<label for="remember-me">记住我</label>
 				</div>
 				<span class="span" @click.prevent="goForgot">忘记密码？</span>
 			</div>
@@ -49,6 +49,8 @@
 
 			<div class="login-actions">
 				<p class="p"><span class="span" @click.prevent="goUserLogin">去用户登录</span></p>
+				<!-- 调试按钮 -->
+				<button type="button" @click="testRememberMe" class="test-btn">测试记住我功能</button>
 			</div>
 		</form>
 	</div>
@@ -92,6 +94,17 @@ const onSubmit = async () => {
 		if (result.success) {
 			// 设置记住我
 			authStore.setRememberMe(remember.value)
+			console.log('设置记住我状态:', remember.value)
+			
+			// 如果选择了记住我，保存用户名
+			if (remember.value) {
+				authStore.setRememberedUsername(email.value)
+				console.log('已保存用户名:', email.value)
+				console.log('localStorage中的记住用户名:', localStorage.getItem('remembered_username'))
+			} else {
+				authStore.clearRememberedUsername()
+				console.log('已清除记住的用户名')
+			}
 
 			// 跳转到管理后台
 			router.push('/admin/dashboard')
@@ -109,15 +122,40 @@ const onSubmit = async () => {
 const goUserLogin = () => router.push('/user/login')
 const goForgot = () => { }
 
-// 组件挂载时检查初始设置和恢复记住的用户名
+// 测试记住我功能
+const testRememberMe = () => {
+	console.log('=== 测试记住我功能 ===')
+	console.log('当前用户名:', email.value)
+	console.log('当前记住我状态:', remember.value)
+	console.log('localStorage中的记住用户名:', localStorage.getItem('remembered_username'))
+	console.log('localStorage中的记住我状态:', localStorage.getItem('remember_me'))
+	
+	// 测试保存
+	if (email.value) {
+		authStore.setRememberedUsername(email.value)
+		console.log('已保存用户名到localStorage')
+	}
+	
+	// 测试获取
+	const savedUsername = authStore.getRememberedUsername()
+	console.log('从localStorage获取的用户名:', savedUsername)
+}
+
+// 组件挂载时恢复记住的用户名
 onMounted(() => {
 	// 恢复记住的用户名
-	if (authStore.rememberMe && authStore.admin?.username) {
-		email.value = authStore.admin.username
+	const rememberedUsername = authStore.getRememberedUsername()
+	console.log('恢复记住的用户名:', rememberedUsername)
+	console.log('localStorage中的记住用户名:', localStorage.getItem('remembered_username'))
+	console.log('localStorage中的记住我状态:', localStorage.getItem('remember_me'))
+	
+	if (rememberedUsername) {
+		email.value = rememberedUsername
 		remember.value = true
+		console.log('已恢复用户名:', email.value, '记住我状态:', remember.value)
+	} else {
+		console.log('没有找到记住的用户名')
 	}
-
-	// 不再自动检查管理员状态
 })
 </script>
 <style scoped>
@@ -184,6 +222,24 @@ onMounted(() => {
 	font-size: 14px;
 	color: black;
 	font-weight: 400;
+}
+
+.remember-me {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.remember-me input[type="checkbox"] {
+	width: 16px;
+	height: 16px;
+	cursor: pointer;
+	accent-color: #2d79f3;
+}
+
+.remember-me label {
+	cursor: pointer;
+	user-select: none;
 }
 
 .span {
@@ -263,6 +319,23 @@ onMounted(() => {
 
 .btn:hover {
 	border: 1px solid #2d79f3;
+}
+
+.test-btn {
+	margin-top: 10px;
+	padding: 8px 16px;
+	background-color: #f3f4f6;
+	border: 1px solid #d1d5db;
+	border-radius: 6px;
+	color: #374151;
+	font-size: 12px;
+	cursor: pointer;
+	transition: all 0.2s;
+}
+
+.test-btn:hover {
+	background-color: #e5e7eb;
+	border-color: #9ca3af;
 }
 
 /* 响应式：窄屏表单宽度自适应 */

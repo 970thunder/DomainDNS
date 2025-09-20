@@ -17,9 +17,13 @@ spring:
           auth: true
           starttls:
             enable: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
           socketFactory:
             class: javax.net.ssl.SSLSocketFactory
             port: 587
+        debug: false
   data:
     redis:
       host: 127.0.0.1
@@ -44,3 +48,7 @@ jwt:
 
 secrets:
   aes-key: "Dev-Only-Example-AES-Key-Please-Override-In-Prod"
+
+app:
+  name: "DomainDNS"
+  url: "http://localhost:3000"

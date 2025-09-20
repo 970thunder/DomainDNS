@@ -50,6 +50,7 @@ export const STORAGE_CONFIG = {
 
     // 其他存储键名
     REMEMBER_ME_KEY: 'remember_me',
+    REMEMBERED_USERNAME_KEY: 'remembered_username',
     THEME_KEY: 'theme',
 }
 

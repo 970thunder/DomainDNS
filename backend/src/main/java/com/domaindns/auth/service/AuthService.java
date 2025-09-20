@@ -7,14 +7,12 @@ import com.domaindns.auth.dto.AuthDtos.RegisterResp;
 import com.domaindns.auth.entity.User;
 import com.domaindns.auth.mapper.UserMapper;
 import com.domaindns.common.RateLimiter;
+import com.domaindns.common.EmailService;
 import com.domaindns.settings.SettingsService;
 import com.domaindns.user.mapper.PointsMapper;
 import com.domaindns.admin.mapper.InviteMapper;
 import com.domaindns.admin.model.InviteCode;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,7 +24,7 @@ import java.util.Random;
 public class AuthService {
     private final UserMapper userMapper;
     private final JwtService jwtService;
-    private final JavaMailSender mailSender;
+    private final EmailService emailService;
     private final StringRedisTemplate redis;
     private final RateLimiter rateLimiter;
     private final SettingsService settingsService;
@@ -34,15 +32,12 @@ public class AuthService {
     private final InviteMapper inviteMapper;
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
-    @Value("${spring.mail.username:}")
-    private String mailFrom;
-
-    public AuthService(UserMapper userMapper, JwtService jwtService, JavaMailSender mailSender,
+    public AuthService(UserMapper userMapper, JwtService jwtService, EmailService emailService,
             StringRedisTemplate redis, RateLimiter rateLimiter, SettingsService settingsService,
             PointsMapper pointsMapper, InviteMapper inviteMapper) {
         this.userMapper = userMapper;
         this.jwtService = jwtService;
-        this.mailSender = mailSender;
+        this.emailService = emailService;
         this.redis = redis;
         this.rateLimiter = rateLimiter;
         this.settingsService = settingsService;
@@ -56,13 +51,9 @@ public class AuthService {
             throw new IllegalArgumentException("请求过于频繁，请稍后再试");
         String code = String.format("%06d", new Random().nextInt(1_000_000));
         redis.opsForValue().set("regcode:" + email, code, Duration.ofMinutes(10));
-        SimpleMailMessage message = new SimpleMailMessage();
-        if (mailFrom != null && !mailFrom.isBlank())
-            message.setFrom(mailFrom);
-        message.setTo(email);
-        message.setSubject("DomainDNS 注册验证码");
-        message.setText("您的注册验证码为：" + code + "，10分钟内有效。");
-        mailSender.send(message);
+
+        // 异步发送邮件，立即返回
+        emailService.sendVerificationCode(email, code, "register");
     }
 
     @Transactional
@@ -165,6 +156,11 @@ public class AuthService {
             inviteMapper.incrementUsedCount(inviteCode);
         }
 
+        // 发送欢迎邮件（异步）
+        if (email != null && !email.isBlank()) {
+            emailService.sendWelcomeEmail(email, username);
+        }
+
         RegisterResp resp = new RegisterResp();
         resp.userId = u.getId();
         return resp;
@@ -200,13 +196,9 @@ public class AuthService {
         String code = String.format("%06d", new Random().nextInt(1_000_000));
         String key2 = "pwdreset:" + email;
         redis.opsForValue().set(key2, code, Duration.ofMinutes(10));
-        SimpleMailMessage message = new SimpleMailMessage();
-        if (mailFrom != null && !mailFrom.isBlank())
-            message.setFrom(mailFrom);
-        message.setTo(email);
-        message.setSubject("DomainDNS 密码重置");
-        message.setText("您的验证码为：" + code + "，10分钟内有效。");
-        mailSender.send(message);
+
+        // 异步发送邮件，立即返回
+        emailService.sendVerificationCode(email, code, "reset");
     }
 
     @Transactional
