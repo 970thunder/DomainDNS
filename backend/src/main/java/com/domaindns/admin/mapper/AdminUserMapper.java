@@ -14,4 +14,6 @@ public interface AdminUserMapper {
     int count(@Param("status") Integer status, @Param("role") String role);
 
     int adjustPoints(@Param("id") Long id, @Param("delta") Integer delta);
+
+    AdminUser findById(@Param("id") Long id);
 }

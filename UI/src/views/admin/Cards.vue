@@ -1,61 +1,279 @@
 <template>
 	<main class="main container">
 		<div class="card">
-			<h3>生成卡密</h3>
+			<div class="card-header">
+				<h3>生成卡密</h3>
+				<div class="header-actions">
+					<button class="btn outline" @click="loadCards" :disabled="isLoading">
+						{{ isLoading ? '加载中...' : '刷新' }}
+					</button>
+				</div>
+			</div>
+
 			<div class="form">
 				<div class="grid cols-3">
-					<div class="input-row"><label class="label">面值（积分）</label><input class="input" v-model="form.amount"
-							placeholder="例如：10" /></div>
-					<div class="input-row"><label class="label">数量</label><input class="input" v-model="form.count"
-							placeholder="例如：100" /></div>
-					<div class="input-row"><label class="label">有效期（天）</label><input class="input" v-model="form.days"
-							placeholder="例如：30" /></div>
+					<div class="input-row">
+						<label class="label">面值（积分）</label>
+						<input class="input" v-model="form.points" placeholder="例如：10" type="number" min="1"
+							max="9999" />
+					</div>
+					<div class="input-row">
+						<label class="label">数量</label>
+						<input class="input" v-model="form.count" placeholder="例如：100" type="number" min="1"
+							max="1000" />
+					</div>
+					<div class="input-row">
+						<label class="label">有效期（天）</label>
+						<input class="input" v-model="form.validDays" placeholder="例如：30" type="number" min="0"
+							max="3650" />
+					</div>
 				</div>
 				<div class="row">
-					<button class="btn primary" @click="generate">生成</button>
-					<button class="btn outline" @click="exportCsv">导出 CSV</button>
+					<button class="btn primary" @click="generateCards" :disabled="isLoading">
+						{{ isLoading ? '生成中...' : '生成' }}
+					</button>
+					<button class="btn outline" @click="exportCsv" :disabled="cards.length === 0">
+						导出 CSV
+					</button>
 				</div>
 			</div>
 		</div>
 
 		<div class="card" style="margin-top:16px;">
-			<h3>卡密列表</h3>
-			<table class="table">
-				<thead>
-					<tr>
-						<th>卡密</th>
-						<th>面值</th>
-						<th>状态</th>
-						<th>生成时间</th>
-						<th>过期时间</th>
-						<th>使用者</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr v-for="r in rows" :key="r.code">
-						<td>{{ r.code }}</td>
-						<td>{{ r.amount }}</td>
-						<td><span class="badge success">{{ r.status }}</span></td>
-						<td>{{ r.createdAt }}</td>
-						<td>{{ r.expiredAt }}</td>
-						<td>{{ r.user }}</td>
-					</tr>
-				</tbody>
-			</table>
+			<div class="card-header">
+				<h3>卡密列表</h3>
+				<div class="header-actions">
+					<div class="filter-group">
+						<select class="select" style="max-width:160px;" v-model="filters.status" @change="loadCards">
+							<option value="">全部状态</option>
+							<option value="ACTIVE">未使用</option>
+							<option value="USED">已使用</option>
+							<option value="EXPIRED">已过期</option>
+						</select>
+					</div>
+				</div>
+			</div>
+
+			<div class="table-container" v-loading="isLoading">
+				<table class="table">
+					<thead>
+						<tr>
+							<th>卡密</th>
+							<th>面值</th>
+							<th>状态</th>
+							<th>生成时间</th>
+							<th>过期时间</th>
+							<th>使用者</th>
+							<th>使用时间</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr v-for="card in cards" :key="card.id">
+							<td class="card-code">{{ card.code }}</td>
+							<td>{{ card.points }}</td>
+							<td>
+								<span class="badge" :class="getStatusClass(card.status)">
+									{{ getStatusText(card.status) }}
+								</span>
+							</td>
+							<td>{{ formatDate(card.createdAt) }}</td>
+							<td>{{ formatDate(card.expiredAt) || '永不过期' }}</td>
+							<td>{{ card.usedByUsername || '-' }}</td>
+							<td>{{ formatDate(card.usedAt) || '-' }}</td>
+						</tr>
+					</tbody>
+				</table>
+
+				<div v-if="!isLoading && cards.length === 0" class="empty-state">
+					<p>暂无卡密数据</p>
+				</div>
+			</div>
 		</div>
 	</main>
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue'
+import { reactive, ref, onMounted } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { apiGet, apiPost } from '@/utils/api.js'
 
-const form = reactive({ amount: '', count: '', days: '' })
-const rows = ref([
-	{ code: 'XXXX-YYYY-ZZZZ', amount: 10, status: '未使用', createdAt: '2025-09-01', expiredAt: '2025-10-01', user: '-' }
-])
+// 响应式数据
+const isLoading = ref(false)
+const cards = ref([])
 
-const generate = () => { }
-const exportCsv = () => { }
+// 生成表单
+const form = reactive({
+	points: '',
+	count: '',
+	validDays: ''
+})
+
+// 过滤器
+const filters = reactive({
+	status: '',
+	page: 1,
+	size: 20
+})
+
+// 加载卡密列表
+const loadCards = async () => {
+	try {
+		isLoading.value = true
+
+		const params = new URLSearchParams()
+		if (filters.status) {
+			params.append('status', filters.status)
+		}
+		params.append('page', filters.page)
+		params.append('size', filters.size)
+
+		const response = await apiGet(`/api/admin/cards?${params.toString()}`)
+		cards.value = response.data?.list || []
+	} catch (error) {
+		ElMessage.error('加载卡密列表失败: ' + error.message)
+	} finally {
+		isLoading.value = false
+	}
+}
+
+// 生成卡密
+const generateCards = async () => {
+	try {
+		// 表单验证
+		if (!form.points || !form.count) {
+			ElMessage.error('请填写面值和数量')
+			return
+		}
+
+		if (form.points < 1 || form.points > 9999) {
+			ElMessage.error('面值必须在 1-9999 之间')
+			return
+		}
+
+		if (form.count < 1 || form.count > 1000) {
+			ElMessage.error('数量必须在 1-1000 之间')
+			return
+		}
+
+		if (form.validDays < 0 || form.validDays > 3650) {
+			ElMessage.error('有效期必须在 0-3650 天之间')
+			return
+		}
+
+		await ElMessageBox.confirm(
+			`确定要生成 ${form.count} 张面值为 ${form.points} 积分的卡密吗？`,
+			'确认生成',
+			{
+				confirmButtonText: '确定',
+				cancelButtonText: '取消',
+				type: 'warning'
+			}
+		)
+
+		isLoading.value = true
+
+		const data = {
+			count: parseInt(form.count),
+			points: parseInt(form.points),
+			validDays: form.validDays ? parseInt(form.validDays) : null
+		}
+
+		const response = await apiPost('/api/admin/cards/generate', data)
+		ElMessage.success(`成功生成 ${response.data.count} 张卡密`)
+
+		// 清空表单
+		form.points = ''
+		form.count = ''
+		form.validDays = ''
+
+		await loadCards()
+	} catch (error) {
+		if (error !== 'cancel') {
+			ElMessage.error('生成卡密失败: ' + error.message)
+		}
+	} finally {
+		isLoading.value = false
+	}
+}
+
+// 导出CSV
+const exportCsv = () => {
+	try {
+		if (cards.value.length === 0) {
+			ElMessage.warning('没有数据可导出')
+			return
+		}
+
+		// 构建CSV内容
+		const headers = ['卡密', '面值', '状态', '生成时间', '过期时间', '使用者', '使用时间']
+		const csvContent = [
+			headers.join(','),
+			...cards.value.map(card => [
+				card.code,
+				card.points,
+				getStatusText(card.status),
+				formatDate(card.createdAt),
+				formatDate(card.expiredAt) || '永不过期',
+				card.usedByUsername || '-',
+				formatDate(card.usedAt) || '-'
+			].join(','))
+		].join('\n')
+
+		// 创建下载链接
+		const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' })
+		const link = document.createElement('a')
+		const url = URL.createObjectURL(blob)
+		link.setAttribute('href', url)
+		link.setAttribute('download', `卡密列表_${new Date().toISOString().split('T')[0]}.csv`)
+		link.style.visibility = 'hidden'
+		document.body.appendChild(link)
+		link.click()
+		document.body.removeChild(link)
+
+		ElMessage.success('CSV文件导出成功')
+	} catch (error) {
+		ElMessage.error('导出失败: ' + error.message)
+	}
+}
+
+// 获取状态样式类
+const getStatusClass = (status) => {
+	switch (status) {
+		case 'ACTIVE':
+			return 'success'
+		case 'USED':
+			return 'warning'
+		case 'EXPIRED':
+			return 'danger'
+		default:
+			return ''
+	}
+}
+
+// 获取状态文本
+const getStatusText = (status) => {
+	switch (status) {
+		case 'ACTIVE':
+			return '未使用'
+		case 'USED':
+			return '已使用'
+		case 'EXPIRED':
+			return '已过期'
+		default:
+			return status
+	}
+}
+
+// 格式化日期
+const formatDate = (dateString) => {
+	if (!dateString) return '-'
+	return new Date(dateString).toLocaleString('zh-CN')
+}
+
+// 组件挂载时初始化
+onMounted(() => {
+	loadCards()
+})
 </script>
 
 <style scoped>
@@ -179,6 +397,59 @@ const exportCsv = () => { }
 	background: #ecfdf5;
 	color: #065f46;
 	border-color: #a7f3d0;
+}
+
+.badge.warning {
+	background: #fef3c7;
+	color: #92400e;
+	border-color: #fbbf24;
+}
+
+.badge.danger {
+	background: #fee2e2;
+	color: #991b1b;
+	border-color: #f87171;
+}
+
+.card-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 16px;
+}
+
+.header-actions {
+	display: flex;
+	gap: 8px;
+}
+
+.filter-group {
+	display: flex;
+	gap: 12px;
+	align-items: center;
+}
+
+.table-container {
+	position: relative;
+}
+
+.empty-state {
+	text-align: center;
+	padding: 40px 20px;
+	color: #64748b;
+}
+
+.empty-state p {
+	margin: 0;
+	font-size: 14px;
+}
+
+.card-code {
+	font-family: monospace;
+	font-size: 13px;
+	background: #f1f5f9;
+	padding: 2px 6px;
+	border-radius: 4px;
 }
 
 /* 响应式：窄屏优化 */

@@ -23,12 +23,13 @@ public class InviteController {
 
     @GetMapping
     public ApiResponse<Map<String, Object>> list(
+            @RequestParam(value = "keyword", required = false) String keyword,
             @RequestParam(value = "ownerUserId", required = false) Long ownerUserId,
             @RequestParam(value = "page", defaultValue = "1") Integer page,
             @RequestParam(value = "size", defaultValue = "20") Integer size) {
         int offset = (Math.max(page, 1) - 1) * Math.max(size, 1);
-        List<InviteCode> list = mapper.list(ownerUserId, offset, size);
-        int total = mapper.count(ownerUserId);
+        List<InviteCode> list = mapper.list(keyword, ownerUserId, offset, size);
+        int total = mapper.count(keyword, ownerUserId);
         Map<String, Object> m = new HashMap<>();
         m.put("list", list);
         m.put("total", total);

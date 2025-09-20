@@ -39,4 +39,8 @@
 	<update id="adjustPoints">
 		UPDATE users SET points = points + #{delta} WHERE id=#{id}
 	</update>
+
+	<select id="findById" parameterType="long" resultMap="UserMap">
+		SELECT id,username,email,display_name,points,role,status,created_at FROM users WHERE id = #{id}
+	</select>
 </mapper>

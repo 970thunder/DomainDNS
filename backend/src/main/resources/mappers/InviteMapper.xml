@@ -5,6 +5,7 @@
 		<id property="id" column="id" />
 		<result property="code" column="code" />
 		<result property="ownerUserId" column="owner_user_id" />
+		<result property="ownerUsername" column="owner_username" />
 		<result property="maxUses" column="max_uses" />
 		<result property="usedCount" column="used_count" />
 		<result property="status" column="status" />
@@ -13,18 +14,42 @@
 	</resultMap>
 
 	<select id="list" resultMap="InviteMap">
-		SELECT * FROM invite_codes
+		SELECT 
+			ic.id,
+			ic.code,
+			ic.owner_user_id,
+			u.username as owner_username,
+			ic.max_uses,
+			ic.used_count,
+			ic.status,
+			ic.created_at,
+			ic.expired_at
+		FROM invite_codes ic
+		LEFT JOIN users u ON ic.owner_user_id = u.id
 		<where>
-			<if test="ownerUserId!=null">owner_user_id=#{ownerUserId}</if>
+			<if test="keyword!=null and keyword!=''">
+				(ic.code LIKE CONCAT('%', #{keyword}, '%') OR u.username LIKE CONCAT('%', #{keyword}, '%'))
+			</if>
+			<if test="ownerUserId!=null">
+				<if test="keyword!=null and keyword!=''">AND</if>
+				ic.owner_user_id=#{ownerUserId}
+			</if>
 		</where>
-		ORDER BY id DESC
+		ORDER BY ic.id DESC
 		<if test="size!=null"> LIMIT #{offset}, #{size}</if>
 	</select>
 
 	<select id="count" resultType="int">
-		SELECT COUNT(1) FROM invite_codes
+		SELECT COUNT(1) FROM invite_codes ic
+		LEFT JOIN users u ON ic.owner_user_id = u.id
 		<where>
-			<if test="ownerUserId!=null">owner_user_id=#{ownerUserId}</if>
+			<if test="keyword!=null and keyword!=''">
+				(ic.code LIKE CONCAT('%', #{keyword}, '%') OR u.username LIKE CONCAT('%', #{keyword}, '%'))
+			</if>
+			<if test="ownerUserId!=null">
+				<if test="keyword!=null and keyword!=''">AND</if>
+				ic.owner_user_id=#{ownerUserId}
+			</if>
 		</where>
 	</select>
 
@@ -34,7 +59,20 @@
 	</insert>
 
 	<select id="findByOwnerUserId" resultMap="InviteMap">
-		SELECT * FROM invite_codes WHERE owner_user_id=#{ownerUserId} ORDER BY id DESC LIMIT 1
+		SELECT 
+			ic.id,
+			ic.code,
+			ic.owner_user_id,
+			u.username as owner_username,
+			ic.max_uses,
+			ic.used_count,
+			ic.status,
+			ic.created_at,
+			ic.expired_at
+		FROM invite_codes ic
+		LEFT JOIN users u ON ic.owner_user_id = u.id
+		WHERE ic.owner_user_id=#{ownerUserId} 
+		ORDER BY ic.id DESC LIMIT 1
 	</select>
 
 	<update id="updateByOwnerUserId">
@@ -47,7 +85,19 @@
 	</delete>
 
 	<select id="findByCode" resultMap="InviteMap">
-		SELECT * FROM invite_codes WHERE code=#{code}
+		SELECT 
+			ic.id,
+			ic.code,
+			ic.owner_user_id,
+			u.username as owner_username,
+			ic.max_uses,
+			ic.used_count,
+			ic.status,
+			ic.created_at,
+			ic.expired_at
+		FROM invite_codes ic
+		LEFT JOIN users u ON ic.owner_user_id = u.id
+		WHERE ic.code=#{code}
 	</select>
 
 	<update id="incrementUsedCount">

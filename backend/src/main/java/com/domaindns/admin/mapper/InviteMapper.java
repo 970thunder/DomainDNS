@@ -9,10 +9,11 @@ import java.util.List;
 
 @Mapper
 public interface InviteMapper {
-        List<InviteCode> list(@Param("ownerUserId") Long ownerUserId, @Param("offset") Integer offset,
+        List<InviteCode> list(@Param("keyword") String keyword, @Param("ownerUserId") Long ownerUserId,
+                        @Param("offset") Integer offset,
                         @Param("size") Integer size);
 
-        int count(@Param("ownerUserId") Long ownerUserId);
+        int count(@Param("keyword") String keyword, @Param("ownerUserId") Long ownerUserId);
 
         int insert(@Param("code") String code, @Param("ownerUserId") Long ownerUserId,
                         @Param("maxUses") Integer maxUses,

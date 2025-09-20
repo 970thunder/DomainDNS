@@ -6,6 +6,7 @@ public class InviteCode {
     private Long id;
     private String code;
     private Long ownerUserId;
+    private String ownerUsername;
     private Integer maxUses;
     private Integer usedCount;
     private String status;
@@ -34,6 +35,14 @@ public class InviteCode {
 
     public void setOwnerUserId(Long ownerUserId) {
         this.ownerUserId = ownerUserId;
+    }
+
+    public String getOwnerUsername() {
+        return ownerUsername;
+    }
+
+    public void setOwnerUsername(String ownerUsername) {
+        this.ownerUsername = ownerUsername;
     }
 
     public Integer getMaxUses() {
