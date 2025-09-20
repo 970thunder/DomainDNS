@@ -56,6 +56,8 @@ export const useAuthStore = defineStore('auth', {
         // 从本地存储加载状态
         loadFromStorage() {
             try {
+                console.log('loadFromStorage 开始加载本地存储')
+
                 // 加载用户信息
                 const userToken = localStorage.getItem(STORAGE_CONFIG.USER_TOKEN_KEY)
                 const userInfo = localStorage.getItem(STORAGE_CONFIG.USER_INFO_KEY)
@@ -65,6 +67,16 @@ export const useAuthStore = defineStore('auth', {
                     this.user = JSON.parse(userInfo)
                     this.role = 'USER'
                     this.isLoggedIn = true
+                    console.log('用户信息已从localStorage加载:', {
+                        user: this.user,
+                        token: this.token ? this.token.substring(0, 20) + '...' : null,
+                        isLoggedIn: this.isLoggedIn
+                    })
+                } else {
+                    console.log('用户信息加载条件不满足:', {
+                        hasUserToken: !!userToken,
+                        hasUserInfo: !!userInfo
+                    })
                 }
 
                 // 加载管理员信息
@@ -77,6 +89,13 @@ export const useAuthStore = defineStore('auth', {
                     this.adminRole = adminRole
                     this.admin = { username: adminUsername }
                     this.isAdminLoggedIn = true
+                    console.log('管理员信息已从localStorage加载')
+                } else {
+                    console.log('管理员信息加载条件不满足:', {
+                        hasAdminToken: !!adminToken,
+                        hasAdminRole: !!adminRole,
+                        hasAdminUsername: !!adminUsername
+                    })
                 }
 
                 // 加载记住我设置
@@ -95,6 +114,8 @@ export const useAuthStore = defineStore('auth', {
                 const response = await apiPost('/api/auth/login', credentials)
 
                 if (response.code === 0) {
+                    console.log('用户登录成功:', response.data)
+
                     this.user = response.data.user
                     this.token = response.data.token
                     this.role = 'USER'
@@ -102,6 +123,12 @@ export const useAuthStore = defineStore('auth', {
 
                     // 保存到本地存储
                     this.saveToStorage()
+
+                    console.log('用户登录后状态:', {
+                        user: this.user,
+                        token: this.token ? this.token.substring(0, 20) + '...' : null,
+                        isLoggedIn: this.isLoggedIn
+                    })
 
                     return { success: true, data: response.data }
                 } else {
@@ -203,6 +230,8 @@ export const useAuthStore = defineStore('auth', {
         saveToStorage() {
             try {
                 console.log('saveToStorage 开始:', {
+                    user: this.user,
+                    token: this.token ? this.token.substring(0, 20) + '...' : null,
                     adminToken: this.adminToken,
                     admin: this.admin,
                     adminRole: this.adminRole
@@ -212,6 +241,12 @@ export const useAuthStore = defineStore('auth', {
                 if (this.token && this.user) {
                     localStorage.setItem(STORAGE_CONFIG.USER_TOKEN_KEY, this.token)
                     localStorage.setItem(STORAGE_CONFIG.USER_INFO_KEY, JSON.stringify(this.user))
+                    console.log('用户信息已保存到localStorage')
+                } else {
+                    console.log('用户信息保存条件不满足:', {
+                        hasToken: !!this.token,
+                        hasUser: !!this.user
+                    })
                 }
 
                 // 保存管理员信息
@@ -249,19 +284,19 @@ export const useAuthStore = defineStore('auth', {
             }
         },
 
-        // 登出
+        // 用户登出
         logout() {
+            // 只清除用户相关状态，保留管理员状态
             this.user = null
             this.token = null
             this.role = null
-            this.admin = null
-            this.adminToken = null
-            this.adminRole = null
             this.isLoggedIn = false
-            this.isAdminLoggedIn = false
-            this.rememberMe = false
 
-            this.clearStorage()
+            // 只清除用户相关的存储
+            localStorage.removeItem(STORAGE_CONFIG.USER_TOKEN_KEY)
+            localStorage.removeItem(STORAGE_CONFIG.USER_INFO_KEY)
+
+            // 注意：不清除记住的用户名，因为"记住我"是为了方便下次登录
         },
 
         // 管理员登出

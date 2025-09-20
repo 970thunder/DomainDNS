@@ -39,6 +39,16 @@ public class AuthDtos {
     public static class LoginResp {
         public String token;
         public String role;
+        public UserInfo user;
+    }
+
+    public static class UserInfo {
+        public Long id;
+        public String username;
+        public String email;
+        public String displayName;
+        public Integer points;
+        public String role;
     }
 
     public static class ForgotPasswordReq {

@@ -11,7 +11,6 @@
 						<line x1="3" y1="18" x2="21" y2="18"></line>
 					</svg>
 				</button>
-				<button class="btn outline" @click="$router.push('/admin/login')" v-if="!isMobile">管理端登录</button>
 			</div>
 		</header>
 
@@ -74,14 +73,14 @@
 					</svg>
 					充值
 				</router-link>
-				<router-link to="/user/login" @click="closeMobileMenu" class="nav-link">
+				<button @click="logout" class="nav-link logout-btn">
 					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
 						<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
 						<polyline points="16,17 21,12 16,7"></polyline>
 						<line x1="21" y1="12" x2="9" y2="12"></line>
 					</svg>
-					退出
-				</router-link>
+					退出登录
+				</button>
 			</nav>
 			<div class="mobile-sidebar-footer">
 				<button class="btn outline" @click="$router.push('/admin/login'); closeMobileMenu()">管理端登录</button>
@@ -101,8 +100,7 @@
 					:class="{ active: $route.path === '/user/invite' }">邀请</router-link>
 				<router-link to="/user/recharge" class="nav-link"
 					:class="{ active: $route.path === '/user/recharge' }">充值</router-link>
-				<router-link to="/user/login" class="nav-link"
-					:class="{ active: $route.path === '/user/login' }">退出</router-link>
+				<button @click="logout" class="nav-link logout-btn">退出登录</button>
 			</nav>
 
 			<div class="page">
@@ -117,6 +115,12 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth.js'
+import { ElMessage, ElMessageBox } from 'element-plus'
+
+const router = useRouter()
+const authStore = useAuthStore()
 
 const isMobile = ref(false)
 const mobileMenuOpen = ref(false)
@@ -131,6 +135,36 @@ const toggleMobileMenu = () => {
 
 const closeMobileMenu = () => {
 	mobileMenuOpen.value = false
+}
+
+// 退出登录
+const logout = async () => {
+	try {
+		await ElMessageBox.confirm(
+			'确定要退出登录吗？',
+			'确认退出',
+			{
+				confirmButtonText: '确定',
+				cancelButtonText: '取消',
+				type: 'warning'
+			}
+		)
+
+		// 调用用户登出
+		authStore.logout()
+		ElMessage.success('已退出登录')
+
+		// 关闭移动端菜单
+		closeMobileMenu()
+
+		// 跳转到登录页
+		router.push('/user/login')
+	} catch (error) {
+		// 用户取消退出
+		if (error !== 'cancel') {
+			console.error('退出登录失败:', error)
+		}
+	}
 }
 
 onMounted(() => {
@@ -289,6 +323,20 @@ onUnmounted(() => {
 
 .mobile-nav .nav-link svg {
 	flex-shrink: 0;
+}
+
+.logout-btn {
+	background: none;
+	border: none;
+	width: 100%;
+	text-align: left;
+	cursor: pointer;
+}
+
+.logout-btn:hover {
+	background: #f8fafc;
+	color: #0f172a;
+	border-left-color: #ef4444;
 }
 
 .mobile-sidebar-footer {

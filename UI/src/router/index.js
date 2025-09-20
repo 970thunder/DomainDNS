@@ -42,7 +42,7 @@ router.beforeEach((to, from, next) => {
     const authStore = useAuthStore()
 
     // 只在首次访问或从登录页跳转时加载状态
-    if (from.path === '/admin/login' || from.path === '/user/login' || !authStore.isAdminLoggedIn) {
+    if (from.path === '/admin/login' || from.path === '/user/login' || !authStore.isAdminLoggedIn || !authStore.isLoggedIn) {
         authStore.loadFromStorage()
     }
 
@@ -50,7 +50,9 @@ router.beforeEach((to, from, next) => {
         path: to.path,
         from: from.path,
         isAdminLoggedIn: authStore.isAdminLoggedIn,
-        adminToken: authStore.adminToken ? '已设置' : '未设置'
+        adminToken: authStore.adminToken ? '已设置' : '未设置',
+        isLoggedIn: authStore.isLoggedIn,
+        userToken: authStore.token ? '已设置' : '未设置'
     })
 
     // 管理员路由需要认证

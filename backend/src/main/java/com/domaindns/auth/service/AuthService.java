@@ -1,5 +1,6 @@
 package com.domaindns.auth.service;
 
+import com.domaindns.auth.dto.AuthDtos;
 import com.domaindns.auth.dto.AuthDtos.LoginReq;
 import com.domaindns.auth.dto.AuthDtos.LoginResp;
 import com.domaindns.auth.dto.AuthDtos.RegisterReq;
@@ -180,9 +181,21 @@ public class AuthService {
             throw new IllegalArgumentException("用户不存在或密码错误");
         if (!requiredRole.equals(u.getRole()))
             throw new IllegalArgumentException("角色不匹配：需要" + requiredRole);
+
         LoginResp resp = new LoginResp();
         resp.role = u.getRole();
         resp.token = jwtService.issueToken(String.valueOf(u.getId()), u.getRole());
+
+        // 添加用户信息
+        AuthDtos.UserInfo userInfo = new AuthDtos.UserInfo();
+        userInfo.id = u.getId();
+        userInfo.username = u.getUsername();
+        userInfo.email = u.getEmail();
+        userInfo.displayName = u.getDisplayName();
+        userInfo.points = u.getPoints();
+        userInfo.role = u.getRole();
+        resp.user = userInfo;
+
         return resp;
     }
 
