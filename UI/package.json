@@ -4,9 +4,14 @@
 	"version": "0.1.0",
 	"type": "module",
 	"scripts": {
-		"dev": "vite",
-		"build": "vite build",
-		"preview": "vite preview"
+		"dev": "vite --mode development",
+		"dev:prod": "vite --mode production",
+		"build": "vite build --mode production",
+		"build:dev": "vite build --mode development",
+		"preview": "vite preview",
+		"preview:prod": "vite preview --mode production",
+		"lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore",
+		"type-check": "vue-tsc --noEmit"
 	},
 	"dependencies": {
 		"element-plus": "^2.7.8",

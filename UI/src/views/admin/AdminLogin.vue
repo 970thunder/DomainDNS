@@ -42,55 +42,32 @@
 				{{ errorMessage }}
 			</div>
 
+
 			<button class="button-submit" type="submit" :disabled="isLoading">
 				{{ isLoading ? '登录中...' : '登录管理端' }}
 			</button>
-			<p class="p"><span class="span" @click.prevent="goUserLogin">去用户登录</span></p>
+
+			<div class="login-actions">
+				<p class="p"><span class="span" @click.prevent="goUserLogin">去用户登录</span></p>
+			</div>
 		</form>
 	</div>
 </template>
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth.js'
 
 const router = useRouter()
+const authStore = useAuthStore()
+
 const email = ref('')
 const password = ref('')
 const remember = ref(false)
 const isLoading = ref(false)
 const errorMessage = ref('')
 
-// 检查是否需要初始设置
-const checkInitialSetup = async () => {
-	try {
-		// 尝试访问管理员注册接口，如果返回40901错误说明管理员已存在
-		const response = await fetch('/api/auth/admin/register', {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify({
-				username: 'test',
-				email: 'test@test.com',
-				password: 'test'
-			})
-		})
-
-		const result = await response.json()
-
-		// 如果返回40901错误，说明管理员已存在，可以正常登录
-		if (result.code === 40901) {
-			// 管理员已存在，继续显示登录界面
-			return
-		}
-
-		// 如果没有40901错误，说明系统需要初始设置
-		router.push('/admin/setup')
-	} catch (error) {
-		// 网络错误或其他错误，继续显示登录界面
-		console.log('检查初始设置时出错:', error)
-	}
-}
+// 已删除设置页面相关功能
 
 // 管理员登录
 const onSubmit = async () => {
@@ -103,28 +80,22 @@ const onSubmit = async () => {
 	errorMessage.value = ''
 
 	try {
-		const response = await fetch('/api/auth/admin/login', {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify({
-				username: email.value,
-				password: password.value
-			})
+		const result = await authStore.loginAdmin({
+			username: email.value,
+			password: password.value
 		})
 
-		const result = await response.json()
+		if (result.success) {
+			// 设置记住我
+			authStore.setRememberMe(remember.value)
 
-		if (result.code === 0) {
-			// 登录成功，保存token
-			localStorage.setItem('admin_token', result.data.token)
+			// 跳转到管理后台
 			router.push('/admin/dashboard')
 		} else {
 			errorMessage.value = result.message || '登录失败'
 		}
 	} catch (error) {
-		errorMessage.value = '网络错误，请稍后重试'
+		errorMessage.value = error.message || '登录失败'
 	} finally {
 		isLoading.value = false
 	}
@@ -133,9 +104,15 @@ const onSubmit = async () => {
 const goUserLogin = () => router.push('/user/login')
 const goForgot = () => { }
 
-// 组件挂载时检查初始设置
+// 组件挂载时检查初始设置和恢复记住的用户名
 onMounted(() => {
-	checkInitialSetup()
+	// 恢复记住的用户名
+	if (authStore.rememberMe && authStore.admin?.username) {
+		email.value = authStore.admin.username
+		remember.value = true
+	}
+
+	// 不再自动检查管理员状态
 })
 </script>
 <style scoped>
@@ -252,6 +229,16 @@ onMounted(() => {
 	font-size: 14px;
 	margin: 5px 0;
 }
+
+.login-actions {
+	margin-top: 10px;
+}
+
+.setup-link {
+	color: #ef4444 !important;
+	font-weight: 600;
+}
+
 
 .btn {
 	margin-top: 10px;

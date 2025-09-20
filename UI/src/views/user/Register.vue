@@ -129,8 +129,10 @@
 <script setup>
 import { ref, computed, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth.js'
 
 const router = useRouter()
+const authStore = useAuthStore()
 
 // 表单数据
 const formData = ref({
@@ -200,19 +202,9 @@ const validateForm = () => {
 // 发送验证码
 const sendVerificationCode = async () => {
 	try {
-		const response = await fetch('/api/auth/register/send-code', {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify({
-				email: formData.value.email
-			})
-		})
+		const result = await authStore.sendRegisterCode(formData.value.email)
 
-		const result = await response.json()
-
-		if (result.code === 0) {
+		if (result.success) {
 			showEmailVerification.value = true
 			startResendCountdown()
 		} else {
@@ -293,23 +285,15 @@ const verifyAndRegister = async () => {
 	verificationError.value = ''
 
 	try {
-		const response = await fetch('/api/auth/register', {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify({
-				username: formData.value.username,
-				email: formData.value.email,
-				password: formData.value.password,
-				emailCode: verificationCode.value.join(''),
-				inviteCode: formData.value.inviteCode || undefined
-			})
+		const result = await authStore.registerUser({
+			username: formData.value.username,
+			email: formData.value.email,
+			password: formData.value.password,
+			emailCode: verificationCode.value.join(''),
+			inviteCode: formData.value.inviteCode || undefined
 		})
 
-		const result = await response.json()
-
-		if (result.code === 0) {
+		if (result.success) {
 			// 注册成功，跳转到登录页面
 			router.push('/user/login?message=注册成功，请登录')
 		} else {
