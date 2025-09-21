@@ -87,4 +87,19 @@ router.beforeEach((to, from, next) => {
     next()
 })
 
+// 路由错误处理
+router.onError((error) => {
+    console.error('路由错误:', error)
+
+    // 如果是token过期相关的错误，跳转到登录页
+    if (error.message && (error.message.includes('Token已过期') || error.message.includes('Token无效'))) {
+        const authStore = useAuthStore()
+        if (window.location.pathname.startsWith('/user')) {
+            authStore.handleTokenExpired()
+        } else if (window.location.pathname.startsWith('/admin')) {
+            authStore.handleAdminTokenExpired()
+        }
+    }
+})
+
 export default router

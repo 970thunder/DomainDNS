@@ -12,10 +12,12 @@ body {
     margin: 0;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", Arial, "Noto Sans", sans-serif;
     color: #0f172a;
-    /* background-image: radial-gradient(circle, #efefef, #f0f1f3, #f0f2f6, #f0f5fa, #eef7fd, #eef9fd, #eefbfd, #f0fdfc, #f4fefa, #f8fefa, #fcfefa, #fffffc); */
     background: #f1f3f5;
     min-height: 100vh;
     position: relative;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
 }
 
 body::before {
@@ -130,25 +132,20 @@ body::before {
 /* Cards */
 .card {
     background: rgba(255, 255, 255, 0.6);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     border: 1px solid rgba(255, 255, 255, 0.3);
     border-radius: 16px;
     padding: 20px;
-    box-shadow:
-        0 8px 32px rgba(0, 0, 0, 0.08),
-        0 2px 8px rgba(0, 0, 0, 0.04),
-        inset 0 1px 0 rgba(255, 255, 255, 0.4);
-    transition: all 0.3s ease;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    transition: transform 0.2s ease, background-color 0.2s ease;
+    will-change: transform;
 }
 
 .card:hover {
     transform: translateY(-2px);
     background: rgba(255, 255, 255, 0.7);
-    box-shadow:
-        0 12px 40px rgba(0, 0, 0, 0.12),
-        0 4px 12px rgba(0, 0, 0, 0.06),
-        inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 
 .card h3 {
@@ -182,12 +179,9 @@ body::before {
     border-radius: 16px;
     overflow: hidden;
     background: rgba(255, 255, 255, 0.5);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    box-shadow:
-        0 8px 32px rgba(0, 0, 0, 0.08),
-        0 2px 8px rgba(0, 0, 0, 0.04),
-        inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
 }
 
 .table th,
@@ -202,15 +196,11 @@ body::before {
     background: rgba(255, 255, 255, 0.4);
     color: #0f172a;
     font-weight: 600;
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
     border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .table tr:hover td {
     background: rgba(255, 255, 255, 0.3);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
 }
 
 /* Forms */
@@ -238,14 +228,13 @@ body::before {
     border: 1px solid rgba(255, 255, 255, 0.4);
     border-radius: 12px;
     background: rgba(255, 255, 255, 0.6);
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     color: #0f172a;
     outline: none;
-    transition: all 0.3s ease;
-    box-shadow:
-        0 2px 8px rgba(0, 0, 0, 0.04),
-        inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    transition: border-color 0.2s ease, background-color 0.2s ease, transform 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    will-change: transform;
 }
 
 .input:focus,
@@ -253,12 +242,7 @@ body::before {
 .textarea:focus {
     border-color: #6366f1;
     background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    box-shadow:
-        0 0 0 3px rgba(99, 102, 241, 0.15),
-        0 4px 12px rgba(0, 0, 0, 0.08),
-        inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15), 0 4px 12px rgba(0, 0, 0, 0.08);
     transform: translateY(-1px);
 }
 
@@ -278,19 +262,14 @@ body::before {
     text-decoration: none;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s ease;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    box-shadow:
-        0 4px 12px rgba(0, 0, 0, 0.1),
-        0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease, background-color 0.2s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    will-change: transform;
 }
 
 .btn:hover {
     transform: translateY(-2px);
-    box-shadow:
-        0 8px 20px rgba(0, 0, 0, 0.15),
-        0 4px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 
 .btn.primary {
@@ -307,6 +286,8 @@ body::before {
     background: rgba(255, 255, 255, 0.6);
     border-color: rgba(255, 255, 255, 0.4);
     color: #0f172a;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
 }
 
 .btn.outline:hover {
@@ -333,11 +314,9 @@ body::before {
     font-size: 12px;
     font-weight: 500;
     border: 1px solid rgba(255, 255, 255, 0.4);
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
-    box-shadow:
-        0 2px 8px rgba(0, 0, 0, 0.06),
-        inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 .badge.success {
@@ -366,29 +345,28 @@ body::before {
     right: 0;
     bottom: 0;
     background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 1000;
-    animation: modalFadeIn 0.3s ease;
+    animation: modalFadeIn 0.2s ease;
+    will-change: opacity;
 }
 
 .modal-content {
     background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(25px);
-    -webkit-backdrop-filter: blur(25px);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border: 1px solid rgba(255, 255, 255, 0.4);
     border-radius: 20px;
     padding: 32px;
     width: 90%;
     max-width: 500px;
-    box-shadow:
-        0 20px 60px rgba(0, 0, 0, 0.2),
-        0 8px 24px rgba(0, 0, 0, 0.15),
-        inset 0 1px 0 rgba(255, 255, 255, 0.5);
-    animation: modalSlideIn 0.3s ease;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+    animation: modalSlideIn 0.2s ease;
+    will-change: transform, opacity;
 }
 
 .modal-content h3 {
@@ -431,12 +409,45 @@ body::before {
 @keyframes modalSlideIn {
     from {
         opacity: 0;
-        transform: translateY(-20px) scale(0.95);
+        transform: translate3d(0, -20px, 0) scale(0.95);
     }
 
     to {
         opacity: 1;
-        transform: translateY(0) scale(1);
+        transform: translate3d(0, 0, 0) scale(1);
+    }
+}
+
+/* Performance optimizations */
+* {
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Optimize scrolling performance */
+.mobile-nav {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+}
+
+/* Reduce paint operations */
+.card,
+.table,
+.btn,
+.input,
+.select,
+.textarea {
+    contain: layout style paint;
+}
+
+/* Optimize animations for better performance */
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
     }
 }
 

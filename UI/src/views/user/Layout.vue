@@ -223,10 +223,29 @@ const logout = async () => {
 onMounted(() => {
 	checkMobile()
 	window.addEventListener('resize', checkMobile)
+
+	// 监听token过期事件
+	const handleTokenExpired = () => {
+		console.log('用户界面收到token过期事件')
+		// 显示提示信息
+		ElMessage.warning('登录已过期，请重新登录')
+		// 跳转到登录页
+		router.push('/user/login')
+	}
+
+	window.addEventListener('token-expired', handleTokenExpired)
+
+	// 保存事件监听器的引用，以便在组件卸载时移除
+	window._tokenExpiredHandler = handleTokenExpired
 })
 
 onUnmounted(() => {
 	window.removeEventListener('resize', checkMobile)
+	// 移除token过期事件监听器
+	if (window._tokenExpiredHandler) {
+		window.removeEventListener('token-expired', window._tokenExpiredHandler)
+		delete window._tokenExpiredHandler
+	}
 })
 </script>
 
@@ -253,6 +272,8 @@ onUnmounted(() => {
 	padding: 8px;
 	border-radius: 6px;
 	display: none;
+	transition: background-color 0.15s ease;
+	will-change: background-color;
 }
 
 .mobile-menu-toggle:hover {
@@ -267,14 +288,12 @@ onUnmounted(() => {
 	margin-bottom: 20px;
 	padding: 12px 16px;
 	background: rgba(255, 255, 255, 0.6);
-	backdrop-filter: blur(20px);
-	-webkit-backdrop-filter: blur(20px);
+	backdrop-filter: blur(10px);
+	-webkit-backdrop-filter: blur(10px);
 	border: 1px solid rgba(255, 255, 255, 0.3);
 	border-radius: 16px;
-	box-shadow:
-		0 8px 32px rgba(0, 0, 0, 0.08),
-		0 2px 8px rgba(0, 0, 0, 0.04),
-		inset 0 1px 0 rgba(255, 255, 255, 0.4);
+	box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+	will-change: transform;
 }
 
 .nav-links {
@@ -296,27 +315,25 @@ onUnmounted(() => {
 	text-decoration: none;
 	color: #64748b;
 	font-weight: 500;
-	transition: all 0.3s ease;
+	transition: transform 0.2s ease, background-color 0.2s ease, color 0.2s ease;
 	background: rgba(255, 255, 255, 0.4);
 	border: 1px solid rgba(255, 255, 255, 0.3);
-	backdrop-filter: blur(10px);
-	-webkit-backdrop-filter: blur(10px);
+	backdrop-filter: blur(8px);
+	-webkit-backdrop-filter: blur(8px);
+	will-change: transform;
 }
 
 .desktop-nav .nav-link:hover {
 	background: rgba(255, 255, 255, 0.6);
 	color: #0f172a;
 	transform: translateY(-1px);
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .desktop-nav .nav-link.active {
 	background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
 	color: #fff;
 	border-color: rgba(255, 255, 255, 0.3);
-	box-shadow:
-		0 4px 12px rgba(99, 102, 241, 0.3),
-		inset 0 1px 0 rgba(255, 255, 255, 0.2);
+	box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
 }
 
 /* Mobile Sidebar */
@@ -330,7 +347,8 @@ onUnmounted(() => {
 	z-index: 998;
 	opacity: 0;
 	visibility: hidden;
-	transition: all 0.3s ease;
+	transition: opacity 0.2s ease, visibility 0.2s ease;
+	will-change: opacity;
 }
 
 .mobile-overlay.active {
@@ -347,10 +365,11 @@ onUnmounted(() => {
 	background: #fff;
 	z-index: 999;
 	transform: translateX(-100%);
-	transition: transform 0.3s ease;
+	transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 	display: flex;
 	flex-direction: column;
-	box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+	box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+	will-change: transform;
 }
 
 .mobile-sidebar.active {
@@ -379,6 +398,8 @@ onUnmounted(() => {
 	cursor: pointer;
 	padding: 4px;
 	border-radius: 4px;
+	transition: background-color 0.15s ease;
+	will-change: background-color;
 }
 
 .close-btn:hover {
@@ -389,6 +410,9 @@ onUnmounted(() => {
 	flex: 1;
 	padding: 20px 0;
 	overflow-y: auto;
+	-webkit-overflow-scrolling: touch;
+	scroll-behavior: smooth;
+	contain: layout style paint;
 }
 
 .mobile-nav .nav-link {
@@ -399,8 +423,9 @@ onUnmounted(() => {
 	color: #64748b;
 	text-decoration: none;
 	font-weight: 500;
-	transition: all 0.2s;
+	transition: background-color 0.15s ease, color 0.15s ease, border-left-color 0.15s ease;
 	border-left: 3px solid transparent;
+	will-change: background-color;
 }
 
 .mobile-nav .nav-link:hover,
@@ -459,6 +484,28 @@ onUnmounted(() => {
 
 	.container {
 		padding: 0 8px;
+	}
+}
+
+/* Performance optimizations for reduced motion */
+@media (prefers-reduced-motion: reduce) {
+
+	.mobile-sidebar,
+	.mobile-overlay,
+	.desktop-nav .nav-link,
+	.mobile-nav .nav-link,
+	.mobile-menu-toggle,
+	.close-btn {
+		transition: none !important;
+		animation: none !important;
+	}
+
+	.mobile-sidebar {
+		transform: translateX(-100%);
+	}
+
+	.mobile-sidebar.active {
+		transform: translateX(0);
 	}
 }
 </style>

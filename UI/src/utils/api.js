@@ -5,6 +5,10 @@
 
 import { API_CONFIG, ERROR_CODES, ERROR_MESSAGES, DEBUG_CONFIG, STORAGE_CONFIG } from '@/config/env.js'
 
+// Token过期事件防抖
+let tokenExpiredEventTriggered = false
+const TOKEN_EXPIRED_DEBOUNCE_TIME = 5000 // 5秒内不重复触发
+
 /**
  * 创建完整的 API URL
  * @param {string} endpoint - API 端点
@@ -45,6 +49,34 @@ const handleResponse = async (response) => {
                 status: response.status,
                 data: data
             })
+        }
+
+        // 检查JWT token过期 - 只检查特定的token过期消息
+        // 排除登录相关的API调用，避免在登录过程中误触发
+        const isLoginRelated = response.url.includes('/auth/login') ||
+            response.url.includes('/auth/register') ||
+            response.url.includes('/auth/send-code')
+
+        if (!isLoginRelated && data.message && (
+            data.message.includes('JWT expired at') ||
+            data.message.includes('Token无效或已过期') ||
+            (data.message.includes('Token已过期') && !data.message.includes('验证码'))
+        )) {
+            console.warn('检测到token过期:', data.message)
+
+            // 防抖处理，避免短时间内多次触发
+            if (!tokenExpiredEventTriggered) {
+                tokenExpiredEventTriggered = true
+                // 触发token过期事件
+                window.dispatchEvent(new CustomEvent('token-expired'))
+
+                // 5秒后重置防抖标志
+                setTimeout(() => {
+                    tokenExpiredEventTriggered = false
+                }, TOKEN_EXPIRED_DEBOUNCE_TIME)
+            }
+
+            throw new Error('Token已过期，请重新登录')
         }
 
         return data

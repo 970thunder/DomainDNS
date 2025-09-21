@@ -95,7 +95,7 @@ const isSubmitting = ref(false)
 const availableZones = ref([])
 const userBalance = ref(0)
 const defaultTtl = ref(120)
-const baseCost = ref(5)
+const baseCost = ref(10) // 根据API文档，默认应该是10分，不是5分
 
 // 表单数据
 const formData = ref({
@@ -127,38 +127,72 @@ const canSubmit = computed(() => {
 // 加载可用域名
 const loadZones = async () => {
 	try {
+		if (!authStore.token) {
+			console.error('用户token不存在')
+			ElMessage.error('请先登录')
+			return
+		}
+
 		const response = await apiGet('/api/zones', { token: authStore.token })
 		if (response.data) {
 			availableZones.value = response.data.filter(zone => zone.enabled)
 		}
 	} catch (error) {
 		console.error('加载域名列表失败:', error)
-		ElMessage.error('加载域名列表失败')
+		ElMessage.error('加载域名列表失败: ' + (error.message || '未知错误'))
 	}
 }
 
 // 加载用户积分
 const loadUserBalance = async () => {
 	try {
+		if (!authStore.token) {
+			console.error('用户token不存在')
+			return
+		}
+
 		const response = await apiGet('/api/user/points', { token: authStore.token })
 		if (response.data) {
 			userBalance.value = response.data.balance || 0
 		}
 	} catch (error) {
 		console.error('加载用户积分失败:', error)
+		ElMessage.error('加载用户积分失败: ' + (error.message || '未知错误'))
 	}
 }
 
 // 加载系统设置
 const loadSystemSettings = async () => {
 	try {
-		const response = await apiGet('/api/admin/settings', { token: authStore.adminToken })
+		if (!authStore.token) {
+			console.error('用户token不存在')
+			// 使用默认值
+			defaultTtl.value = 120
+			baseCost.value = 10
+			return
+		}
+
+		const response = await apiGet('/api/user/settings', { token: authStore.token })
 		if (response.data) {
+			// 从后端获取实际的系统设置
 			defaultTtl.value = parseInt(response.data.default_ttl) || 120
-			baseCost.value = parseInt(response.data.domain_cost_points) || 5
+			baseCost.value = parseInt(response.data.domain_cost_points) || 10
+			console.log('加载系统设置成功:', {
+				defaultTtl: defaultTtl.value,
+				baseCost: baseCost.value,
+				allSettings: response.data
+			})
 		}
 	} catch (error) {
 		console.error('加载系统设置失败:', error)
+		// 如果接口失败，使用默认值
+		defaultTtl.value = 120
+		baseCost.value = 10
+		console.log('使用默认系统设置:', {
+			defaultTtl: defaultTtl.value,
+			baseCost: baseCost.value,
+			note: '接口调用失败，使用默认值'
+		})
 	}
 }
 
@@ -176,6 +210,15 @@ const checkAvailability = async () => {
 
 	checkTimeout.value = setTimeout(async () => {
 		try {
+			if (!authStore.token) {
+				console.error('用户token不存在')
+				availabilityStatus.value = {
+					available: false,
+					reason: '请先登录'
+				}
+				return
+			}
+
 			const fullDomain = `${formData.value.prefix.trim()}.${selectedZone.value.name}`
 			const response = await apiGet('/api/domains/search', {
 				token: authStore.token,
@@ -193,7 +236,7 @@ const checkAvailability = async () => {
 			console.error('检查域名可用性失败:', error)
 			availabilityStatus.value = {
 				available: false,
-				reason: '检查失败'
+				reason: '检查失败: ' + (error.message || '未知错误')
 			}
 		}
 	}, 500)
@@ -224,27 +267,42 @@ const getValuePlaceholder = () => {
 	}
 }
 
-// 计算消耗积分
+// 计算消耗积分 - 按照API文档规则
 const calculateCost = () => {
 	if (!selectedZone.value) return baseCost.value
 
 	const domain = selectedZone.value.name.toLowerCase()
 	let multiplier = 1.0
 
-	// 根据TLD计算倍数
+	// 根据API文档规则计算倍数
 	if (domain.endsWith('.cn') || domain.endsWith('.com')) {
-		multiplier = 2.0
+		multiplier = 2.0  // .cn / .com：2.0倍
 	} else if (domain.endsWith('.top')) {
-		multiplier = 1.5
+		multiplier = 1.5  // .top：1.5倍
+	} else {
+		multiplier = 1.0  // 其它：1.0倍
 	}
 
-	return Math.floor(baseCost.value * multiplier)
+	const cost = Math.floor(baseCost.value * multiplier)
+	console.log('积分计算:', {
+		domain: domain,
+		baseCost: baseCost.value,
+		multiplier: multiplier,
+		finalCost: cost
+	})
+
+	return cost
 }
 
 // 提交申请
 const submitApplication = async () => {
 	if (!canSubmit.value) {
 		ElMessage.warning('请填写完整的申请信息')
+		return
+	}
+
+	if (!authStore.token) {
+		ElMessage.error('请先登录')
 		return
 	}
 
@@ -299,6 +357,14 @@ watch(() => formData.value.prefix, () => {
 const initData = async () => {
 	isLoading.value = true
 	try {
+		// 检查用户是否已登录
+		if (!authStore.isLoggedIn || !authStore.token) {
+			ElMessage.error('请先登录')
+			// 可以在这里跳转到登录页
+			// router.push('/user/login')
+			return
+		}
+
 		await Promise.all([
 			loadZones(),
 			loadUserBalance(),
@@ -306,6 +372,7 @@ const initData = async () => {
 		])
 	} catch (error) {
 		console.error('初始化数据失败:', error)
+		ElMessage.error('初始化数据失败: ' + (error.message || '未知错误'))
 	} finally {
 		isLoading.value = false
 	}
@@ -318,6 +385,10 @@ onMounted(() => {
 <style scoped>
 .apply-domain-container {
 	padding: 20px;
+}
+
+.card {
+	background: rgba(183, 241, 241, 0.055)
 }
 
 .card-header {

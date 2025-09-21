@@ -18,4 +18,16 @@ app.use(ElementPlus)
 const authStore = useAuthStore()
 authStore.init()
 
+// 监听token过期事件
+window.addEventListener('token-expired', () => {
+    console.log('收到token过期事件，执行自动登出')
+
+    // 判断当前是用户还是管理员页面
+    if (window.location.pathname.startsWith('/user')) {
+        authStore.handleTokenExpired()
+    } else if (window.location.pathname.startsWith('/admin')) {
+        authStore.handleAdminTokenExpired()
+    }
+})
+
 app.mount('#app')

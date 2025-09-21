@@ -344,6 +344,47 @@ export const useAuthStore = defineStore('auth', {
         // 清除记住的用户名
         clearRememberedUsername() {
             localStorage.removeItem(STORAGE_CONFIG.REMEMBERED_USERNAME_KEY)
+        },
+
+        // 处理token过期
+        handleTokenExpired() {
+            console.log('处理token过期，清除用户状态')
+
+            // 清除用户状态
+            this.user = null
+            this.token = null
+            this.role = null
+            this.isLoggedIn = false
+
+            // 清除用户相关的存储
+            localStorage.removeItem(STORAGE_CONFIG.USER_TOKEN_KEY)
+            localStorage.removeItem(STORAGE_CONFIG.USER_INFO_KEY)
+
+            // 跳转到登录页
+            if (window.location.pathname.startsWith('/user')) {
+                window.location.href = '/user/login'
+            }
+        },
+
+        // 处理管理员token过期
+        handleAdminTokenExpired() {
+            console.log('处理管理员token过期，清除管理员状态')
+
+            // 清除管理员状态
+            this.admin = null
+            this.adminToken = null
+            this.adminRole = null
+            this.isAdminLoggedIn = false
+
+            // 清除管理员相关的存储
+            localStorage.removeItem(STORAGE_CONFIG.TOKEN_KEY)
+            localStorage.removeItem(STORAGE_CONFIG.ADMIN_ROLE_KEY)
+            localStorage.removeItem(STORAGE_CONFIG.ADMIN_USERNAME_KEY)
+
+            // 跳转到管理员登录页
+            if (window.location.pathname.startsWith('/admin')) {
+                window.location.href = '/admin/login'
+            }
         }
     }
 })

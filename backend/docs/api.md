@@ -520,7 +520,27 @@ curl -X GET http://localhost:8080/api/user/invite/mycode \
   -H "Authorization: Bearer <user_token>"
 ```
 
-#### 3.6 充值❌
+#### 3.6 系统设置✅
+- GET `/api/user/settings`：获取用户可访问的系统设置
+
+响应示例：
+```json
+{
+  "code": 0,
+  "data": {
+    "domain_cost_points": "10",
+    "default_ttl": "120",
+    "max_domains_per_user": "5",
+    "initial_register_points": "1",
+    "invitee_points": "3",
+    "inviter_points": "3"
+  }
+}
+```
+
+说明：只返回用户需要知道的设置，不包含敏感的管理员设置。
+
+#### 3.7 充值❌
 - POST `/api/user/recharge`：创建订单（返回支付链接/二维码）
 - GET `/api/user/orders`：查看我的订单
 
@@ -781,7 +801,15 @@ curl -X GET "http://localhost:8080/api/admin/orders?status=PAID&page=1&size=20" 
 
 ---
 
-### 15) User - 充值/订单✅
+### 15) User - 系统设置✅
+
+- 获取用户设置：
+```bash
+curl -X GET http://localhost:8080/api/user/settings \
+  -H "Authorization: Bearer <user_token>"
+```
+
+### 16) User - 充值/订单✅
 
 - 创建订单：
 ```bash

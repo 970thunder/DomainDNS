@@ -31,10 +31,10 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.js'
-import { ElMessageBox } from 'element-plus'
+import { ElMessageBox, ElMessage } from 'element-plus'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -65,6 +65,30 @@ const logout = async () => {
 		}
 	}
 }
+
+onMounted(() => {
+	// 监听token过期事件
+	const handleTokenExpired = () => {
+		console.log('管理员界面收到token过期事件')
+		// 显示提示信息
+		ElMessage.warning('登录已过期，请重新登录')
+		// 跳转到管理员登录页
+		router.push('/admin/login')
+	}
+
+	window.addEventListener('token-expired', handleTokenExpired)
+
+	// 保存事件监听器的引用，以便在组件卸载时移除
+	window._adminTokenExpiredHandler = handleTokenExpired
+})
+
+onUnmounted(() => {
+	// 移除token过期事件监听器
+	if (window._adminTokenExpiredHandler) {
+		window.removeEventListener('token-expired', window._adminTokenExpiredHandler)
+		delete window._adminTokenExpiredHandler
+	}
+})
 </script>
 
 <style scoped>
