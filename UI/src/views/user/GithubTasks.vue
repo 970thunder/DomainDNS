@@ -81,7 +81,8 @@
 
         <!-- 验证Star状态对话框 -->
         <el-dialog :model-value="verifyDialogVisible" @update:model-value="verifyDialogVisible = $event"
-            :title="currentTask?.isCompleted ? '任务完成详情' : '验证Star状态'" width="500px" :close-on-click-modal="false">
+            :title="currentTask?.isCompleted ? '任务完成详情' : '验证Star状态'" :width="dialogWidth" :close-on-click-modal="false"
+            class="verify-dialog">
             <div v-if="currentTask" class="verify-content">
                 <div class="task-info">
                     <h4>{{ currentTask.title }}</h4>
@@ -120,7 +121,8 @@
 
                 <!-- 只有未完成任务才显示验证表单 -->
                 <div v-if="!currentTask.isCompleted">
-                    <el-form :model="verifyForm" :rules="verifyRules" ref="verifyFormRef" label-width="100px">
+                    <el-form :model="verifyForm" :rules="verifyRules" ref="verifyFormRef" :label-width="labelWidth"
+                        class="verify-form">
                         <el-form-item label="GitHub用户名" prop="githubUsername">
                             <el-input v-model="verifyForm.githubUsername" placeholder="请输入您的GitHub用户名"
                                 :disabled="isVerifying" />
@@ -155,12 +157,25 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import { useAuthStore } from '@/stores/auth.js'
 import { apiGet, apiPost } from '@/utils/api.js'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 const authStore = useAuthStore()
+
+// 响应式计算属性
+const dialogWidth = computed(() => {
+    if (window.innerWidth <= 480) return '95%'
+    if (window.innerWidth <= 768) return '90%'
+    return '500px'
+})
+
+const labelWidth = computed(() => {
+    if (window.innerWidth <= 480) return '80px'
+    if (window.innerWidth <= 768) return '90px'
+    return '120px'
+})
 
 // 响应式数据
 const isLoading = ref(false)
@@ -543,6 +558,33 @@ onMounted(() => {
     gap: 12px;
 }
 
+/* 验证对话框响应式样式 */
+.verify-dialog .el-dialog {
+    margin: 0 auto;
+}
+
+.verify-form {
+    padding: 0;
+}
+
+.verify-form .el-form-item {
+    margin-bottom: 20px;
+}
+
+.verify-form .el-form-item__label {
+    font-weight: 500;
+    color: #374151;
+}
+
+.verify-form .el-input__wrapper {
+    border-radius: 6px;
+}
+
+.verify-form .el-button {
+    border-radius: 6px;
+    font-weight: 500;
+}
+
 /* 响应式设计 */
 @media (max-width: 768px) {
     .tasks-grid {
@@ -561,6 +603,78 @@ onMounted(() => {
 
     .btn {
         width: 100%;
+    }
+
+    .dialog-footer {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .dialog-footer .el-button {
+        width: 100%;
+    }
+
+    .verify-tips {
+        padding: 12px;
+    }
+
+    .verify-tips h5 {
+        font-size: 13px;
+    }
+
+    .verify-tips ol {
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 480px) {
+    .verify-content {
+        padding: 16px 0;
+    }
+
+    .task-info h4 {
+        font-size: 16px;
+    }
+
+    .repository-info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+
+    .repository-link {
+        font-size: 13px;
+    }
+
+    .verify-form .el-form-item {
+        margin-bottom: 16px;
+    }
+
+    .verify-form .el-form-item__label {
+        font-size: 14px;
+    }
+
+    .verify-form .el-input {
+        font-size: 14px;
+    }
+
+    .verify-form .el-button {
+        font-size: 14px;
+        padding: 8px 16px;
+    }
+
+    .success-message {
+        flex-direction: column;
+        text-align: center;
+        gap: 4px;
+    }
+
+    .completion-details {
+        padding: 12px;
+    }
+
+    .completion-details p {
+        font-size: 13px;
     }
 }
 </style>

@@ -110,8 +110,8 @@
 
         <!-- 创建/编辑任务对话框 -->
         <el-dialog :model-value="taskDialogVisible" @update:model-value="taskDialogVisible = $event"
-            :title="isEditing ? '编辑任务' : '新建任务'" width="600px" :close-on-click-modal="false">
-            <el-form :model="taskForm" :rules="taskRules" ref="taskFormRef" label-width="100px">
+            :title="isEditing ? '编辑任务' : '新建任务'" :width="dialogWidth" :close-on-click-modal="false" class="task-dialog">
+            <el-form :model="taskForm" :rules="taskRules" ref="taskFormRef" :label-width="labelWidth" class="task-form">
                 <el-form-item label="任务标题" prop="title">
                     <el-input v-model="taskForm.title" placeholder="请输入任务标题" maxlength="200" show-word-limit />
                 </el-form-item>
@@ -158,7 +158,7 @@
 
         <!-- 任务统计对话框 -->
         <el-dialog :model-value="statsDialogVisible" @update:model-value="statsDialogVisible = $event" title="任务统计"
-            width="500px">
+            :width="statsDialogWidth" class="stats-dialog">
             <div v-if="currentTaskStats" class="stats-content">
                 <div class="stats-header">
                     <h4>{{ currentTaskStats.taskTitle }}</h4>
@@ -185,12 +185,31 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import { useAuthStore } from '@/stores/auth.js'
 import { apiGet, apiPost, apiPut, apiDelete } from '@/utils/api.js'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 const authStore = useAuthStore()
+
+// 响应式计算属性
+const dialogWidth = computed(() => {
+    if (window.innerWidth <= 480) return '95%'
+    if (window.innerWidth <= 768) return '90%'
+    return '600px'
+})
+
+const statsDialogWidth = computed(() => {
+    if (window.innerWidth <= 480) return '95%'
+    if (window.innerWidth <= 768) return '90%'
+    return '500px'
+})
+
+const labelWidth = computed(() => {
+    if (window.innerWidth <= 480) return '80px'
+    if (window.innerWidth <= 768) return '90px'
+    return '100px'
+})
 
 // 响应式数据
 const isLoading = ref(false)
@@ -582,6 +601,46 @@ onMounted(() => {
     gap: 12px;
 }
 
+/* 任务对话框响应式样式 */
+.task-dialog .el-dialog {
+    margin: 0 auto;
+}
+
+.task-form {
+    padding: 0;
+}
+
+.task-form .el-form-item {
+    margin-bottom: 20px;
+}
+
+.task-form .el-form-item__label {
+    font-weight: 500;
+    color: #374151;
+}
+
+.task-form .el-input__wrapper {
+    border-radius: 6px;
+}
+
+.task-form .el-button {
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+.task-form .el-select {
+    width: 100%;
+}
+
+.task-form .el-date-picker {
+    width: 100%;
+}
+
+/* 统计对话框响应式样式 */
+.stats-dialog .el-dialog {
+    margin: 0 auto;
+}
+
 .stats-content {
     padding: 20px 0;
 }
@@ -673,6 +732,32 @@ onMounted(() => {
     .stat-value {
         font-size: 20px;
     }
+
+    .dialog-footer {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .dialog-footer .el-button {
+        width: 100%;
+    }
+
+    .task-form .el-form-item {
+        margin-bottom: 16px;
+    }
+
+    .task-form .el-form-item__label {
+        font-size: 14px;
+    }
+
+    .task-form .el-input {
+        font-size: 14px;
+    }
+
+    .task-form .el-button {
+        font-size: 14px;
+        padding: 8px 16px;
+    }
 }
 
 @media (max-width: 480px) {
@@ -704,6 +789,47 @@ onMounted(() => {
     .btn-icon svg {
         width: 12px;
         height: 12px;
+    }
+
+    .task-form .el-form-item {
+        margin-bottom: 12px;
+    }
+
+    .task-form .el-form-item__label {
+        font-size: 13px;
+    }
+
+    .task-form .el-input {
+        font-size: 13px;
+    }
+
+    .task-form .el-button {
+        font-size: 13px;
+        padding: 6px 12px;
+    }
+
+    .task-form .el-textarea__inner {
+        font-size: 13px;
+    }
+
+    .stats-header h4 {
+        font-size: 16px;
+    }
+
+    .stats-header p {
+        font-size: 12px;
+    }
+
+    .stat-item {
+        padding: 12px;
+    }
+
+    .stat-value {
+        font-size: 18px;
+    }
+
+    .stat-label {
+        font-size: 12px;
     }
 }
 </style>

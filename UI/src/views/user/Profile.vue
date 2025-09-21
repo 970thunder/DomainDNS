@@ -23,7 +23,7 @@
                     <div class="info-item">
                         <span class="label">状态：</span>
                         <span class="badge" :class="getStatusClass(userInfo.status)">{{ getStatusText(userInfo.status)
-                            }}</span>
+                        }}</span>
                     </div>
                 </div>
             </div>
@@ -56,15 +56,16 @@
 
     <!-- 重置密码对话框 -->
     <el-dialog :model-value="resetPasswordDialogVisible" @update:model-value="resetPasswordDialogVisible = $event"
-        title="重置密码" width="400px" :close-on-click-modal="false">
-        <el-form :model="resetForm" :rules="resetRules" ref="resetFormRef" label-width="100px">
+        title="重置密码" :width="dialogWidth" :close-on-click-modal="false" class="reset-password-dialog">
+        <el-form :model="resetForm" :rules="resetRules" ref="resetFormRef" :label-width="labelWidth" class="reset-form">
             <el-form-item label="邮箱" prop="email">
                 <el-input v-model="resetForm.email" disabled />
             </el-form-item>
             <el-form-item label="验证码" prop="code">
                 <div class="code-input-group">
                     <el-input v-model="resetForm.code" placeholder="请输入6位验证码" maxlength="6" />
-                    <el-button @click="sendResetCode" :disabled="isSendingCode" :loading="isSendingCode">
+                    <el-button @click="sendResetCode" :disabled="isSendingCode" :loading="isSendingCode"
+                        class="code-button">
                         {{ isSendingCode ? '发送中...' : '发送验证码' }}
                     </el-button>
                 </div>
@@ -78,20 +79,34 @@
         </el-form>
         <template #footer>
             <div class="dialog-footer">
-                <el-button @click="resetPasswordDialogVisible = false">取消</el-button>
-                <el-button type="primary" @click="handleResetPassword" :loading="isResetting">确定</el-button>
+                <el-button @click="resetPasswordDialogVisible = false" class="cancel-btn">取消</el-button>
+                <el-button type="primary" @click="handleResetPassword" :loading="isResetting"
+                    class="confirm-btn">确定</el-button>
             </div>
         </template>
     </el-dialog>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useAuthStore } from '@/stores/auth.js'
 import { apiGet, apiPost } from '@/utils/api.js'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 const authStore = useAuthStore()
+
+// 响应式计算属性
+const dialogWidth = computed(() => {
+    if (window.innerWidth <= 480) return '95%'
+    if (window.innerWidth <= 768) return '90%'
+    return '400px'
+})
+
+const labelWidth = computed(() => {
+    if (window.innerWidth <= 480) return '80px'
+    if (window.innerWidth <= 768) return '90px'
+    return '100px'
+})
 
 // 响应式数据
 const isLoading = ref(false)
@@ -380,10 +395,47 @@ onMounted(() => {
     flex: 1;
 }
 
+.code-button {
+    white-space: nowrap;
+    min-width: 100px;
+}
+
 .dialog-footer {
     display: flex;
     justify-content: flex-end;
     gap: 12px;
+}
+
+.cancel-btn,
+.confirm-btn {
+    min-width: 80px;
+}
+
+/* 重置密码对话框响应式样式 */
+.reset-password-dialog .el-dialog {
+    margin: 0 auto;
+}
+
+.reset-form {
+    padding: 0;
+}
+
+.reset-form .el-form-item {
+    margin-bottom: 20px;
+}
+
+.reset-form .el-form-item__label {
+    font-weight: 500;
+    color: #374151;
+}
+
+.reset-form .el-input__wrapper {
+    border-radius: 6px;
+}
+
+.reset-form .el-button {
+    border-radius: 6px;
+    font-weight: 500;
 }
 
 /* 响应式设计 */
@@ -414,6 +466,70 @@ onMounted(() => {
     .action-buttons .btn {
         width: 100%;
         justify-content: center;
+    }
+
+    .code-input-group {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .code-button {
+        width: 100%;
+    }
+
+    .dialog-footer {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .cancel-btn,
+    .confirm-btn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .profile-container {
+        padding: 8px;
+    }
+
+    .card-header {
+        flex-direction: column;
+        gap: 12px;
+        align-items: flex-start;
+    }
+
+    .card-header h3 {
+        margin: 0;
+    }
+
+    .info-item {
+        padding: 12px;
+    }
+
+    .info-item .label {
+        font-size: 13px;
+    }
+
+    .info-item .value {
+        font-size: 13px;
+    }
+
+    .reset-form .el-form-item {
+        margin-bottom: 16px;
+    }
+
+    .reset-form .el-form-item__label {
+        font-size: 14px;
+    }
+
+    .reset-form .el-input {
+        font-size: 14px;
+    }
+
+    .reset-form .el-button {
+        font-size: 14px;
+        padding: 8px 16px;
     }
 }
 </style>
