@@ -73,6 +73,23 @@
 					</svg>
 					充值
 				</router-link>
+				<router-link to="/user/announcements" @click="closeMobileMenu" class="nav-link">
+					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+						<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+						<polyline points="14,2 14,8 20,8"></polyline>
+						<line x1="16" y1="13" x2="8" y2="13"></line>
+						<line x1="16" y1="17" x2="8" y2="17"></line>
+						<polyline points="10,9 9,9 8,9"></polyline>
+					</svg>
+					公告
+				</router-link>
+				<router-link to="/user/profile" @click="closeMobileMenu" class="nav-link">
+					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+						<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+						<circle cx="12" cy="7" r="4"></circle>
+					</svg>
+					{{ userInfo.username || '用户信息' }}
+				</router-link>
 				<button @click="logout" class="nav-link logout-btn">
 					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
 						<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
@@ -142,6 +159,27 @@
 						</svg>
 						充值
 					</router-link>
+					<router-link to="/user/announcements" class="nav-link"
+						:class="{ active: $route.path === '/user/announcements' }">
+						<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+							stroke-width="2">
+							<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+							<polyline points="14,2 14,8 20,8"></polyline>
+							<line x1="16" y1="13" x2="8" y2="13"></line>
+							<line x1="16" y1="17" x2="8" y2="17"></line>
+							<polyline points="10,9 9,9 8,9"></polyline>
+						</svg>
+						公告
+					</router-link>
+					<router-link to="/user/profile" class="nav-link"
+						:class="{ active: $route.path === '/user/profile' }">
+						<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+							stroke-width="2">
+							<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+							<circle cx="12" cy="7" r="4"></circle>
+						</svg>
+						{{ userInfo.username || '用户信息' }}
+					</router-link>
 				</div>
 				<div class="nav-actions">
 					<button @click="logout" class="nav-link logout-btn">
@@ -163,6 +201,9 @@
 		<footer class="footer container">
 			© 2025 HyperNym-DomainDNS
 		</footer>
+
+		<!-- 公告弹窗 -->
+		<AnnouncementModal v-model:visible="showAnnouncementModal" @confirm="handleAnnouncementConfirm" />
 	</div>
 </template>
 
@@ -170,7 +211,9 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.js'
+import { apiGet } from '@/utils/api.js'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import AnnouncementModal from '@/components/AnnouncementModal.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -178,8 +221,74 @@ const authStore = useAuthStore()
 const isMobile = ref(false)
 const mobileMenuOpen = ref(false)
 
+// 用户信息
+const userInfo = ref({
+	username: '',
+	email: '',
+	createdAt: '',
+	status: ''
+})
+
+// 公告弹窗
+const showAnnouncementModal = ref(false)
+
 const checkMobile = () => {
 	isMobile.value = window.innerWidth <= 768
+}
+
+// 加载用户信息
+const loadUserInfo = async () => {
+	try {
+		if (!authStore.token) {
+			console.error('用户token不存在')
+			return
+		}
+
+		const response = await apiGet('/api/user/info', { token: authStore.token })
+		if (response.data) {
+			userInfo.value = response.data
+			console.log('加载用户信息成功:', response.data)
+		}
+	} catch (error) {
+		console.error('加载用户信息失败:', error)
+		// 如果接口失败，使用默认值
+		userInfo.value = {
+			username: '用户信息',
+			email: '',
+			createdAt: '',
+			status: ''
+		}
+	}
+}
+
+// 检查是否需要显示公告弹窗
+const checkAnnouncementModal = () => {
+	// 检查是否已登录
+	if (!authStore.isLoggedIn || !authStore.token) {
+		return
+	}
+
+	// 获取今天的日期
+	const today = new Date().toDateString()
+
+	// 检查今天是否已经显示过公告
+	const lastShownDate = localStorage.getItem('announcement_last_shown')
+
+	// 如果今天还没有显示过，则显示公告弹窗
+	if (lastShownDate !== today) {
+		// 延迟显示，确保页面完全加载
+		setTimeout(() => {
+			showAnnouncementModal.value = true
+		}, 1000)
+	}
+}
+
+// 处理公告确认
+const handleAnnouncementConfirm = () => {
+	// 记录今天已经显示过公告
+	const today = new Date().toDateString()
+	localStorage.setItem('announcement_last_shown', today)
+	console.log('用户已确认查看公告')
 }
 
 const toggleMobileMenu = () => {
@@ -224,6 +333,22 @@ onMounted(() => {
 	checkMobile()
 	window.addEventListener('resize', checkMobile)
 
+	// 加载用户信息
+	loadUserInfo()
+
+	// 检查是否需要显示公告弹窗
+	checkAnnouncementModal()
+
+	// 监听路由变化，确保每次进入用户页面都检查公告
+	let unwatchRoute = router.afterEach((to) => {
+		if (to.path.startsWith('/user') && to.path !== '/user/login' && to.path !== '/user/register') {
+			// 延迟检查，确保页面切换完成
+			setTimeout(() => {
+				checkAnnouncementModal()
+			}, 500)
+		}
+	})
+
 	// 监听token过期事件
 	const handleTokenExpired = () => {
 		console.log('用户界面收到token过期事件')
@@ -246,6 +371,10 @@ onUnmounted(() => {
 		window.removeEventListener('token-expired', window._tokenExpiredHandler)
 		delete window._tokenExpiredHandler
 	}
+	// 清理路由监听器
+	if (unwatchRoute) {
+		unwatchRoute()
+	}
 })
 </script>
 
@@ -261,42 +390,6 @@ onUnmounted(() => {
 .container {
 	max-width: 1200px;
 	margin: 0 auto;
-	padding: 0 16px;
-	transition: all 0.3s ease;
-}
-
-/* 响应式容器 */
-@media (min-width: 1400px) {
-	.container {
-		max-width: 1400px;
-		padding: 0 24px;
-	}
-}
-
-@media (min-width: 1200px) and (max-width: 1399px) {
-	.container {
-		max-width: 1200px;
-		padding: 0 20px;
-	}
-}
-
-@media (min-width: 992px) and (max-width: 1199px) {
-	.container {
-		max-width: 1000px;
-		padding: 0 16px;
-	}
-}
-
-@media (max-width: 768px) {
-	.container {
-		padding: 0 12px;
-	}
-}
-
-@media (max-width: 480px) {
-	.container {
-		padding: 0 8px;
-	}
 }
 
 /* Mobile Menu Toggle */

@@ -390,14 +390,13 @@ onMounted(() => {
 .apply-domain-container {
 	padding: 20px;
 	min-height: 100vh;
-	justify-content: center;
-	align-items: flex-start;
-
-	padding-bottom: 40px;
+	display: flex;
+	flex-direction: column;
 }
 
 .card {
 	background: rgba(247, 250, 250, 0.685);
+	flex: 1;
 	max-width: 1200px;
 	margin: 0 auto;
 	width: 100%;

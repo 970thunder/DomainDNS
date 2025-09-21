@@ -12,8 +12,8 @@
 				<div class="invite-code-display">
 					<div class="code-input-group">
 						<input class="input code-input" :value="inviteInfo.code" readonly>
-						<button class="btn outline" @click="copyInviteCode">复制</button>
 					</div>
+					<button class="btn outline" @click="copyInviteCode">复制</button>
 					<button class="btn primary" @click="copyInviteLink">复制邀请链接</button>
 				</div>
 
@@ -28,7 +28,8 @@
 					</div>
 					<div class="stat-item" v-if="inviteInfo.expiredAt">
 						<span class="label">过期时间：</span>
-						<span class="value">{{ formatTime(inviteInfo.expiredAt) }}</span>
+						<span class="value" :class="getExpiredTimeClass(inviteInfo.expiredAt)">{{
+							formatExpiredTime(inviteInfo.expiredAt) }}</span>
 					</div>
 				</div>
 			</div>
@@ -37,7 +38,7 @@
 				<p>您还没有邀请码，点击上方按钮生成一个</p>
 			</div>
 
-			<p class="invite-tip">新用户使用你的邀请码注册，你与对方均可获得3点积分。</p>
+			<p class="invite-tip">新用户使用你的邀请码注册，你与对方均可获得{{ systemSettings.inviterPoints }}点积分。</p>
 		</div>
 
 		<div class="card" style="margin-top:16px;">
@@ -93,6 +94,53 @@ const inviteInfo = ref({
 	expiredAt: null
 })
 const inviteDetails = ref([])
+
+// 系统设置
+const systemSettings = ref({
+	inviterPoints: 3,  // 邀请者获得积分
+	inviteePoints: 3   // 被邀请者获得积分
+})
+
+// 加载系统设置
+const loadSystemSettings = async () => {
+	try {
+		if (!authStore.token) {
+			console.error('用户token不存在')
+			// 使用默认值
+			systemSettings.value = {
+				inviterPoints: 3,
+				inviteePoints: 3
+			}
+			return
+		}
+
+		const response = await apiGet('/api/user/settings', { token: authStore.token })
+		if (response.data) {
+			// 从后端获取实际的系统设置
+			systemSettings.value = {
+				inviterPoints: parseInt(response.data.inviter_points) || 3,
+				inviteePoints: parseInt(response.data.invitee_points) || 3
+			}
+			console.log('加载系统设置成功:', {
+				inviterPoints: systemSettings.value.inviterPoints,
+				inviteePoints: systemSettings.value.inviteePoints,
+				allSettings: response.data
+			})
+		}
+	} catch (error) {
+		console.error('加载系统设置失败:', error)
+		// 如果接口失败，使用默认值
+		systemSettings.value = {
+			inviterPoints: 3,
+			inviteePoints: 3
+		}
+		console.log('使用默认系统设置:', {
+			inviterPoints: systemSettings.value.inviterPoints,
+			inviteePoints: systemSettings.value.inviteePoints,
+			note: '接口调用失败，使用默认值'
+		})
+	}
+}
 
 // 加载邀请码信息
 const loadInviteCode = async () => {
@@ -169,19 +217,21 @@ const copyInviteLink = async () => {
 // 加载邀请明细
 const loadInviteDetails = async () => {
 	try {
-		// 这里需要根据实际API调整
-		// 假设有一个获取邀请明细的API
+		if (!authStore.token) {
+			console.error('用户token不存在')
+			return
+		}
+
 		const response = await apiGet('/api/user/invite/details', { token: authStore.token })
 		if (response.data) {
 			inviteDetails.value = response.data.list || []
+			console.log('加载邀请明细成功:', response.data)
 		}
 	} catch (error) {
 		console.error('加载邀请明细失败:', error)
-		// 暂时使用模拟数据
-		inviteDetails.value = [
-			{ id: 1, username: 'new_user_1', createdAt: '2025-01-20T10:30:00Z', points: 3 },
-			{ id: 2, username: 'new_user_2', createdAt: '2025-01-19T15:20:00Z', points: 3 }
-		]
+		ElMessage.error('加载邀请明细失败')
+		// 清空数据
+		inviteDetails.value = []
 	}
 }
 
@@ -190,7 +240,7 @@ const refreshInviteDetails = () => {
 	loadInviteDetails()
 }
 
-// 格式化时间
+// 格式化时间（相对时间，用于显示多久前）
 const formatTime = (timeStr) => {
 	if (!timeStr) return '未知'
 	const date = new Date(timeStr)
@@ -203,6 +253,34 @@ const formatTime = (timeStr) => {
 	return date.toLocaleDateString()
 }
 
+// 格式化过期时间（绝对时间，用于显示具体日期时间）
+const formatExpiredTime = (timeStr) => {
+	if (!timeStr) return '永不过期'
+	const date = new Date(timeStr)
+	const now = new Date()
+
+	// 检查是否已过期
+	if (date < now) {
+		return `已过期 (${date.toLocaleString()})`
+	}
+
+	// 计算剩余时间
+	const diff = date - now
+	const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+	const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+	const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+
+	if (days > 0) {
+		return `${days}天${hours}小时后过期 (${date.toLocaleString()})`
+	} else if (hours > 0) {
+		return `${hours}小时${minutes}分钟后过期 (${date.toLocaleString()})`
+	} else if (minutes > 0) {
+		return `${minutes}分钟后过期 (${date.toLocaleString()})`
+	} else {
+		return `即将过期 (${date.toLocaleString()})`
+	}
+}
+
 // 获取状态样式类
 const getStatusClass = (status) => {
 	switch (status) {
@@ -213,11 +291,36 @@ const getStatusClass = (status) => {
 	}
 }
 
+// 获取过期时间样式类
+const getExpiredTimeClass = (timeStr) => {
+	if (!timeStr) return ''
+	const date = new Date(timeStr)
+	const now = new Date()
+
+	if (date < now) {
+		return 'expired'
+	}
+
+	// 计算剩余时间
+	const diff = date - now
+	const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+	const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+
+	if (days <= 1) {
+		return 'expiring-soon'
+	} else if (days <= 7) {
+		return 'expiring-week'
+	}
+
+	return ''
+}
+
 // 初始化数据
 const initData = async () => {
 	isLoading.value = true
 	try {
 		await Promise.all([
+			loadSystemSettings(),
 			loadInviteCode(),
 			loadInviteDetails()
 		])
@@ -313,6 +416,22 @@ onMounted(() => {
 .badge.danger {
 	background-color: #fee2e2;
 	color: #dc2626;
+}
+
+/* 过期时间样式 */
+.value.expired {
+	color: #dc2626;
+	font-weight: 600;
+}
+
+.value.expiring-soon {
+	color: #f59e0b;
+	font-weight: 600;
+}
+
+.value.expiring-week {
+	color: #f97316;
+	font-weight: 500;
 }
 
 .no-invite-code {

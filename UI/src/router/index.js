@@ -13,6 +13,8 @@ const routes = [
             { path: 'domains', component: () => import('../views/user/MyDomains.vue') },
             { path: 'invite', component: () => import('../views/user/Invite.vue') },
             { path: 'recharge', component: () => import('../views/user/Recharge.vue') },
+            { path: 'profile', component: () => import('../views/user/Profile.vue') },
+            { path: 'announcements', component: () => import('../views/user/Announcements.vue') },
         ]
     },
     // Admin login (separate)

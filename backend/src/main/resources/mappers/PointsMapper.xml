@@ -47,11 +47,30 @@
     <select id="getWeeklyPointsChange" resultType="long">
         SELECT COALESCE(SUM(change_amount), 0) 
         FROM points_transactions 
-        WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+        WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
     </select>
 
     <select id="getAverageUserPoints" resultType="double">
-        SELECT COALESCE(AVG(points), 0) FROM users WHERE points > 0
+        SELECT COALESCE(AVG(points), 0) FROM users
+    </select>
+
+    <!-- 查询邀请奖励记录 - 优化查询，只查询邀请相关的积分记录 -->
+    <select id="getInviteRewards" resultType="com.domaindns.user.dto.InviteRewardDto">
+        SELECT pt.id, u.username, pt.change_amount as points, pt.remark, pt.created_at as createdAt
+        FROM points_transactions pt
+        LEFT JOIN users u ON pt.related_id = u.id
+        WHERE pt.user_id = #{userId} 
+        AND pt.type IN ('INVITE_REWARD', 'INVITER_REWARD')
+        ORDER BY pt.created_at DESC
+        <if test="size != null">LIMIT #{offset}, #{size}</if>
+    </select>
+
+    <!-- 统计邀请奖励记录数量 -->
+    <select id="countInviteRewards" resultType="int">
+        SELECT COUNT(1) 
+        FROM points_transactions 
+        WHERE user_id = #{userId} 
+        AND type IN ('INVITE_REWARD', 'INVITER_REWARD')
     </select>
 </mapper>
 

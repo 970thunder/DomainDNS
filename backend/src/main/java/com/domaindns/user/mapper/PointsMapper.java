@@ -26,4 +26,11 @@ public interface PointsMapper {
         Long getWeeklyPointsChange();
 
         Double getAverageUserPoints();
+
+        // 查询邀请奖励记录
+        java.util.List<com.domaindns.user.dto.InviteRewardDto> getInviteRewards(@Param("userId") Long userId,
+                        @Param("offset") Integer offset, @Param("size") Integer size);
+
+        // 统计邀请奖励记录数量
+        int countInviteRewards(@Param("userId") Long userId);
 }

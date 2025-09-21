@@ -270,9 +270,47 @@ curl -X DELETE http://localhost:8080/api/admin/zones/1/records/<cf_record_id> \
 - 积分调整：POST `/api/admin/users/{id}/points` `{delta:int, remark:string}✅`
 - 审计日志：GET `/api/admin/audit?page=&size=&action=`✅
 
-#### 2.8 邀请/卡密/支付✅
+#### 2.8 公告管理✅
+- 列表：GET `/api/admin/announcements`✅
+- 详情：GET `/api/admin/announcements/{id}`✅
+- 创建：POST `/api/admin/announcements`✅
+- 更新：PUT `/api/admin/announcements/{id}`✅
+- 删除：DELETE `/api/admin/announcements/{id}`✅
+- 发布：POST `/api/admin/announcements/{id}/publish`✅
+- 归档：POST `/api/admin/announcements/{id}/archive`✅
 
-##### 2.8.1 邀请码（ADMIN）✅
+请求参数（创建/更新）：
+| 字段 | 类型 | 必填 | 说明 |
+|---|---|---|---|
+| title | string | 是 | 公告标题（最大200字符） |
+| content | string | 是 | 公告内容 |
+| status | string | 是 | 状态：DRAFT/PUBLISHED/ARCHIVED |
+| priority | int | 是 | 优先级：1-普通，2-重要，3-紧急 |
+
+响应示例（列表）：
+```json
+{
+  "code": 0,
+  "data": [
+    {
+      "id": 1,
+      "title": "系统维护通知",
+      "content": "系统将于今晚进行维护...",
+      "status": "PUBLISHED",
+      "priority": 2,
+      "publishedAt": "2024-09-18T10:00:00",
+      "createdAt": "2024-09-18T09:00:00",
+      "updatedAt": "2024-09-18T10:00:00",
+      "createdBy": 1,
+      "createdByUsername": "admin"
+    }
+  ]
+}
+```
+
+#### 2.9 邀请/卡密/支付✅
+
+##### 2.9.1 邀请码（ADMIN）✅
 - 列表：GET `/api/admin/invites?ownerUserId=&page=&size=`
 
 请求参数：
@@ -299,7 +337,7 @@ curl -X DELETE http://localhost:8080/api/admin/zones/1/records/<cf_record_id> \
 
 说明：生成后默认为 `status=ACTIVE`，`used_count=0`，若传入 `validDays` 则计算 `expired_at`。
 
-##### 2.8.2 卡密（ADMIN）✅
+##### 2.9.2 卡密（ADMIN）✅
 - 列表：GET `/api/admin/cards?status=&page=&size=`
 
 请求参数：
@@ -326,7 +364,7 @@ curl -X DELETE http://localhost:8080/api/admin/zones/1/records/<cf_record_id> \
 
 说明：卡密一经生成即为 `ACTIVE`，被用户兑换后变为 `USED`，过期后为 `EXPIRED`（状态字段以实现为准）。
 
-##### 2.8.3 订单（ADMIN）✅
+##### 2.9.3 订单（ADMIN）✅
 - 列表：GET `/api/admin/orders?status=&userId=&page=&size=`
 
 请求参数：
@@ -540,7 +578,26 @@ curl -X GET http://localhost:8080/api/user/invite/mycode \
 
 说明：只返回用户需要知道的设置，不包含敏感的管理员设置。
 
-#### 3.7 充值❌
+#### 3.7 用户信息✅
+- GET `/api/user/info`：获取当前用户的基本信息
+
+响应示例：
+```json
+{
+  "code": 0,
+  "data": {
+    "id": 1,
+    "username": "alice",
+    "email": "alice@example.com",
+    "createdAt": "2024-09-18T06:18:00",
+    "status": "ACTIVE"
+  }
+}
+```
+
+说明：返回用户的基本信息，包括用户名、邮箱、创建时间、账户状态等。
+
+#### 3.8 充值❌
 - POST `/api/user/recharge`：创建订单（返回支付链接/二维码）
 - GET `/api/user/orders`：查看我的订单
 
@@ -809,7 +866,53 @@ curl -X GET http://localhost:8080/api/user/settings \
   -H "Authorization: Bearer <user_token>"
 ```
 
-### 16) User - 充值/订单✅
+### 16) User - 用户信息✅
+
+- 获取用户信息：
+```bash
+curl -X GET http://localhost:8080/api/user/info \
+  -H "Authorization: Bearer <user_token>"
+```
+
+### 17) User - 邀请明细✅
+
+- 获取邀请奖励记录：
+```bash
+curl -X GET "http://localhost:8080/api/user/invite/details?page=1&size=20" \
+  -H "Authorization: Bearer <user_token>"
+```
+
+**响应示例：**
+```json
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "list": [
+      {
+        "id": 123,
+        "username": "new_user_1",
+        "points": 3,
+        "remark": "邀请奖励",
+        "createdAt": "2025-01-20T10:30:00"
+      }
+    ],
+    "total": 5,
+    "page": 1,
+    "size": 20
+  }
+}
+```
+
+**说明：**
+- `page`: 页码，默认1
+- `size`: 每页数量，默认20，最大100
+- `username`: 被邀请用户的用户名
+- `points`: 获得的积分数量
+- `remark`: 备注信息
+- `createdAt`: 奖励时间
+
+### 18) User - 充值/订单✅
 
 - 创建订单：
 ```bash
