@@ -253,7 +253,21 @@ const loadTasks = async () => {
 
         const response = await apiGet('/api/admin/github-tasks', { token: authStore.adminToken })
         if (response.data) {
-            tasks.value = response.data
+            // 处理后端返回的Map数据，确保字段名正确
+            tasks.value = response.data.map(task => ({
+                id: task.id,
+                title: task.title,
+                description: task.description,
+                repositoryUrl: task.repository_url,
+                repositoryOwner: task.repository_owner,
+                repositoryName: task.repository_name,
+                rewardPoints: task.reward_points,
+                status: task.status,
+                startTime: task.start_time,
+                endTime: task.end_time,
+                createdAt: task.created_at,
+                completionCount: task.completionCount || 0
+            }))
         }
     } catch (error) {
         console.error('加载任务失败:', error)

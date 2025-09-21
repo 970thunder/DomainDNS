@@ -81,11 +81,31 @@
 
         <!-- 验证Star状态对话框 -->
         <el-dialog :model-value="verifyDialogVisible" @update:model-value="verifyDialogVisible = $event"
-            title="验证Star状态" width="500px" :close-on-click-modal="false">
+            :title="currentTask?.isCompleted ? '任务完成详情' : '验证Star状态'" width="500px" :close-on-click-modal="false">
             <div v-if="currentTask" class="verify-content">
                 <div class="task-info">
                     <h4>{{ currentTask.title }}</h4>
-                    <p>请确保您已Star该仓库，然后输入您的GitHub用户名进行验证：</p>
+
+                    <!-- 已完成任务显示 -->
+                    <div v-if="currentTask.isCompleted" class="completed-info">
+                        <div class="success-message">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" style="color: #10b981;">
+                                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path>
+                            </svg>
+                            <span>恭喜！您已完成此任务</span>
+                        </div>
+                        <div class="completion-details">
+                            <p><strong>获得积分：</strong>{{ currentTask.pointsAwarded || currentTask.rewardPoints }} 分</p>
+                            <p><strong>完成时间：</strong>{{ currentTask.completedAt ? formatTime(currentTask.completedAt) :
+                                '未知' }}</p>
+                        </div>
+                    </div>
+
+                    <!-- 未完成任务显示 -->
+                    <div v-else>
+                        <p>请确保您已Star该仓库，然后输入您的GitHub用户名进行验证：</p>
+                    </div>
+
                     <div class="repository-info">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                             <path
@@ -98,30 +118,34 @@
                     </div>
                 </div>
 
-                <el-form :model="verifyForm" :rules="verifyRules" ref="verifyFormRef" label-width="100px">
-                    <el-form-item label="GitHub用户名" prop="githubUsername">
-                        <el-input v-model="verifyForm.githubUsername" placeholder="请输入您的GitHub用户名"
-                            :disabled="isVerifying" />
-                    </el-form-item>
-                </el-form>
+                <!-- 只有未完成任务才显示验证表单 -->
+                <div v-if="!currentTask.isCompleted">
+                    <el-form :model="verifyForm" :rules="verifyRules" ref="verifyFormRef" label-width="100px">
+                        <el-form-item label="GitHub用户名" prop="githubUsername">
+                            <el-input v-model="verifyForm.githubUsername" placeholder="请输入您的GitHub用户名"
+                                :disabled="isVerifying" />
+                        </el-form-item>
+                    </el-form>
 
-                <div class="verify-tips">
-                    <h5>验证步骤：</h5>
-                    <ol>
-                        <li>点击上方链接前往GitHub仓库</li>
-                        <li>点击仓库右上角的"Star"按钮</li>
-                        <li>返回此页面，输入您的GitHub用户名</li>
-                        <li>点击"验证"按钮完成验证</li>
-                    </ol>
+                    <div class="verify-tips">
+                        <h5>验证步骤：</h5>
+                        <ol>
+                            <li>点击上方链接前往GitHub仓库</li>
+                            <li>点击仓库右上角的"Star"按钮</li>
+                            <li>返回此页面，输入您的GitHub用户名</li>
+                            <li>点击"验证"按钮完成验证</li>
+                        </ol>
+                    </div>
                 </div>
             </div>
 
             <template #footer>
                 <div class="dialog-footer">
                     <el-button @click="verifyDialogVisible = false" :disabled="isVerifying">
-                        取消
+                        {{ currentTask?.isCompleted ? '关闭' : '取消' }}
                     </el-button>
-                    <el-button type="primary" @click="verifyStar" :loading="isVerifying">
+                    <el-button v-if="!currentTask?.isCompleted" type="primary" @click="verifyStar"
+                        :loading="isVerifying">
                         验证
                     </el-button>
                 </div>
@@ -171,7 +195,23 @@ const loadTasks = async () => {
 
         const response = await apiGet('/api/user/github-tasks', { token: authStore.token })
         if (response.data) {
-            tasks.value = response.data
+            // 处理后端返回的Map数据，确保字段名正确
+            tasks.value = response.data.map(task => ({
+                id: task.id,
+                title: task.title,
+                description: task.description,
+                repositoryUrl: task.repository_url,
+                repositoryOwner: task.repository_owner,
+                repositoryName: task.repository_name,
+                rewardPoints: task.reward_points,
+                status: task.status,
+                startTime: task.start_time,
+                endTime: task.end_time,
+                createdAt: task.created_at,
+                isCompleted: task.isCompleted || false,
+                pointsAwarded: task.points_awarded,
+                completedAt: task.completed_at
+            }))
         }
     } catch (error) {
         console.error('加载任务失败:', error)
@@ -183,6 +223,12 @@ const loadTasks = async () => {
 
 // 打开验证对话框
 const openVerifyDialog = (task) => {
+    // 检查任务是否已完成
+    if (task.isCompleted) {
+        ElMessage.warning('该任务已完成，无法重复提交')
+        return
+    }
+
     currentTask.value = task
     verifyForm.githubUsername = ''
     verifyDialogVisible.value = true
@@ -457,6 +503,38 @@ onMounted(() => {
 
 .verify-tips li {
     margin-bottom: 4px;
+}
+
+.completed-info {
+    margin-bottom: 20px;
+}
+
+.success-message {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #dcfce7;
+    color: #166534;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    font-weight: 500;
+}
+
+.completion-details {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 16px;
+}
+
+.completion-details p {
+    margin: 0 0 8px 0;
+    color: #374151;
+}
+
+.completion-details p:last-child {
+    margin-bottom: 0;
 }
 
 .dialog-footer {

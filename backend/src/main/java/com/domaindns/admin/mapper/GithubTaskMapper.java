@@ -6,6 +6,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * GitHub任务Mapper接口
@@ -27,6 +28,11 @@ public interface GithubTaskMapper {
      * 查询所有任务（管理员）
      */
     List<GithubTask> findAll();
+
+    /**
+     * 查询所有任务（管理员，包含完成数）
+     */
+    List<Map<String, Object>> findAllWithCompletionCount();
 
     /**
      * 查询活跃任务（用户）
@@ -76,5 +82,5 @@ public interface GithubTaskMapper {
     /**
      * 查询用户任务详情（包含任务信息）
      */
-    List<GithubTask> findUserTaskDetails(@Param("userId") Long userId);
+    List<Map<String, Object>> findUserTaskDetails(@Param("userId") Long userId);
 }

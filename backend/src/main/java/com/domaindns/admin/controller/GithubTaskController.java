@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map;
 
 /**
  * 管理员GitHub任务控制器
@@ -112,12 +113,12 @@ public class GithubTaskController {
      * 获取所有任务（管理员）
      */
     @GetMapping
-    public ApiResponse<List<GithubTask>> getAllTasks(
+    public ApiResponse<List<Map<String, Object>>> getAllTasks(
             @RequestHeader("Authorization") String authorization) {
         try {
             getCurrentAdminId(authorization);
 
-            List<GithubTask> tasks = githubTaskService.getAllTasks();
+            List<Map<String, Object>> tasks = githubTaskService.getAllTasks();
             return ApiResponse.ok(tasks);
 
         } catch (Exception e) {

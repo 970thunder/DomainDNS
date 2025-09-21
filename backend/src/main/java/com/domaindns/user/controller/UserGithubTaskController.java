@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map;
 
 /**
  * 用户GitHub任务控制器
@@ -32,12 +33,12 @@ public class UserGithubTaskController {
      * 获取用户可参与的任务列表
      */
     @GetMapping
-    public ApiResponse<List<GithubTask>> getUserTasks(
+    public ApiResponse<List<Map<String, Object>>> getUserTasks(
             @RequestHeader("Authorization") String authorization) {
         try {
             long userId = getCurrentUserId(authorization);
 
-            List<GithubTask> tasks = githubTaskService.getUserTasks(userId);
+            List<Map<String, Object>> tasks = githubTaskService.getUserTasks(userId);
             return ApiResponse.ok(tasks);
 
         } catch (Exception e) {

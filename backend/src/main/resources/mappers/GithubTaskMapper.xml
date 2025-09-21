@@ -53,6 +53,20 @@
         SELECT * FROM github_tasks ORDER BY created_at DESC
     </select>
 
+    <!-- 查询所有任务（管理员，包含完成数） -->
+    <select id="findAllWithCompletionCount" resultType="map">
+        SELECT gt.*, 
+               COALESCE(completion_stats.completion_count, 0) as completionCount
+        FROM github_tasks gt
+        LEFT JOIN (
+            SELECT task_id, COUNT(*) as completion_count
+            FROM user_github_tasks 
+            WHERE is_starred = true
+            GROUP BY task_id
+        ) completion_stats ON gt.id = completion_stats.task_id
+        ORDER BY gt.created_at DESC
+    </select>
+
     <!-- 查询活跃任务（用户） -->
     <select id="findActiveTasks" resultMap="GithubTaskResult">
         SELECT * FROM github_tasks 
@@ -130,11 +144,12 @@
     </select>
 
     <!-- 查询用户任务详情（包含任务信息） -->
-    <select id="findUserTaskDetails" parameterType="long" resultMap="GithubTaskResult">
+    <select id="findUserTaskDetails" parameterType="long" resultType="map">
         SELECT gt.*, 
                ugt.is_starred,
                ugt.points_awarded,
-               ugt.completed_at
+               ugt.completed_at,
+               CASE WHEN ugt.is_starred = true THEN true ELSE false END as isCompleted
         FROM github_tasks gt
         LEFT JOIN user_github_tasks ugt ON gt.id = ugt.task_id AND ugt.user_id = #{userId}
         WHERE gt.status = 'ACTIVE' 

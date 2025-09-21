@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 /**
  * GitHub任务服务类
@@ -68,8 +69,8 @@ public class GithubTaskService {
     /**
      * 获取所有任务（管理员）
      */
-    public List<GithubTask> getAllTasks() {
-        return githubTaskMapper.findAll();
+    public List<Map<String, Object>> getAllTasks() {
+        return githubTaskMapper.findAllWithCompletionCount();
     }
 
     /**
@@ -89,7 +90,7 @@ public class GithubTaskService {
     /**
      * 获取用户任务列表
      */
-    public List<GithubTask> getUserTasks(Long userId) {
+    public List<Map<String, Object>> getUserTasks(Long userId) {
         return githubTaskMapper.findUserTaskDetails(userId);
     }
 
