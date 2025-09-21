@@ -1,0 +1,57 @@
+# 开发环境配置模板
+# 复制此文件为 application-dev.yml 并填入真实配置
+
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/domaindns?useSSL=false&serverTimezone=UTC&characterEncoding=utf8
+    username: your_db_username
+    password: your_db_password
+  jackson:
+    serialization:
+      WRITE_DATES_AS_TIMESTAMPS: false
+  mail:
+    host: smtp.qq.com
+    port: 587
+    username: your_email@qq.com
+    password: your_email_app_password
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+          socketFactory:
+            class: javax.net.ssl.SSLSocketFactory
+            port: 587
+        debug: false
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 6379
+      database: 0
+logging:
+  level:
+    root: INFO
+    com.domaindns: DEBUG
+    org.mybatis: DEBUG
+  pattern:
+    console: "%d{HH:mm:ss} %-5level %logger{36} - %msg%n"
+server:
+  port: 8080
+cors:
+  allow-origins: "http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173,http://127.0.0.1:5173"
+
+jwt:
+  secret: "your_jwt_secret_key_here_at_least_256_bits"
+  issuer: "domaindns"
+  expire-minutes: 120
+
+secrets:
+  aes-key: "your_32_character_aes_key_here"
+
+app:
+  name: "DomainDNS"
+  url: "http://localhost:3000"
