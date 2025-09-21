@@ -36,6 +36,41 @@ body::before {
     max-width: 1200px;
     margin: 0 auto;
     padding: 16px;
+    transition: all 0.3s ease;
+}
+
+/* 响应式容器 */
+@media (min-width: 1400px) {
+    .container {
+        max-width: 1400px;
+        padding: 24px;
+    }
+}
+
+@media (min-width: 1200px) and (max-width: 1399px) {
+    .container {
+        max-width: 1200px;
+        padding: 20px;
+    }
+}
+
+@media (min-width: 992px) and (max-width: 1199px) {
+    .container {
+        max-width: 1000px;
+        padding: 16px;
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 8px;
+    }
 }
 
 .app-header {
@@ -138,8 +173,42 @@ body::before {
     border-radius: 16px;
     padding: 20px;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-    transition: transform 0.2s ease, background-color 0.2s ease;
+    transition: transform 0.2s ease, background-color 0.2s ease, padding 0.3s ease;
     will-change: transform;
+    width: 100%;
+    max-width: 100%;
+}
+
+/* 响应式卡片 */
+@media (min-width: 1400px) {
+    .card {
+        padding: 32px;
+    }
+}
+
+@media (min-width: 1200px) and (max-width: 1399px) {
+    .card {
+        padding: 28px;
+    }
+}
+
+@media (min-width: 992px) and (max-width: 1199px) {
+    .card {
+        padding: 24px;
+    }
+}
+
+@media (max-width: 768px) {
+    .card {
+        padding: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .card {
+        padding: 16px;
+        border-radius: 12px;
+    }
 }
 
 .card:hover {

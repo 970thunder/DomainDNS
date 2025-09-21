@@ -7,31 +7,36 @@
 			</div>
 
 			<div class="form">
-				<div class="input-row">
-					<label class="label">选择主域名（可分发）</label>
-					<select class="select" v-model="formData.zoneId" @change="onZoneChange">
-						<option value="">请选择主域名</option>
-						<option v-for="zone in availableZones" :key="zone.id" :value="zone.id">
-							{{ zone.name }} {{ zone.enabled ? '(可用)' : '(不可用)' }}
-						</option>
-					</select>
+				<!-- 主域名和子域名前缀在同一行 -->
+				<div class="grid cols-2">
+					<div class="input-row">
+						<label class="label">选择主域名（可分发）</label>
+						<select class="select" v-model="formData.zoneId" @change="onZoneChange">
+							<option value="">请选择主域名</option>
+							<option v-for="zone in availableZones" :key="zone.id" :value="zone.id">
+								{{ zone.name }} {{ zone.enabled ? '(可用)' : '(不可用)' }}
+							</option>
+						</select>
+					</div>
+
+					<div class="input-row">
+						<label class="label">子域名前缀</label>
+						<div class="prefix-input-group">
+							<input class="input" v-model="formData.prefix" placeholder="例如：app"
+								@input="checkAvailability">
+							<span class="domain-suffix" v-if="selectedZone">.{{ selectedZone.name }}</span>
+						</div>
+						<div class="availability-status" v-if="availabilityStatus">
+							<span class="status" :class="availabilityStatus.available ? 'available' : 'unavailable'">
+								{{ availabilityStatus.available ? '✓ 可用' : '✗ 不可用' }}
+							</span>
+							<span class="reason" v-if="availabilityStatus.reason">{{ availabilityStatus.reason }}</span>
+						</div>
+					</div>
 				</div>
 
-				<div class="input-row">
-					<label class="label">子域名前缀</label>
-					<div class="prefix-input-group">
-						<input class="input" v-model="formData.prefix" placeholder="例如：app" @input="checkAvailability">
-						<span class="domain-suffix" v-if="selectedZone">.{{ selectedZone.name }}</span>
-					</div>
-					<div class="availability-status" v-if="availabilityStatus">
-						<span class="status" :class="availabilityStatus.available ? 'available' : 'unavailable'">
-							{{ availabilityStatus.available ? '✓ 可用' : '✗ 不可用' }}
-						</span>
-						<span class="reason" v-if="availabilityStatus.reason">{{ availabilityStatus.reason }}</span>
-					</div>
-				</div>
-
-				<div class="grid cols-3">
+				<!-- 记录类型、记录值、TTL和备注在同一行 -->
+				<div class="grid cols-4">
 					<div class="input-row">
 						<label class="label">记录类型</label>
 						<select class="select" v-model="formData.type" @change="onTypeChange">
@@ -50,11 +55,10 @@
 						<input class="input" v-model.number="formData.ttl" type="number"
 							:placeholder="`默认 ${defaultTtl}`">
 					</div>
-				</div>
-
-				<div class="input-row">
-					<label class="label">备注</label>
-					<textarea class="textarea" v-model="formData.remark" placeholder="用途说明，方便管理"></textarea>
+					<div class="input-row">
+						<label class="label">备注</label>
+						<textarea class="textarea compact" v-model="formData.remark" placeholder="用途说明，方便管理"></textarea>
+					</div>
 				</div>
 
 				<div class="cost-info">
@@ -385,10 +389,19 @@ onMounted(() => {
 <style scoped>
 .apply-domain-container {
 	padding: 20px;
+	min-height: 100vh;
+	justify-content: center;
+	align-items: flex-start;
+
+	padding-bottom: 40px;
 }
 
 .card {
-	background: rgba(183, 241, 241, 0.055)
+	background: rgba(247, 250, 250, 0.685);
+	max-width: 1200px;
+	margin: 0 auto;
+	width: 100%;
+	transition: all 0.3s ease;
 }
 
 .card-header {
@@ -401,7 +414,23 @@ onMounted(() => {
 .form {
 	display: flex;
 	flex-direction: column;
+	gap: 24px;
+	max-width: 100%;
+	padding: 0 8px;
+}
+
+.grid {
+	display: grid;
 	gap: 20px;
+	align-items: start;
+}
+
+.grid.cols-2 {
+	grid-template-columns: 1fr 1fr;
+}
+
+.grid.cols-4 {
+	grid-template-columns: 1fr 1.5fr 0.8fr 1.2fr;
 }
 
 .input-row {
@@ -414,6 +443,7 @@ onMounted(() => {
 	font-size: 14px;
 	font-weight: 500;
 	color: #374151;
+	white-space: nowrap;
 }
 
 .prefix-input-group {
@@ -426,6 +456,7 @@ onMounted(() => {
 	font-size: 14px;
 	color: #64748b;
 	font-weight: 500;
+	white-space: nowrap;
 }
 
 .availability-status {
@@ -455,6 +486,12 @@ onMounted(() => {
 .reason {
 	font-size: 12px;
 	color: #64748b;
+}
+
+.textarea.compact {
+	min-height: 60px;
+	max-height: 60px;
+	resize: vertical;
 }
 
 .cost-info {
@@ -507,7 +544,79 @@ onMounted(() => {
 }
 
 /* 响应式设计 */
+@media (min-width: 1400px) {
+	.apply-domain-container {
+		padding: 40px 60px;
+	}
+
+	.card {
+		padding: 32px;
+	}
+
+	.form {
+		gap: 32px;
+	}
+
+	.grid {
+		gap: 24px;
+	}
+}
+
+@media (min-width: 1200px) and (max-width: 1399px) {
+	.apply-domain-container {
+		padding: 32px 48px;
+	}
+
+	.card {
+		padding: 28px;
+	}
+
+	.form {
+		gap: 28px;
+	}
+}
+
+@media (min-width: 992px) and (max-width: 1199px) {
+	.apply-domain-container {
+		padding: 24px 32px;
+	}
+
+	.card {
+		padding: 24px;
+	}
+}
+
+@media (max-width: 1024px) {
+	.grid.cols-4 {
+		grid-template-columns: 1fr 1fr;
+		gap: 16px;
+	}
+
+	.grid.cols-2 {
+		gap: 16px;
+	}
+}
+
 @media (max-width: 768px) {
+	.apply-domain-container {
+		padding: 16px;
+	}
+
+	.card {
+		padding: 20px;
+	}
+
+	.form {
+		gap: 20px;
+		padding: 0;
+	}
+
+	.grid.cols-2,
+	.grid.cols-4 {
+		grid-template-columns: 1fr;
+		gap: 16px;
+	}
+
 	.form-actions {
 		flex-direction: column;
 	}
@@ -532,6 +641,40 @@ onMounted(() => {
 		flex-direction: column;
 		align-items: flex-start;
 		gap: 4px;
+	}
+
+	.textarea.compact {
+		min-height: 80px;
+		max-height: 120px;
+	}
+}
+
+@media (max-width: 480px) {
+	.apply-domain-container {
+		padding: 12px;
+	}
+
+	.card {
+		padding: 16px;
+	}
+
+	.form {
+		gap: 16px;
+	}
+
+	.grid {
+		gap: 12px;
+	}
+
+	.card-header {
+		flex-direction: column;
+		gap: 12px;
+		align-items: stretch;
+	}
+
+	.form-actions {
+		flex-direction: column;
+		gap: 8px;
 	}
 }
 </style>

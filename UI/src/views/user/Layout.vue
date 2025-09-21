@@ -261,6 +261,42 @@ onUnmounted(() => {
 .container {
 	max-width: 1200px;
 	margin: 0 auto;
+	padding: 0 16px;
+	transition: all 0.3s ease;
+}
+
+/* 响应式容器 */
+@media (min-width: 1400px) {
+	.container {
+		max-width: 1400px;
+		padding: 0 24px;
+	}
+}
+
+@media (min-width: 1200px) and (max-width: 1399px) {
+	.container {
+		max-width: 1200px;
+		padding: 0 20px;
+	}
+}
+
+@media (min-width: 992px) and (max-width: 1199px) {
+	.container {
+		max-width: 1000px;
+		padding: 0 16px;
+	}
+}
+
+@media (max-width: 768px) {
+	.container {
+		padding: 0 12px;
+	}
+}
+
+@media (max-width: 480px) {
+	.container {
+		padding: 0 8px;
+	}
 }
 
 /* Mobile Menu Toggle */
