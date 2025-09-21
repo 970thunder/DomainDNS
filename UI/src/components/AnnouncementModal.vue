@@ -1,6 +1,6 @@
 <template>
-    <el-dialog v-model="visible" title="系统公告" width="600px" :close-on-click-modal="false" :close-on-press-escape="false"
-        :show-close="false" class="announcement-modal">
+    <el-dialog :model-value="visible" @update:model-value="$emit('update:visible', $event)" title="系统公告" width="600px"
+        :close-on-click-modal="false" :close-on-press-escape="false" :show-close="false" class="announcement-modal">
         <div class="announcement-content">
             <div v-if="announcements.length === 0" class="empty-state">
                 <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor" style="color: #9ca3af;">
@@ -347,14 +347,47 @@ onMounted(() => {
 }
 
 /* 响应式设计 */
+@media (max-width: 1200px) {
+    .announcement-modal :deep(.el-dialog) {
+        width: 80% !important;
+    }
+}
+
+@media (max-width: 992px) {
+    .announcement-modal :deep(.el-dialog) {
+        width: 85% !important;
+    }
+
+    .announcement-modal :deep(.el-dialog__body) {
+        padding: 18px;
+    }
+}
+
 @media (max-width: 768px) {
     .announcement-modal :deep(.el-dialog) {
         width: 95% !important;
         margin: 0 auto;
     }
 
+    .announcement-modal :deep(.el-dialog__header) {
+        padding: 12px 16px;
+    }
+
+    .announcement-modal :deep(.el-dialog__title) {
+        font-size: 16px;
+    }
+
     .announcement-modal :deep(.el-dialog__body) {
         padding: 16px;
+        max-height: 50vh;
+    }
+
+    .announcement-modal :deep(.el-dialog__footer) {
+        padding: 12px 16px;
+    }
+
+    .announcement-content {
+        max-height: 40vh;
     }
 
     .announcement-header {
@@ -365,14 +398,144 @@ onMounted(() => {
 
     .announcement-title {
         font-size: 14px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+    }
+
+    .announcement-meta {
+        align-self: flex-start;
+    }
+
+    .announcement-body {
+        max-height: 150px;
+        font-size: 14px;
     }
 
     .dialog-footer {
         flex-direction: column;
+        gap: 8px;
     }
 
     .dialog-footer .el-button {
         width: 100%;
+    }
+
+    .empty-state {
+        padding: 30px 16px;
+    }
+
+    .empty-state svg {
+        width: 40px;
+        height: 40px;
+        margin-bottom: 12px;
+    }
+
+    .empty-state p {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .announcement-modal :deep(.el-dialog) {
+        width: 98% !important;
+        margin: 5px auto;
+    }
+
+    .announcement-modal :deep(.el-dialog__header) {
+        padding: 10px 12px;
+    }
+
+    .announcement-modal :deep(.el-dialog__title) {
+        font-size: 15px;
+    }
+
+    .announcement-modal :deep(.el-dialog__body) {
+        padding: 12px;
+        max-height: 45vh;
+    }
+
+    .announcement-modal :deep(.el-dialog__footer) {
+        padding: 10px 12px;
+    }
+
+    .announcement-content {
+        max-height: 35vh;
+    }
+
+    .announcement-item {
+        padding: 12px;
+    }
+
+    .announcement-title {
+        font-size: 13px;
+    }
+
+    .announcement-body {
+        max-height: 120px;
+        font-size: 13px;
+    }
+
+    .priority-badge {
+        padding: 3px 6px;
+        font-size: 11px;
+    }
+
+    .publish-time {
+        font-size: 12px;
+    }
+
+    .empty-state {
+        padding: 20px 12px;
+    }
+
+    .empty-state svg {
+        width: 36px;
+        height: 36px;
+        margin-bottom: 10px;
+    }
+
+    .empty-state p {
+        font-size: 13px;
+    }
+}
+
+/* 超小屏幕优化 */
+@media (max-width: 360px) {
+    .announcement-modal :deep(.el-dialog) {
+        width: 100% !important;
+        margin: 0;
+        border-radius: 0;
+    }
+
+    .announcement-modal :deep(.el-dialog__header) {
+        padding: 8px 10px;
+    }
+
+    .announcement-modal :deep(.el-dialog__body) {
+        padding: 10px;
+        max-height: 40vh;
+    }
+
+    .announcement-modal :deep(.el-dialog__footer) {
+        padding: 8px 10px;
+    }
+
+    .announcement-content {
+        max-height: 30vh;
+    }
+
+    .announcement-item {
+        padding: 10px;
+    }
+
+    .announcement-title {
+        font-size: 12px;
+    }
+
+    .announcement-body {
+        max-height: 100px;
+        font-size: 12px;
     }
 }
 </style>

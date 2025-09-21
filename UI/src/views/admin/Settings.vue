@@ -164,8 +164,8 @@
 		</div>
 
 		<!-- 创建/编辑公告对话框 -->
-		<el-dialog v-model="announcementDialogVisible" :title="isEditing ? '编辑公告' : '新建公告'" width="600px"
-			:close-on-click-modal="false">
+		<el-dialog :model-value="announcementDialogVisible" @update:model-value="announcementDialogVisible = $event"
+			:title="isEditing ? '编辑公告' : '新建公告'" width="600px" :close-on-click-modal="false">
 			<el-form :model="announcementForm" :rules="announcementRules" ref="announcementFormRef" label-width="80px">
 				<el-form-item label="标题" prop="title">
 					<el-input v-model="announcementForm.title" placeholder="请输入公告标题" maxlength="200" show-word-limit />

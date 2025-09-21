@@ -15,6 +15,7 @@ const routes = [
             { path: 'recharge', component: () => import('../views/user/Recharge.vue') },
             { path: 'profile', component: () => import('../views/user/Profile.vue') },
             { path: 'announcements', component: () => import('../views/user/Announcements.vue') },
+            { path: 'github-tasks', component: () => import('../views/user/GithubTasks.vue') },
         ]
     },
     // Admin login (separate)
@@ -30,6 +31,7 @@ const routes = [
             { path: 'invites', component: () => import('../views/admin/Invites.vue') },
             { path: 'cards', component: () => import('../views/admin/Cards.vue') },
             { path: 'settings', component: () => import('../views/admin/Settings.vue') },
+            { path: 'github-tasks', component: () => import('../views/admin/GithubTasks.vue') },
         ]
     },
 ]

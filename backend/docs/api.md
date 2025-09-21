@@ -308,9 +308,68 @@ curl -X DELETE http://localhost:8080/api/admin/zones/1/records/<cf_record_id> \
 }
 ```
 
-#### 2.9 邀请/卡密/支付✅
+#### 2.9 GitHub任务管理✅
 
-##### 2.9.1 邀请码（ADMIN）✅
+##### 2.9.1 GitHub任务（ADMIN）✅
+- 创建：POST `/api/admin/github-tasks`
+- 列表：GET `/api/admin/github-tasks`
+- 详情：GET `/api/admin/github-tasks/{id}`
+- 更新：PUT `/api/admin/github-tasks/{id}`
+- 删除：DELETE `/api/admin/github-tasks/{id}`
+- 统计：GET `/api/admin/github-tasks/{id}/stats`
+
+请求参数（创建/更新）：
+| 字段 | 类型 | 必填 | 说明 |
+|---|---|---|---|
+| title | string | 是 | 任务标题（最大200字符） |
+| description | string | 否 | 任务描述 |
+| repositoryUrl | string | 是 | GitHub仓库链接 |
+| repositoryOwner | string | 是 | 仓库所有者 |
+| repositoryName | string | 是 | 仓库名称 |
+| rewardPoints | int | 是 | 奖励积分 |
+| status | string | 否 | 状态：ACTIVE/INACTIVE/COMPLETED |
+| startTime | string | 否 | 开始时间（ISO格式） |
+| endTime | string | 否 | 结束时间（ISO格式） |
+
+响应示例（列表）：
+```json
+{
+  "code": 0,
+  "data": [
+    {
+      "id": 1,
+      "title": "Star HyperNym 主仓库",
+      "description": "请为我们的主仓库添加Star，支持我们的开源项目！",
+      "repositoryUrl": "https://github.com/hypernym/hypernym",
+      "repositoryOwner": "hypernym",
+      "repositoryName": "hypernym",
+      "rewardPoints": 50,
+      "status": "ACTIVE",
+      "startTime": "2025-01-20T00:00:00",
+      "endTime": "2025-02-20T00:00:00",
+      "createdAt": "2025-01-20T10:00:00",
+      "createdBy": 1
+    }
+  ]
+}
+```
+
+统计响应示例：
+```json
+{
+  "code": 0,
+  "data": {
+    "taskId": 1,
+    "taskTitle": "Star HyperNym 主仓库",
+    "completionCount": 15,
+    "rewardPoints": 50
+  }
+}
+```
+
+#### 2.10 邀请/卡密/支付✅
+
+##### 2.10.1 邀请码（ADMIN）✅
 - 列表：GET `/api/admin/invites?ownerUserId=&page=&size=`
 
 请求参数：
@@ -337,7 +396,7 @@ curl -X DELETE http://localhost:8080/api/admin/zones/1/records/<cf_record_id> \
 
 说明：生成后默认为 `status=ACTIVE`，`used_count=0`，若传入 `validDays` 则计算 `expired_at`。
 
-##### 2.9.2 卡密（ADMIN）✅
+##### 2.10.2 卡密（ADMIN）✅
 - 列表：GET `/api/admin/cards?status=&page=&size=`
 
 请求参数：
@@ -364,7 +423,7 @@ curl -X DELETE http://localhost:8080/api/admin/zones/1/records/<cf_record_id> \
 
 说明：卡密一经生成即为 `ACTIVE`，被用户兑换后变为 `USED`，过期后为 `EXPIRED`（状态字段以实现为准）。
 
-##### 2.9.3 订单（ADMIN）✅
+##### 2.10.3 订单（ADMIN）✅
 - 列表：GET `/api/admin/orders?status=&userId=&page=&size=`
 
 请求参数：
@@ -597,7 +656,135 @@ curl -X GET http://localhost:8080/api/user/invite/mycode \
 
 说明：返回用户的基本信息，包括用户名、邮箱、创建时间、账户状态等。
 
-#### 3.8 充值❌
+#### 3.8 GitHub任务✅
+
+##### 3.8.1 任务列表✅
+- 方法：GET `/api/user/github-tasks`
+- 说明：获取用户可参与的GitHub Star任务列表
+
+响应示例：
+```json
+{
+  "code": 0,
+  "data": [
+    {
+      "id": 1,
+      "title": "Star HyperNym 主仓库",
+      "description": "请为我们的主仓库添加Star，支持我们的开源项目！",
+      "repositoryUrl": "https://github.com/hypernym/hypernym",
+      "repositoryOwner": "hypernym",
+      "repositoryName": "hypernym",
+      "rewardPoints": 50,
+      "status": "ACTIVE",
+      "startTime": "2025-01-20T00:00:00",
+      "endTime": "2025-02-20T00:00:00",
+      "isCompleted": false,
+      "isStarred": false,
+      "pointsAwarded": 0
+    }
+  ]
+}
+```
+
+##### 3.8.2 任务详情✅
+- 方法：GET `/api/user/github-tasks/{id}`
+- 说明：获取指定任务的详细信息
+
+响应示例：
+```json
+{
+  "code": 0,
+  "data": {
+    "task": {
+      "id": 1,
+      "title": "Star HyperNym 主仓库",
+      "description": "请为我们的主仓库添加Star，支持我们的开源项目！",
+      "repositoryUrl": "https://github.com/hypernym/hypernym",
+      "repositoryOwner": "hypernym",
+      "repositoryName": "hypernym",
+      "rewardPoints": 50,
+      "status": "ACTIVE"
+    },
+    "isCompleted": false,
+    "userTask": null
+  }
+}
+```
+
+##### 3.8.3 验证Star状态✅
+- 方法：POST `/api/user/github-tasks/{id}/verify`
+- 说明：验证用户是否已Star指定仓库并发放积分奖励
+
+请求参数：
+| 字段 | 类型 | 必填 | 说明 |
+|---|---|---|---|
+| githubUsername | string | 是 | GitHub用户名 |
+
+响应示例：
+```json
+{
+  "code": 0,
+  "data": {
+    "success": true,
+    "message": "验证成功！您已获得 50 积分奖励",
+    "pointsAwarded": 50
+  }
+}
+```
+
+错误示例：
+```json
+{
+  "code": 40001,
+  "message": "验证失败，请确保您已Star该仓库"
+}
+```
+
+##### 3.8.4 任务记录✅
+- 方法：GET `/api/user/github-tasks/records`
+- 说明：获取用户的任务参与记录
+
+响应示例：
+```json
+{
+  "code": 0,
+  "data": [
+    {
+      "id": 1,
+      "userId": 1,
+      "taskId": 1,
+      "githubUsername": "alice",
+      "isStarred": true,
+      "pointsAwarded": 50,
+      "completedAt": "2025-01-20T10:30:00",
+      "createdAt": "2025-01-20T10:30:00"
+    }
+  ]
+}
+```
+
+##### 3.8.5 已完成任务✅
+- 方法：GET `/api/user/github-tasks/completed`
+- 说明：获取用户已完成的任务列表
+
+##### 3.8.6 任务统计✅
+- 方法：GET `/api/user/github-tasks/stats`
+- 说明：获取用户任务完成统计
+
+响应示例：
+```json
+{
+  "code": 0,
+  "data": {
+    "totalTasks": 5,
+    "completedCount": 3,
+    "totalPointsEarned": 120,
+    "completionRate": 60.0
+  }
+}
+```
+
+#### 3.9 充值❌
 - POST `/api/user/recharge`：创建订单（返回支付链接/二维码）
 - GET `/api/user/orders`：查看我的订单
 
@@ -912,7 +1099,64 @@ curl -X GET "http://localhost:8080/api/user/invite/details?page=1&size=20" \
 - `remark`: 备注信息
 - `createdAt`: 奖励时间
 
-### 18) User - 充值/订单✅
+### 18) Admin - GitHub任务管理✅
+
+- 创建任务：
+```bash
+curl -X POST http://localhost:8080/api/admin/github-tasks \
+  -H "Authorization: Bearer <admin_token>" -H "Content-Type: application/json" \
+  -d '{
+    "title": "Star HyperNym 主仓库",
+    "description": "请为我们的主仓库添加Star，支持我们的开源项目！",
+    "repositoryUrl": "https://github.com/hypernym/hypernym",
+    "repositoryOwner": "hypernym",
+    "repositoryName": "hypernym",
+    "rewardPoints": 50,
+    "startTime": "2025-01-20T00:00:00",
+    "endTime": "2025-02-20T00:00:00"
+  }'
+```
+
+- 任务列表：
+```bash
+curl -X GET http://localhost:8080/api/admin/github-tasks \
+  -H "Authorization: Bearer <admin_token>"
+```
+
+- 任务统计：
+```bash
+curl -X GET http://localhost:8080/api/admin/github-tasks/1/stats \
+  -H "Authorization: Bearer <admin_token>"
+```
+
+### 19) User - GitHub任务✅
+
+- 获取任务列表：
+```bash
+curl -X GET http://localhost:8080/api/user/github-tasks \
+  -H "Authorization: Bearer <user_token>"
+```
+
+- 验证Star状态：
+```bash
+curl -X POST http://localhost:8080/api/user/github-tasks/1/verify \
+  -H "Authorization: Bearer <user_token>" -H "Content-Type: application/json" \
+  -d '{"githubUsername": "alice"}'
+```
+
+- 获取任务记录：
+```bash
+curl -X GET http://localhost:8080/api/user/github-tasks/records \
+  -H "Authorization: Bearer <user_token>"
+```
+
+- 获取任务统计：
+```bash
+curl -X GET http://localhost:8080/api/user/github-tasks/stats \
+  -H "Authorization: Bearer <user_token>"
+```
+
+### 20) User - 充值/订单✅
 
 - 创建订单：
 ```bash

@@ -83,6 +83,14 @@
 					</svg>
 					公告
 				</router-link>
+				<router-link to="/user/github-tasks" @click="closeMobileMenu" class="nav-link">
+					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+						<path
+							d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z">
+						</path>
+					</svg>
+					GitHub任务
+				</router-link>
 				<router-link to="/user/profile" @click="closeMobileMenu" class="nav-link">
 					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
 						<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
@@ -170,6 +178,16 @@
 							<polyline points="10,9 9,9 8,9"></polyline>
 						</svg>
 						公告
+					</router-link>
+					<router-link to="/user/github-tasks" class="nav-link"
+						:class="{ active: $route.path === '/user/github-tasks' }">
+						<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+							stroke-width="2">
+							<path
+								d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z">
+							</path>
+						</svg>
+						GitHub任务
 					</router-link>
 					<router-link to="/user/profile" class="nav-link"
 						:class="{ active: $route.path === '/user/profile' }">

@@ -107,7 +107,8 @@
 		</div>
 
 		<!-- 添加/编辑记录对话框 -->
-		<el-dialog v-model="recordDialogVisible" :title="editingRecord ? '编辑 DNS 记录' : '添加 DNS 记录'" width="600px">
+		<el-dialog :model-value="recordDialogVisible" @update:model-value="recordDialogVisible = $event"
+			:title="editingRecord ? '编辑 DNS 记录' : '添加 DNS 记录'" width="600px">
 			<el-form :model="recordForm" :rules="recordRules" ref="recordFormRef" label-width="100px">
 				<el-form-item label="记录名称" prop="name">
 					<el-input v-model="recordForm.name" placeholder="例如：www 或 @" />

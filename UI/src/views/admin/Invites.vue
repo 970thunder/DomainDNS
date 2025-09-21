@@ -66,7 +66,8 @@
 		</div>
 
 		<!-- 生成邀请码对话框 -->
-		<el-dialog v-model="createDialogVisible" title="生成邀请码" width="500px">
+		<el-dialog :model-value="createDialogVisible" @update:model-value="createDialogVisible = $event" title="生成邀请码"
+			width="500px">
 			<el-form :model="createForm" :rules="createRules" ref="createFormRef" label-width="100px">
 				<el-form-item label="归属用户" prop="ownerUserId">
 					<el-select v-model="createForm.ownerUserId" placeholder="选择用户（留空为通用码）" style="width: 100%;"
@@ -92,7 +93,8 @@
 		</el-dialog>
 
 		<!-- 邀请码详情对话框 -->
-		<el-dialog v-model="detailDialogVisible" title="邀请码详情" width="600px">
+		<el-dialog :model-value="detailDialogVisible" @update:model-value="detailDialogVisible = $event" title="邀请码详情"
+			width="600px">
 			<div v-if="selectedInvite" class="invite-detail">
 				<div class="detail-item">
 					<label>邀请码：</label>

@@ -227,6 +227,80 @@ CREATE TABLE IF NOT EXISTS rate_limit (
 	UNIQUE KEY uk_rate_key_bucket (key_name, bucket)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- 创建公告表
+
+CREATE TABLE IF NOT EXISTS announcements (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(200) NOT NULL COMMENT '公告标题',
+    content LONGTEXT NOT NULL COMMENT '公告内容（支持HTML格式）',
+    status ENUM('DRAFT', 'PUBLISHED', 'ARCHIVED') DEFAULT 'DRAFT' COMMENT '状态：草稿、已发布、已归档',
+    priority TINYINT DEFAULT 1 COMMENT '优先级：1-普通，2-重要，3-紧急',
+    published_at TIMESTAMP NULL COMMENT '发布时间',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    created_by BIGINT NOT NULL COMMENT '创建者ID',
+    INDEX idx_announcements_status (status),
+    INDEX idx_announcements_published (published_at),
+    INDEX idx_announcements_created_by (created_by),
+    CONSTRAINT fk_announcements_created_by FOREIGN KEY (created_by) REFERENCES users(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='系统公告表';
+
+-- 优化邀请奖励查询性能的索引
+-- 为 points_transactions 表添加复合索引，优化按用户ID和类型查询的性能
+
+-- 添加复合索引：user_id + type + created_at
+-- 这个索引可以高效支持我们的查询条件：WHERE user_id = ? AND type IN ('INVITE_REWARD', 'INVITER_REWARD') ORDER BY created_at DESC
+ALTER TABLE points_transactions 
+ADD INDEX idx_points_user_type_time (user_id, type, created_at);
+
+-- 为 related_id 添加索引，优化 JOIN 查询
+ALTER TABLE points_transactions 
+ADD INDEX idx_points_related_id (related_id);
+
+-- 验证索引是否创建成功
+SHOW INDEX FROM points_transactions;
+
+-- 创建GitHub Star任务表
+-- 执行时间：2025-01-20
+
+CREATE TABLE IF NOT EXISTS github_tasks (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(200) NOT NULL COMMENT '任务标题',
+    description TEXT COMMENT '任务描述',
+    repository_url VARCHAR(500) NOT NULL COMMENT 'GitHub仓库链接',
+    repository_owner VARCHAR(100) NOT NULL COMMENT '仓库所有者',
+    repository_name VARCHAR(100) NOT NULL COMMENT '仓库名称',
+    reward_points INT NOT NULL DEFAULT 0 COMMENT '奖励积分',
+    status ENUM('ACTIVE', 'INACTIVE', 'COMPLETED') DEFAULT 'ACTIVE' COMMENT '任务状态',
+    start_time TIMESTAMP NULL COMMENT '任务开始时间',
+    end_time TIMESTAMP NULL COMMENT '任务结束时间',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    created_by BIGINT NOT NULL COMMENT '创建者ID'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='GitHub Star任务表';
+
+-- 创建用户任务完成记录表
+CREATE TABLE IF NOT EXISTS user_github_tasks (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL COMMENT '用户ID',
+    task_id BIGINT NOT NULL COMMENT '任务ID',
+    github_username VARCHAR(100) COMMENT '用户GitHub用户名',
+    is_starred BOOLEAN DEFAULT FALSE COMMENT '是否已Star',
+    points_awarded INT DEFAULT 0 COMMENT '已奖励积分',
+    completed_at TIMESTAMP NULL COMMENT '完成时间',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    UNIQUE KEY uk_user_task (user_id, task_id),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (task_id) REFERENCES github_tasks(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户GitHub任务完成记录表';
+
+-- 创建索引优化查询性能
+CREATE INDEX idx_github_tasks_status ON github_tasks(status);
+CREATE INDEX idx_github_tasks_active ON github_tasks(status, start_time, end_time);
+CREATE INDEX idx_user_github_tasks_user ON user_github_tasks(user_id);
+CREATE INDEX idx_user_github_tasks_task ON user_github_tasks(task_id);
+CREATE INDEX idx_user_github_tasks_completed ON user_github_tasks(user_id, is_starred);
 -- ------------------------------------------------------------
 -- 可选：常用统计视图（仅示例，如不需要可注释）
 -- ------------------------------------------------------------

@@ -83,7 +83,8 @@
 		</el-card>
 
 		<!-- 编辑对话框 -->
-		<el-dialog v-model="editDialogVisible" title="编辑账户" width="500px">
+		<el-dialog :model-value="editDialogVisible" @update:model-value="editDialogVisible = $event" title="编辑账户"
+			width="500px">
 			<el-form :model="editFormData" :rules="formRules" ref="editFormRef" label-width="120px">
 				<el-form-item label="账户名称" prop="name">
 					<el-input v-model="editFormData.name" />

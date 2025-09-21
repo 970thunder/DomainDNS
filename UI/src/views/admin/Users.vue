@@ -80,7 +80,8 @@
 		</div>
 
 		<!-- 积分调整对话框 -->
-		<el-dialog v-model="pointsDialogVisible" title="调整积分" width="400px">
+		<el-dialog :model-value="pointsDialogVisible" @update:model-value="pointsDialogVisible = $event" title="调整积分"
+			width="400px">
 			<el-form :model="pointsForm" :rules="pointsRules" ref="pointsFormRef" label-width="80px">
 				<el-form-item label="用户">
 					<el-input v-model="pointsForm.username" disabled />

@@ -23,7 +23,7 @@
                     <div class="info-item">
                         <span class="label">状态：</span>
                         <span class="badge" :class="getStatusClass(userInfo.status)">{{ getStatusText(userInfo.status)
-                        }}</span>
+                            }}</span>
                     </div>
                 </div>
             </div>
@@ -55,7 +55,8 @@
     </div>
 
     <!-- 重置密码对话框 -->
-    <el-dialog v-model="resetPasswordDialogVisible" title="重置密码" width="400px" :close-on-click-modal="false">
+    <el-dialog :model-value="resetPasswordDialogVisible" @update:model-value="resetPasswordDialogVisible = $event"
+        title="重置密码" width="400px" :close-on-click-modal="false">
         <el-form :model="resetForm" :rules="resetRules" ref="resetFormRef" label-width="100px">
             <el-form-item label="邮箱" prop="email">
                 <el-input v-model="resetForm.email" disabled />

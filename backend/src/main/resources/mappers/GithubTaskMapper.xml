@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.domaindns.admin.mapper.GithubTaskMapper">
+
+    <!-- GitHub任务结果映射 -->
+    <resultMap id="GithubTaskResult" type="com.domaindns.admin.model.GithubTask">
+        <id property="id" column="id"/>
+        <result property="title" column="title"/>
+        <result property="description" column="description"/>
+        <result property="repositoryUrl" column="repository_url"/>
+        <result property="repositoryOwner" column="repository_owner"/>
+        <result property="repositoryName" column="repository_name"/>
+        <result property="rewardPoints" column="reward_points"/>
+        <result property="status" column="status"/>
+        <result property="startTime" column="start_time"/>
+        <result property="endTime" column="end_time"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+        <result property="createdBy" column="created_by"/>
+    </resultMap>
+
+    <!-- 用户GitHub任务结果映射 -->
+    <resultMap id="UserGithubTaskResult" type="com.domaindns.admin.model.UserGithubTask">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="taskId" column="task_id"/>
+        <result property="githubUsername" column="github_username"/>
+        <result property="isStarred" column="is_starred"/>
+        <result property="pointsAwarded" column="points_awarded"/>
+        <result property="completedAt" column="completed_at"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <!-- 创建GitHub任务 -->
+    <insert id="insert" parameterType="com.domaindns.admin.model.GithubTask" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO github_tasks (
+            title, description, repository_url, repository_owner, repository_name,
+            reward_points, status, start_time, end_time, created_by
+        ) VALUES (
+            #{title}, #{description}, #{repositoryUrl}, #{repositoryOwner}, #{repositoryName},
+            #{rewardPoints}, #{status}, #{startTime}, #{endTime}, #{createdBy}
+        )
+    </insert>
+
+    <!-- 根据ID查询任务 -->
+    <select id="findById" parameterType="long" resultMap="GithubTaskResult">
+        SELECT * FROM github_tasks WHERE id = #{id}
+    </select>
+
+    <!-- 查询所有任务（管理员） -->
+    <select id="findAll" resultMap="GithubTaskResult">
+        SELECT * FROM github_tasks ORDER BY created_at DESC
+    </select>
+
+    <!-- 查询活跃任务（用户） -->
+    <select id="findActiveTasks" resultMap="GithubTaskResult">
+        SELECT * FROM github_tasks 
+        WHERE status = 'ACTIVE' 
+        AND (start_time IS NULL OR start_time &lt;= NOW())
+        AND (end_time IS NULL OR end_time &gt;= NOW())
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 更新任务 -->
+    <update id="update" parameterType="com.domaindns.admin.model.GithubTask">
+        UPDATE github_tasks SET
+            title = #{title},
+            description = #{description},
+            repository_url = #{repositoryUrl},
+            repository_owner = #{repositoryOwner},
+            repository_name = #{repositoryName},
+            reward_points = #{rewardPoints},
+            status = #{status},
+            start_time = #{startTime},
+            end_time = #{endTime},
+            updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <!-- 删除任务 -->
+    <delete id="deleteById" parameterType="long">
+        DELETE FROM github_tasks WHERE id = #{id}
+    </delete>
+
+    <!-- 创建用户任务记录 -->
+    <insert id="insertUserTask" parameterType="com.domaindns.admin.model.UserGithubTask" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO user_github_tasks (
+            user_id, task_id, github_username, is_starred, points_awarded, completed_at
+        ) VALUES (
+            #{userId}, #{taskId}, #{githubUsername}, #{isStarred}, #{pointsAwarded}, #{completedAt}
+        )
+    </insert>
+
+    <!-- 查询用户任务记录 -->
+    <select id="findUserTask" resultMap="UserGithubTaskResult">
+        SELECT * FROM user_github_tasks 
+        WHERE user_id = #{userId} AND task_id = #{taskId}
+    </select>
+
+    <!-- 更新用户任务记录 -->
+    <update id="updateUserTask" parameterType="com.domaindns.admin.model.UserGithubTask">
+        UPDATE user_github_tasks SET
+            github_username = #{githubUsername},
+            is_starred = #{isStarred},
+            points_awarded = #{pointsAwarded},
+            completed_at = #{completedAt},
+            updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <!-- 查询用户所有任务记录 -->
+    <select id="findUserTasks" parameterType="long" resultMap="UserGithubTaskResult">
+        SELECT * FROM user_github_tasks 
+        WHERE user_id = #{userId}
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 查询用户已完成的任务 -->
+    <select id="findUserCompletedTasks" parameterType="long" resultMap="UserGithubTaskResult">
+        SELECT * FROM user_github_tasks 
+        WHERE user_id = #{userId} AND is_starred = true
+        ORDER BY completed_at DESC
+    </select>
+
+    <!-- 统计任务完成情况 -->
+    <select id="countTaskCompletions" parameterType="long" resultType="int">
+        SELECT COUNT(*) FROM user_github_tasks 
+        WHERE task_id = #{taskId} AND is_starred = true
+    </select>
+
+    <!-- 查询用户任务详情（包含任务信息） -->
+    <select id="findUserTaskDetails" parameterType="long" resultMap="GithubTaskResult">
+        SELECT gt.*, 
+               ugt.is_starred,
+               ugt.points_awarded,
+               ugt.completed_at
+        FROM github_tasks gt
+        LEFT JOIN user_github_tasks ugt ON gt.id = ugt.task_id AND ugt.user_id = #{userId}
+        WHERE gt.status = 'ACTIVE' 
+        AND (gt.start_time IS NULL OR gt.start_time &lt;= NOW())
+        AND (gt.end_time IS NULL OR gt.end_time &gt;= NOW())
+        ORDER BY gt.created_at DESC
+    </select>
+
+</mapper>

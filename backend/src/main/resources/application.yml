@@ -44,3 +44,6 @@ jwt:
 
 secrets:
   aes-key: ${SECRETS_AES_KEY:}
+
+github:
+  token: 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
