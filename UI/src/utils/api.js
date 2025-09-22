@@ -3,7 +3,7 @@
  * 统一处理所有 API 请求，包括环境配置、错误处理、认证等
  */
 
-import { API_CONFIG, ERROR_CODES, ERROR_MESSAGES, DEBUG_CONFIG, STORAGE_CONFIG } from '@/config/env.js'
+import { API_CONFIG, ERROR_CODES, ERROR_MESSAGES, DEBUG_CONFIG, STORAGE_CONFIG, APP_CONFIG } from '@/config/env.js'
 
 // Token过期事件防抖
 let tokenExpiredEventTriggered = false
@@ -17,7 +17,25 @@ const TOKEN_EXPIRED_DEBOUNCE_TIME = 5000 // 5秒内不重复触发
 const createApiUrl = (endpoint) => {
     // 确保 endpoint 以 / 开头
     const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`
-    return `${API_CONFIG.BASE_URL}${normalizedEndpoint}`
+
+    // 避免双斜杠问题
+    const baseUrl = API_CONFIG.BASE_URL.endsWith('/') ? API_CONFIG.BASE_URL.slice(0, -1) : API_CONFIG.BASE_URL
+    const endpointPath = normalizedEndpoint.startsWith('/') ? normalizedEndpoint : `/${normalizedEndpoint}`
+
+    const finalUrl = `${baseUrl}${endpointPath}`
+
+    // 开发环境调试日志
+    if (APP_CONFIG.IS_DEV) {
+        console.log('API URL构建:', {
+            baseUrl,
+            endpoint,
+            normalizedEndpoint,
+            endpointPath,
+            finalUrl
+        })
+    }
+
+    return finalUrl
 }
 
 /**

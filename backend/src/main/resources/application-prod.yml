@@ -6,14 +6,49 @@ spring:
   jackson:
     serialization:
       WRITE_DATES_AS_TIMESTAMPS: false
+  mail:
+    host: ${MAIL_HOST:smtp.qq.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USER:}
+    password: ${MAIL_PASS:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+          socketFactory:
+            class: javax.net.ssl.SSLSocketFactory
+            port: 587
+        debug: false
+  data:
+    redis:
+      host: ${REDIS_HOST:127.0.0.1}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASS:}
+      database: ${REDIS_DB:0}
 logging:
   level:
     root: INFO
     com.domaindns: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} %-5level %logger{36} - %msg%n"
 server:
-  port: 8080
+  port: 9090
 cors:
-  allow-origins: "https://your-admin.example.com,https://your-app.example.com"
+  allow-origins: "*"
+
+jwt:
+  secret: ${JWT_SECRET}
+  issuer: "domaindns"
+  expire-minutes: 120
 
 secrets:
   aes-key: ${SECRETS_AES_KEY}
+
+app:
+  name: "DomainDNS"
+  url: "https://freedns.hyper99.shop"
