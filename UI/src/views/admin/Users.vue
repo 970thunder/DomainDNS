@@ -65,6 +65,9 @@
 								<button class="btn outline" @click="toggleRole(user)" :disabled="user.loading">
 									{{ user.role === 'ADMIN' ? '取消管理员' : '设为管理员' }}
 								</button>
+								<button class="btn primary" @click="resetPassword(user)" :disabled="user.loading">
+									重置密码
+								</button>
 								<button class="btn danger" @click="toggleStatus(user)" :disabled="user.loading">
 									{{ user.status === 1 ? '禁用' : '启用' }}
 								</button>
@@ -219,6 +222,30 @@ const savePointsAdjustment = async () => {
 		ElMessage.error('积分调整失败: ' + error.message)
 	} finally {
 		isLoading.value = false
+	}
+}
+
+// 重置密码（设为默认 123456@）
+const resetPassword = async (user) => {
+	try {
+		await ElMessageBox.confirm(
+			`确定将用户 "${user.username}" 的密码重置为 123456@ 吗？`,
+			'确认操作',
+			{
+				confirmButtonText: '确定',
+				cancelButtonText: '取消',
+				type: 'warning'
+			}
+		)
+		user.loading = true
+		await apiPost(`/api/admin/users/${user.id}/reset-password`, {}, { token: authStore.adminToken })
+		ElMessage.success('密码已重置为 123456@')
+	} catch (error) {
+		if (error !== 'cancel') {
+			ElMessage.error('重置失败: ' + (error.message || error))
+		}
+	} finally {
+		user.loading = false
 	}
 }
 

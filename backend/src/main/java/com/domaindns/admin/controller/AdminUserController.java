@@ -2,12 +2,14 @@ package com.domaindns.admin.controller;
 
 import com.domaindns.admin.mapper.AdminUserMapper;
 import com.domaindns.admin.model.AdminUser;
+import com.domaindns.auth.mapper.UserMapper;
 import com.domaindns.auth.service.JwtService;
 import com.domaindns.common.ApiResponse;
 import com.domaindns.user.mapper.PointsMapper;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.util.HashMap;
 import java.util.List;
@@ -18,11 +20,14 @@ import java.util.Map;
 public class AdminUserController {
     private final AdminUserMapper mapper;
     private final PointsMapper pointsMapper;
+    private final UserMapper userMapper;
     private final JwtService jwtService;
 
-    public AdminUserController(AdminUserMapper mapper, PointsMapper pointsMapper, JwtService jwtService) {
+    public AdminUserController(AdminUserMapper mapper, PointsMapper pointsMapper, UserMapper userMapper,
+            JwtService jwtService) {
         this.mapper = mapper;
         this.pointsMapper = pointsMapper;
+        this.userMapper = userMapper;
         this.jwtService = jwtService;
     }
 
@@ -85,6 +90,34 @@ public class AdminUserController {
         m.put("oldPoints", currentPoints);
         m.put("newPoints", newPoints);
         m.put("delta", delta);
+        return ApiResponse.ok(m);
+    }
+
+    @PostMapping("/{id}/reset-password")
+    public ApiResponse<Map<String, Object>> resetPassword(@RequestHeader("Authorization") String authorization,
+            @PathVariable Long id) {
+        // 验证管理员权限
+        validateAdminAuth(authorization);
+
+        AdminUser user = mapper.findById(id);
+        if (user == null) {
+            return ApiResponse.error(40001, "用户不存在");
+        }
+
+        // 默认密码，可根据需要调整或改为从配置读取
+        String defaultPassword = "123456";
+        // 为了符合你提出的格式，追加固定后缀
+        String finalPassword = defaultPassword + "@";
+
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        String hash = encoder.encode(finalPassword);
+        int rows = userMapper.updatePassword(id, hash);
+        if (rows == 0) {
+            return ApiResponse.error(50000, "密码重置失败");
+        }
+        Map<String, Object> m = new HashMap<>();
+        m.put("updated", rows);
+        m.put("password", "123456@ (已加密存储)");
         return ApiResponse.ok(m);
     }
 

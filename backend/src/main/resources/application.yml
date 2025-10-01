@@ -2,7 +2,7 @@ spring:
   application:
     name: domaindns-backend
   profiles:
-    active: dev
+    active: prod
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:

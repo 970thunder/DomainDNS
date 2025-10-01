@@ -40,47 +40,83 @@ public class GithubApiService {
      * @return true如果已Star，false如果未Star或检查失败
      */
     public boolean checkUserStarredRepository(String username, String owner, String repo) {
-        // 检查是否有GitHub Token
-        if (githubToken == null || githubToken.trim().isEmpty()) {
-            logger.error("GitHub Token未配置，无法检查Star状态");
-            return false;
-        }
-
         try {
-            // 使用正确的GitHub API端点：检查认证用户是否star了指定仓库
-            String url = String.format("%s/user/starred/%s/%s", GITHUB_API_BASE, owner, repo);
+            // 使用公开端点：检查“指定用户名”是否 star 了仓库
+            // 参考：GET /users/{username}/starred/{owner}/{repo}
+            String url = String.format("%s/users/%s/starred/%s/%s", GITHUB_API_BASE, username, owner, repo);
 
             HttpHeaders headers = createHeaders();
             HttpEntity<String> entity = new HttpEntity<>(headers);
 
-            ResponseEntity<String> response = restTemplate.exchange(
-                    url, HttpMethod.GET, entity, String.class);
+            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
 
-            // GitHub API返回204表示已Star，200表示其他状态
-            if (response.getStatusCode() == HttpStatus.NO_CONTENT || response.getStatusCode() == HttpStatus.OK) {
-                logger.info("用户已Star仓库 {}/{}", owner, repo);
+            // GitHub 返回 204 表示已 Star（有时会返回 304 缓存命中）；个别代理会返回 200
+            if (response.getStatusCode() == HttpStatus.NO_CONTENT
+                    || response.getStatusCode() == HttpStatus.OK
+                    || response.getStatusCode() == HttpStatus.NOT_MODIFIED) {
+                logger.info("{} 已 Star {}/{}", username, owner, repo);
                 return true;
             }
 
         } catch (HttpClientErrorException e) {
             if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
-                // 404表示用户未Star该仓库
-                logger.info("用户未Star仓库 {}/{}", owner, repo);
-                return false;
-            } else if (e.getStatusCode() == HttpStatus.UNAUTHORIZED) {
-                logger.error("GitHub API认证失败，请检查Token是否有效: {}", e.getMessage());
-                return false;
-            } else if (e.getStatusCode() == HttpStatus.FORBIDDEN) {
-                logger.error("GitHub API访问被禁止，可能是Token权限不足: {}", e.getMessage());
+                // 404 表示该用户未 star 该仓库
+                logger.info("{} 未 Star {}/{}", username, owner, repo);
+                // 无 token 时，/users/{username}/starred 端点可能受限，尝试 stargazers 兜底校验
+                if (githubToken == null || githubToken.isBlank()) {
+                    return checkViaStargazers(username, owner, repo);
+                }
                 return false;
             }
-            logger.error("检查GitHub Star状态失败: {} - {}", e.getStatusCode(), e.getMessage());
+            if (e.getStatusCode() == HttpStatus.FORBIDDEN) {
+                logger.warn("GitHub API 访问受限（可能触发速率限制或权限不足）：{}", e.getMessage());
+                // 发生限流时可退化为不通过，前端提示稍后再试
+                return false;
+            }
+            logger.error("检查 GitHub Star 状态失败：{} - {}", e.getStatusCode(), e.getMessage());
             return false;
         } catch (Exception e) {
-            logger.error("检查GitHub Star状态时发生异常: {}", e.getMessage());
+            logger.error("检查 GitHub Star 状态异常：{}", e.getMessage());
             return false;
         }
 
+        return false;
+    }
+
+    /**
+     * 兜底方案：遍历 stargazers 列表判断是否包含该用户名（公开接口，速率更宽松）。
+     * 仅检查前若干页以避免过度调用。
+     */
+    private boolean checkViaStargazers(String username, String owner, String repo) {
+        try {
+            int perPage = 100;
+            int maxPages = 10; // 最多检查 1000 人
+            for (int page = 1; page <= maxPages; page++) {
+                String url = String.format("%s/repos/%s/%s/stargazers?per_page=%d&page=%d", GITHUB_API_BASE, owner,
+                        repo, perPage, page);
+                HttpHeaders headers = createHeaders();
+                // 需要设置 star 列表专用 Accept，返回用户对象数组
+                headers.set("Accept", "application/vnd.github+json");
+                HttpEntity<String> entity = new HttpEntity<>(headers);
+                ResponseEntity<String> resp = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
+                if (resp.getStatusCode() != HttpStatus.OK) {
+                    break;
+                }
+                JsonNode arr = objectMapper.readTree(resp.getBody());
+                if (arr == null || !arr.isArray() || arr.size() == 0) {
+                    break; // 没有更多
+                }
+                for (JsonNode n : arr) {
+                    String login = n.path("login").asText();
+                    if (username.equalsIgnoreCase(login)) {
+                        logger.info("(stargazers) {} 已 Star {}/{}", username, owner, repo);
+                        return true;
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            logger.warn("stargazers 兜底检查失败: {}", ex.getMessage());
+        }
         return false;
     }
 
