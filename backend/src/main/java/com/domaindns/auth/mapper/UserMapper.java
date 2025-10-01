@@ -19,4 +19,6 @@ public interface UserMapper {
     int updatePassword(@Param("id") Long id, @Param("passwordHash") String passwordHash);
 
     int updateInviteCode(@Param("id") Long id, @Param("inviteCode") String inviteCode);
+
+    int updateInviterId(@Param("id") Long id, @Param("inviterId") Long inviterId);
 }

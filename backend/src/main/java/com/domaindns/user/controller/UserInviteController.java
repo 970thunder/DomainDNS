@@ -51,6 +51,13 @@ public class UserInviteController {
         return ApiResponse.ok(result);
     }
 
+    @GetMapping("/my-inviter")
+    public ApiResponse<Map<String, Object>> myInviter(@RequestHeader("Authorization") String authorization) {
+        long userId = currentUserId(authorization);
+        Map<String, Object> result = service.getMyInviter(userId);
+        return ApiResponse.ok(result);
+    }
+
     @GetMapping("/details")
     public ApiResponse<Map<String, Object>> details(@RequestHeader("Authorization") String authorization,
             @RequestParam(value = "page", defaultValue = "1") Integer page,
@@ -72,6 +79,15 @@ public class UserInviteController {
         result.put("page", page);
         result.put("size", size);
 
+        return ApiResponse.ok(result);
+    }
+
+    @PostMapping("/bind")
+    public ApiResponse<Map<String, Object>> bind(@RequestHeader("Authorization") String authorization,
+            @RequestBody Map<String, Object> body) {
+        long userId = currentUserId(authorization);
+        String code = body == null ? null : String.valueOf(body.get("inviteCode"));
+        Map<String, Object> result = service.bindInviteCode(userId, code);
         return ApiResponse.ok(result);
     }
 

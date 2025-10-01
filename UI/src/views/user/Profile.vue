@@ -64,9 +64,9 @@
             <el-form-item label="验证码" prop="code">
                 <div class="code-input-group">
                     <el-input v-model="resetForm.code" placeholder="请输入6位验证码" maxlength="6" />
-                    <el-button @click="sendResetCode" :disabled="isSendingCode" :loading="isSendingCode"
-                        class="code-button">
-                        {{ isSendingCode ? '发送中...' : '发送验证码' }}
+                    <el-button @click="sendResetCode" :disabled="isSendingCode || resetCountdown > 0"
+                        :loading="isSendingCode" class="code-button">
+                        {{ isSendingCode ? '发送中...' : (resetCountdown > 0 ? `${resetCountdown}s 后可重发` : '发送验证码') }}
                     </el-button>
                 </div>
             </el-form-item>
@@ -88,7 +88,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useAuthStore } from '@/stores/auth.js'
 import { apiGet, apiPost } from '@/utils/api.js'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -121,6 +121,8 @@ const userInfo = ref({
 const resetPasswordDialogVisible = ref(false)
 const isSendingCode = ref(false)
 const isResetting = ref(false)
+const resetCountdown = ref(0)
+let resetTimer = null
 const resetForm = ref({
     email: '',
     code: '',
@@ -236,6 +238,17 @@ const sendResetCode = async () => {
 
         if (response.code === 0) {
             ElMessage.success('验证码已发送到您的邮箱')
+            // 开始60秒倒计时
+            resetCountdown.value = 60
+            if (resetTimer) clearInterval(resetTimer)
+            resetTimer = setInterval(() => {
+                resetCountdown.value = resetCountdown.value - 1
+                if (resetCountdown.value <= 0) {
+                    resetCountdown.value = 0
+                    clearInterval(resetTimer)
+                    resetTimer = null
+                }
+            }, 1000)
         } else {
             ElMessage.error(response.message || '发送验证码失败')
         }
@@ -288,6 +301,11 @@ const initData = async () => {
 
 onMounted(() => {
     initData()
+})
+
+// 清理倒计时定时器
+onUnmounted(() => {
+    if (resetTimer) clearInterval(resetTimer)
 })
 </script>
 

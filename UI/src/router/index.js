@@ -5,6 +5,7 @@ const routes = [
     { path: '/', redirect: '/user/login' },
     // User
     { path: '/user/login', component: () => import('../views/user/Login.vue') },
+    { path: '/user/forgot', component: () => import('../views/user/Forgot.vue') },
     { path: '/user/register', component: () => import('../views/user/Register.vue') },
     {
         path: '/user', component: () => import('../views/user/Layout.vue'), children: [
@@ -46,7 +47,7 @@ router.beforeEach((to, from, next) => {
     const authStore = useAuthStore()
 
     // 只在首次访问或从登录页跳转时加载状态
-    if (from.path === '/admin/login' || from.path === '/user/login' || !authStore.isAdminLoggedIn || !authStore.isLoggedIn) {
+    if (from.path === '/admin/login' || from.path === '/user/login' || from.path === '/') {
         authStore.loadFromStorage()
     }
 
@@ -69,7 +70,7 @@ router.beforeEach((to, from, next) => {
     }
 
     // 用户路由需要认证
-    if (to.path.startsWith('/user') && to.path !== '/user/login' && to.path !== '/user/register') {
+    if (to.path.startsWith('/user') && to.path !== '/user/login' && to.path !== '/user/register' && to.path !== '/user/forgot') {
         if (!authStore.isLoggedIn || !authStore.token) {
             console.log('用户未登录，重定向到登录页')
             next('/user/login')

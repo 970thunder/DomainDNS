@@ -35,7 +35,10 @@
 					<input type="checkbox" v-model="remember" id="remember-me">
 					<label for="remember-me">记住我</label>
 				</div>
-				<span class="span" @click.prevent="goRegister">没有账号？去注册</span>
+				<div style="display:flex; gap:12px;">
+					<span class="span" @click.prevent="goForgot">忘记密码？</span>
+					<span class="span" @click.prevent="goRegister">没有账号？去注册</span>
+				</div>
 			</div>
 
 			<div class="error-message" v-if="errorMessage">
@@ -121,6 +124,7 @@ const onSubmit = async () => {
 }
 
 const goRegister = () => router.push('/user/register')
+const goForgot = () => router.push('/user/forgot')
 
 // 组件挂载时恢复记住的用户名
 onMounted(() => {

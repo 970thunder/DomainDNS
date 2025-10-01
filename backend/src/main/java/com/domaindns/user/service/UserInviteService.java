@@ -2,7 +2,10 @@ package com.domaindns.user.service;
 
 import com.domaindns.admin.mapper.InviteMapper;
 import com.domaindns.admin.model.InviteCode;
+import com.domaindns.auth.entity.User;
 import com.domaindns.auth.mapper.UserMapper;
+import com.domaindns.user.mapper.PointsMapper;
+import com.domaindns.settings.SettingsService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,11 +18,16 @@ import java.util.Map;
 public class UserInviteService {
     private final InviteMapper inviteMapper;
     private final UserMapper userMapper;
+    private final PointsMapper pointsMapper;
+    private final SettingsService settingsService;
     private final SecureRandom random = new SecureRandom();
 
-    public UserInviteService(InviteMapper inviteMapper, UserMapper userMapper) {
+    public UserInviteService(InviteMapper inviteMapper, UserMapper userMapper,
+            PointsMapper pointsMapper, SettingsService settingsService) {
         this.inviteMapper = inviteMapper;
         this.userMapper = userMapper;
+        this.pointsMapper = pointsMapper;
+        this.settingsService = settingsService;
     }
 
     @Transactional
@@ -47,6 +55,84 @@ public class UserInviteService {
         result.put("validDays", validDays);
         result.put("expiredAt", expiredAt);
         return result;
+    }
+
+    /**
+     * 补填邀请码：为尚未绑定邀请人的用户绑定邀请关系并发放积分。
+     */
+    @Transactional
+    public Map<String, Object> bindInviteCode(Long userId, String code) {
+        if (code == null || code.isBlank()) {
+            throw new IllegalArgumentException("邀请码不能为空");
+        }
+        User me = userMapper.findById(userId);
+        if (me == null) {
+            throw new IllegalArgumentException("用户不存在");
+        }
+        if (me.getInviterId() != null) {
+            throw new IllegalArgumentException("已绑定过邀请人，无法重复绑定");
+        }
+
+        InviteCode invite = inviteMapper.findByCode(code);
+        if (invite == null || !"ACTIVE".equals(invite.getStatus())) {
+            throw new IllegalArgumentException("邀请码无效或已失效");
+        }
+        if (invite.getExpiredAt() != null && invite.getExpiredAt().isBefore(java.time.LocalDateTime.now())) {
+            throw new IllegalArgumentException("邀请码已过期");
+        }
+        if (invite.getMaxUses() != null && invite.getMaxUses() > 0 && invite.getUsedCount() >= invite.getMaxUses()) {
+            throw new IllegalArgumentException("邀请码使用次数已达上限");
+        }
+
+        Long inviterId = invite.getOwnerUserId();
+        if (inviterId.equals(userId)) {
+            throw new IllegalArgumentException("不能绑定自己的邀请码");
+        }
+
+        // 读取配置积分
+        java.util.Map<String, String> settings = settingsService.getAll();
+        int inviteePoints = Integer.parseInt(settings.getOrDefault("invitee_points", "3"));
+        int inviterPoints = Integer.parseInt(settings.getOrDefault("inviter_points", "3"));
+
+        // 绑定邀请关系
+        userMapper.updateInviterId(userId, inviterId);
+
+        // 发放积分（被邀请者 + 邀请者）
+        pointsMapper.adjust(userId, inviteePoints);
+        pointsMapper.insertTxn(userId, inviteePoints, null, "INVITE_CODE",
+                "补填邀请码奖励积分", inviterId);
+
+        pointsMapper.adjust(inviterId, inviterPoints);
+        pointsMapper.insertTxn(inviterId, inviterPoints, null, "INVITE_REWARD",
+                "邀请用户 " + me.getUsername() + " 获得奖励积分", userId);
+
+        // 更新邀请码使用次数
+        inviteMapper.incrementUsedCount(code);
+
+        User inviter = userMapper.findById(inviterId);
+        Map<String, Object> result = new HashMap<>();
+        result.put("inviterId", inviterId);
+        result.put("inviterUsername", inviter != null ? inviter.getUsername() : null);
+        result.put("inviteePoints", inviteePoints);
+        result.put("inviterPoints", inviterPoints);
+        return result;
+    }
+
+    /**
+     * 查询当前用户的邀请人信息
+     */
+    public Map<String, Object> getMyInviter(Long userId) {
+        User me = userMapper.findById(userId);
+        Map<String, Object> m = new HashMap<>();
+        if (me == null || me.getInviterId() == null) {
+            m.put("hasInviter", false);
+            return m;
+        }
+        User inviter = userMapper.findById(me.getInviterId());
+        m.put("hasInviter", true);
+        m.put("inviterId", me.getInviterId());
+        m.put("inviterUsername", inviter != null ? inviter.getUsername() : null);
+        return m;
     }
 
     public Map<String, Object> getMyInviteCode(Long userId) {

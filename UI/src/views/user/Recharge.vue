@@ -37,7 +37,7 @@
 					<button class="btn outline" @click="clearForm">清空</button>
 				</div>
 				<div class="notice">
-					<p>💡 输入卡密即可获得对应积分，卡密由管理员生成</p>
+					<p>💡 输入卡密即可获得对应积分，卡密可联系站长获取</p>
 				</div>
 			</div>
 		</div>

@@ -44,4 +44,8 @@
 	<update id="updateInviteCode">
 		UPDATE users SET invite_code = #{inviteCode} WHERE id = #{id}
 	</update>
+
+	<update id="updateInviterId">
+		UPDATE users SET inviter_id = #{inviterId} WHERE id = #{id} AND inviter_id IS NULL
+	</update>
 </mapper>

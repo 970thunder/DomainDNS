@@ -72,6 +72,26 @@
 				</tbody>
 			</table>
 		</div>
+
+		<div class="card" style="margin-top:16px;">
+			<div class="card-header" style="margin-bottom: 0;">
+				<h3>{{ myInviter.hasInviter ? '邀请人' : '补填邀请码' }}</h3>
+			</div>
+			<div class="invite-bind" v-if="!myInviter.hasInviter">
+				<div class="form"
+					style="margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+					<input class="input" v-model="bindCode" placeholder="请输入邀请人邀请码" style="max-width: 260px;">
+					<button class="btn primary" @click="handleBindInvite" :disabled="binding">
+						{{ binding ? '绑定中...' : '绑定并领取积分' }}
+					</button>
+				</div>
+				<p class="invite-tip">补填后将为邀请人与您各发放{{ systemSettings.inviterPoints }} / {{ systemSettings.inviteePoints
+				}}积分。</p>
+			</div>
+			<div class="invite-bind" v-else>
+				<p>已绑定邀请人：<b>{{ myInviter.inviterUsername || ('#' + myInviter.inviterId) }}</b></p>
+			</div>
+		</div>
 	</div>
 </template>
 <script setup>
@@ -94,6 +114,9 @@ const inviteInfo = ref({
 	expiredAt: null
 })
 const inviteDetails = ref([])
+const myInviter = ref({ hasInviter: false, inviterId: null, inviterUsername: '' })
+const bindCode = ref('')
+const binding = ref(false)
 
 // 系统设置
 const systemSettings = ref({
@@ -235,6 +258,41 @@ const loadInviteDetails = async () => {
 	}
 }
 
+// 加载邀请人信息
+const loadMyInviter = async () => {
+	try {
+		const resp = await apiGet('/api/user/invite/my-inviter', { token: authStore.token })
+		if (resp.data) {
+			myInviter.value = resp.data
+		}
+	} catch (e) {
+		console.error('加载邀请人信息失败:', e)
+	}
+}
+
+// 绑定邀请码
+const handleBindInvite = async () => {
+	if (!bindCode.value.trim()) {
+		ElMessage.warning('请输入邀请码')
+		return
+	}
+	binding.value = true
+	try {
+		const resp = await apiPost('/api/user/invite/bind', { inviteCode: bindCode.value.trim() }, { token: authStore.token })
+		if (resp.code === 0) {
+			ElMessage.success('绑定成功，积分已发放')
+			bindCode.value = ''
+			await loadMyInviter()
+		} else {
+			ElMessage.error(resp.message || '绑定失败')
+		}
+	} catch (e) {
+		ElMessage.error(e.message || '绑定失败')
+	} finally {
+		binding.value = false
+	}
+}
+
 // 刷新邀请明细
 const refreshInviteDetails = () => {
 	loadInviteDetails()
@@ -322,7 +380,8 @@ const initData = async () => {
 		await Promise.all([
 			loadSystemSettings(),
 			loadInviteCode(),
-			loadInviteDetails()
+			loadInviteDetails(),
+			loadMyInviter()
 		])
 	} catch (error) {
 		console.error('初始化数据失败:', error)
