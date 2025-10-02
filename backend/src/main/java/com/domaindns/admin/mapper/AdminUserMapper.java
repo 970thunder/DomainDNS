@@ -16,4 +16,8 @@ public interface AdminUserMapper {
     int adjustPoints(@Param("id") Long id, @Param("delta") Integer delta);
 
     AdminUser findById(@Param("id") Long id);
+
+    int updateStatus(@Param("id") Long id, @Param("status") Integer status);
+
+    int updateRole(@Param("id") Long id, @Param("role") String role);
 }

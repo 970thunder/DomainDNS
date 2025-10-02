@@ -264,13 +264,15 @@ const toggleRole = async (user) => {
 		)
 
 		user.loading = true
-		// 注意：API文档中没有直接的角色切换接口，这里假设通过更新用户信息实现
-		// 实际实现可能需要调用用户更新接口
+		await apiPost(`/api/admin/users/${user.id}/role`, {
+			role: newRole
+		}, { token: authStore.adminToken })
+
 		ElMessage.success('角色切换成功')
 		await loadUsers()
 	} catch (error) {
 		if (error !== 'cancel') {
-			ElMessage.error('角色切换失败: ' + error.message)
+			ElMessage.error('角色切换失败: ' + (error.message || error))
 		}
 	} finally {
 		user.loading = false
@@ -294,13 +296,15 @@ const toggleStatus = async (user) => {
 		)
 
 		user.loading = true
-		// 注意：API文档中没有直接的状态切换接口，这里假设通过更新用户信息实现
-		// 实际实现可能需要调用用户更新接口
+		await apiPost(`/api/admin/users/${user.id}/status`, {
+			status: newStatus
+		}, { token: authStore.adminToken })
+
 		ElMessage.success(`${action}成功`)
 		await loadUsers()
 	} catch (error) {
 		if (error !== 'cancel') {
-			ElMessage.error('操作失败: ' + error.message)
+			ElMessage.error('操作失败: ' + (error.message || error))
 		}
 	} finally {
 		user.loading = false

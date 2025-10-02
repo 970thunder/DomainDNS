@@ -1,6 +1,7 @@
 package com.domaindns.admin.controller;
 
 import com.domaindns.admin.dto.GithubTaskDtos;
+import com.domaindns.admin.dto.CreateReq;
 import com.domaindns.admin.model.GithubTask;
 import com.domaindns.admin.service.GithubTaskService;
 import com.domaindns.auth.service.JwtService;
@@ -34,7 +35,7 @@ public class GithubTaskController {
     @PostMapping
     public ApiResponse<GithubTask> createTask(
             @RequestHeader("Authorization") String authorization,
-            @RequestBody GithubTaskDtos.CreateReq request) {
+            @RequestBody CreateReq request) {
         try {
             long adminId = getCurrentAdminId(authorization);
 

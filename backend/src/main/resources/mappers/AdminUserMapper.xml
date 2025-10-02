@@ -43,4 +43,12 @@
 	<select id="findById" parameterType="long" resultMap="UserMap">
 		SELECT id,username,email,display_name,points,role,status,created_at FROM users WHERE id = #{id}
 	</select>
+
+	<update id="updateStatus">
+		UPDATE users SET status = #{status} WHERE id = #{id}
+	</update>
+
+	<update id="updateRole">
+		UPDATE users SET role = #{role} WHERE id = #{id}
+	</update>
 </mapper>

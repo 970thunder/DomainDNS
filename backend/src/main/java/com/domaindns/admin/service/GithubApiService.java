@@ -41,9 +41,13 @@ public class GithubApiService {
      */
     public boolean checkUserStarredRepository(String username, String owner, String repo) {
         try {
+            // 归一化入参
+            String u = username == null ? "" : username.trim();
+            String o = owner == null ? "" : owner.trim();
+            String r = repo == null ? "" : repo.trim();
             // 使用公开端点：检查“指定用户名”是否 star 了仓库
             // 参考：GET /users/{username}/starred/{owner}/{repo}
-            String url = String.format("%s/users/%s/starred/%s/%s", GITHUB_API_BASE, username, owner, repo);
+            String url = String.format("%s/users/%s/starred/%s/%s", GITHUB_API_BASE, u, o, r);
 
             HttpHeaders headers = createHeaders();
             HttpEntity<String> entity = new HttpEntity<>(headers);
@@ -54,19 +58,16 @@ public class GithubApiService {
             if (response.getStatusCode() == HttpStatus.NO_CONTENT
                     || response.getStatusCode() == HttpStatus.OK
                     || response.getStatusCode() == HttpStatus.NOT_MODIFIED) {
-                logger.info("{} 已 Star {}/{}", username, owner, repo);
+                logger.info("{} 已 Star {}/{}", u, o, r);
                 return true;
             }
 
         } catch (HttpClientErrorException e) {
             if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
                 // 404 表示该用户未 star 该仓库
-                logger.info("{} 未 Star {}/{}", username, owner, repo);
-                // 无 token 时，/users/{username}/starred 端点可能受限，尝试 stargazers 兜底校验
-                if (githubToken == null || githubToken.isBlank()) {
-                    return checkViaStargazers(username, owner, repo);
-                }
-                return false;
+                logger.info("{} 未 Star {}/{} (或用户设置了隐私星标)", username, owner, repo);
+                // 无论是否配置 token，都做一次 stargazers 兜底（列表是公开信息）
+                return checkViaStargazers(username, owner, repo);
             }
             if (e.getStatusCode() == HttpStatus.FORBIDDEN) {
                 logger.warn("GitHub API 访问受限（可能触发速率限制或权限不足）：{}", e.getMessage());
@@ -95,8 +96,9 @@ public class GithubApiService {
                 String url = String.format("%s/repos/%s/%s/stargazers?per_page=%d&page=%d", GITHUB_API_BASE, owner,
                         repo, perPage, page);
                 HttpHeaders headers = createHeaders();
-                // 需要设置 star 列表专用 Accept，返回用户对象数组
+                // stargazers 列表需使用新版 Accept
                 headers.set("Accept", "application/vnd.github+json");
+                headers.set("X-GitHub-Api-Version", "2022-11-28");
                 HttpEntity<String> entity = new HttpEntity<>(headers);
                 ResponseEntity<String> resp = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
                 if (resp.getStatusCode() != HttpStatus.OK) {
@@ -108,7 +110,7 @@ public class GithubApiService {
                 }
                 for (JsonNode n : arr) {
                     String login = n.path("login").asText();
-                    if (username.equalsIgnoreCase(login)) {
+                    if (username != null && username.equalsIgnoreCase(login)) {
                         logger.info("(stargazers) {} 已 Star {}/{}", username, owner, repo);
                         return true;
                     }
@@ -212,7 +214,9 @@ public class GithubApiService {
     private HttpHeaders createHeaders() {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set("Accept", GITHUB_API_VERSION);
+        // 统一使用新版 Accept 与 API 版本头，避免 404/行为差异
+        headers.set("Accept", "application/vnd.github+json");
+        headers.set("X-GitHub-Api-Version", "2022-11-28");
         headers.set("User-Agent", "DomainDNS-App/1.0");
 
         // 如果有GitHub Token，添加到请求头中

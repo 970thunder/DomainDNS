@@ -121,6 +121,62 @@ public class AdminUserController {
         return ApiResponse.ok(m);
     }
 
+    @PostMapping("/{id}/status")
+    public ApiResponse<Map<String, Object>> updateStatus(@RequestHeader("Authorization") String authorization,
+            @PathVariable Long id, @RequestBody Map<String, Object> body) {
+        // 验证管理员权限
+        validateAdminAuth(authorization);
+
+        Integer status = (Integer) body.get("status");
+        if (status == null || (status != 0 && status != 1)) {
+            return ApiResponse.error(40000, "状态值无效，必须为0（禁用）或1（启用）");
+        }
+
+        AdminUser user = mapper.findById(id);
+        if (user == null) {
+            return ApiResponse.error(40001, "用户不存在");
+        }
+
+        int rows = mapper.updateStatus(id, status);
+        if (rows == 0) {
+            return ApiResponse.error(50000, "状态更新失败");
+        }
+
+        Map<String, Object> m = new HashMap<>();
+        m.put("updated", rows);
+        m.put("oldStatus", user.getStatus());
+        m.put("newStatus", status);
+        return ApiResponse.ok(m);
+    }
+
+    @PostMapping("/{id}/role")
+    public ApiResponse<Map<String, Object>> updateRole(@RequestHeader("Authorization") String authorization,
+            @PathVariable Long id, @RequestBody Map<String, Object> body) {
+        // 验证管理员权限
+        validateAdminAuth(authorization);
+
+        String role = (String) body.get("role");
+        if (role == null || (!role.equals("USER") && !role.equals("ADMIN"))) {
+            return ApiResponse.error(40000, "角色值无效，必须为USER或ADMIN");
+        }
+
+        AdminUser user = mapper.findById(id);
+        if (user == null) {
+            return ApiResponse.error(40001, "用户不存在");
+        }
+
+        int rows = mapper.updateRole(id, role);
+        if (rows == 0) {
+            return ApiResponse.error(50000, "角色更新失败");
+        }
+
+        Map<String, Object> m = new HashMap<>();
+        m.put("updated", rows);
+        m.put("oldRole", user.getRole());
+        m.put("newRole", role);
+        return ApiResponse.ok(m);
+    }
+
     // 验证管理员权限
     private void validateAdminAuth(String authorization) {
         if (authorization == null || !authorization.startsWith("Bearer ")) {

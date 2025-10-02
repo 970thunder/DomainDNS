@@ -217,7 +217,10 @@
 			</div>
 		</div>
 		<footer class="footer container">
-			© 2025 HyperNym-DomainDNS
+			<span>© 2025 HyperNym-DomainDNS</span>
+			<a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer" class="beian-link">
+				桂ICP备2024034221号-2
+			</a>
 		</footer>
 
 		<!-- 公告弹窗 -->
@@ -403,6 +406,20 @@ onUnmounted(() => {
 	font-size: 14px;
 	text-align: center;
 	border-top: 1px solid #e2e8f0;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.beian-link {
+	color: #64748b;
+	text-decoration: none;
+	transition: color 0.15s ease;
+}
+
+.beian-link:hover {
+	color: #0f172a;
+	text-decoration: underline;
 }
 
 .container {
