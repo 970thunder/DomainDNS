@@ -21,4 +21,6 @@ public interface UserMapper {
     int updateInviteCode(@Param("id") Long id, @Param("inviteCode") String inviteCode);
 
     int updateInviterId(@Param("id") Long id, @Param("inviterId") Long inviterId);
+
+    int updateStatus(@Param("id") Long id, @Param("status") Integer status);
 }

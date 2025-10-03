@@ -65,6 +65,8 @@ public class UserInfoController {
                 return "ACTIVE";
             case 0:
                 return "INACTIVE";
+            case 2:
+                return "DELETED";
             case -1:
                 return "BANNED";
             default:

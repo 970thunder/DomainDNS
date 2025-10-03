@@ -409,7 +409,7 @@ const formatTime = (timeStr) => {
 // 将后端日期时间格式转换为Element Plus日期选择器支持的格式
 const formatDateTimeForPicker = (timeStr) => {
     if (!timeStr) return null
-
+    
     try {
         // 如果是标准的ISO字符串格式，直接转换为Date对象
         const date = new Date(timeStr)
@@ -417,7 +417,7 @@ const formatDateTimeForPicker = (timeStr) => {
             console.warn('无效的日期时间格式:', timeStr)
             return null
         }
-
+        
         // Element Plus日期选择器期望的格式是YYYY-MM-DDTHH:mm:ss
         const year = date.getFullYear()
         const month = String(date.getMonth() + 1).padStart(2, '0')
@@ -425,7 +425,7 @@ const formatDateTimeForPicker = (timeStr) => {
         const hours = String(date.getHours()).padStart(2, '0')
         const minutes = String(date.getMinutes()).padStart(2, '0')
         const seconds = String(date.getSeconds()).padStart(2, '0')
-
+        
         return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`
     } catch (error) {
         console.error('日期时间格式转换失败:', error, timeStr)

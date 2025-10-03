@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import java.util.List;
+import java.util.Set;
+import java.util.HashSet;
 
 @Service
 public class DnsRecordService {
@@ -37,8 +39,12 @@ public class DnsRecordService {
         CfAccount acc = accMapper.findById(z.getCfAccountId());
         if (acc == null || acc.getEnabled() == null || acc.getEnabled() == 0)
             throw new IllegalArgumentException("对应账户不可用");
+
+        // 收集Cloudflare中的所有记录ID
+        Set<String> cfRecordIds = new HashSet<>();
         int page = 1, per = 100;
         boolean hasMore = true;
+
         while (hasMore) {
             String json = client.listDnsRecords(acc, z.getZoneId(), page, per).block();
             try {
@@ -47,9 +53,12 @@ public class DnsRecordService {
                 int pageSaved = 0;
                 if (result != null && result.isArray()) {
                     for (JsonNode n : result) {
+                        String cfRecordId = n.get("id").asText();
+                        cfRecordIds.add(cfRecordId);
+
                         DnsRecord r = new DnsRecord();
                         r.setZoneId(z.getId());
-                        r.setCfRecordId(n.get("id").asText());
+                        r.setCfRecordId(cfRecordId);
                         r.setName(n.get("name").asText());
                         r.setType(n.get("type").asText());
                         r.setContent(n.path("content").asText(""));
@@ -64,6 +73,15 @@ public class DnsRecordService {
                 page++;
             } catch (Exception e) {
                 throw new IllegalStateException("解析 Cloudflare 记录响应失败");
+            }
+        }
+
+        // 删除数据库中不在Cloudflare中的记录
+        List<DnsRecord> dbRecords = recordMapper.listByZone(zoneDbId, null, null);
+        for (DnsRecord dbRecord : dbRecords) {
+            if (!cfRecordIds.contains(dbRecord.getCfRecordId())) {
+                System.out.println("删除不存在的记录: " + dbRecord.getCfRecordId() + " (" + dbRecord.getName() + ")");
+                recordMapper.deleteByZoneAndCfRecordId(zoneDbId, dbRecord.getCfRecordId());
             }
         }
     }
@@ -106,8 +124,22 @@ public class DnsRecordService {
             resp = client.updateDnsRecord(acc, z.getZoneId(), recordId, bodyJson).block();
         } catch (WebClientResponseException wex) {
             String body = wex.getResponseBodyAsString();
-            throw new IllegalStateException(body != null && !body.isEmpty() ? body
-                    : (wex.getStatusCode() + " " + wex.getStatusText()));
+            // 如果记录不存在，尝试重新同步后再试一次
+            if (body != null && body.contains("Record does not exist")) {
+                System.out.println("记录不存在，尝试重新同步: " + recordId);
+                syncZoneRecords(zoneDbId);
+                // 重新尝试更新
+                try {
+                    resp = client.updateDnsRecord(acc, z.getZoneId(), recordId, bodyJson).block();
+                } catch (WebClientResponseException retryEx) {
+                    String retryBody = retryEx.getResponseBodyAsString();
+                    throw new IllegalStateException(retryBody != null && !retryBody.isEmpty() ? retryBody
+                            : (retryEx.getStatusCode() + " " + retryEx.getStatusText()));
+                }
+            } else {
+                throw new IllegalStateException(body != null && !body.isEmpty() ? body
+                        : (wex.getStatusCode() + " " + wex.getStatusText()));
+            }
         }
         JsonNode root = objectMapper.readTree(resp);
         if (!root.path("success").asBoolean(false))
@@ -132,8 +164,22 @@ public class DnsRecordService {
             resp = client.deleteDnsRecord(acc, z.getZoneId(), recordId).block();
         } catch (WebClientResponseException wex) {
             String body = wex.getResponseBodyAsString();
-            throw new IllegalStateException(body != null && !body.isEmpty() ? body
-                    : (wex.getStatusCode() + " " + wex.getStatusText()));
+            // 如果记录不存在，尝试重新同步后再试一次
+            if (body != null && body.contains("Record does not exist")) {
+                System.out.println("记录不存在，尝试重新同步: " + recordId);
+                syncZoneRecords(zoneDbId);
+                // 重新尝试删除
+                try {
+                    resp = client.deleteDnsRecord(acc, z.getZoneId(), recordId).block();
+                } catch (WebClientResponseException retryEx) {
+                    String retryBody = retryEx.getResponseBodyAsString();
+                    throw new IllegalStateException(retryBody != null && !retryBody.isEmpty() ? retryBody
+                            : (retryEx.getStatusCode() + " " + retryEx.getStatusText()));
+                }
+            } else {
+                throw new IllegalStateException(body != null && !body.isEmpty() ? body
+                        : (wex.getStatusCode() + " " + wex.getStatusText()));
+            }
         }
         JsonNode root = objectMapper.readTree(resp);
         if (!root.path("success").asBoolean(false))
@@ -152,4 +198,5 @@ public class DnsRecordService {
             throw new IllegalArgumentException("账户不存在");
         return a;
     }
+
 }

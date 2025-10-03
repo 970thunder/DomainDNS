@@ -111,7 +111,11 @@ const onSubmit = async () => {
 			})
 
 			ElMessage.success('登录成功')
-			router.push('/user/dashboard')
+
+			// 延迟跳转，确保状态完全保存
+			setTimeout(() => {
+				router.push('/user/dashboard')
+			}, 100)
 		} else {
 			errorMessage.value = result.message || '登录失败'
 		}

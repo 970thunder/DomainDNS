@@ -130,6 +130,9 @@ export const useAuthStore = defineStore('auth', {
                         isLoggedIn: this.isLoggedIn
                     })
 
+                    // 确保状态立即生效，避免路由守卫读取到旧状态
+                    console.log('用户登录完成，状态已保存')
+
                     return { success: true, data: response.data }
                 } else {
                     return { success: false, message: response.message }

@@ -182,6 +182,17 @@ public class AuthService {
         if (!requiredRole.equals(u.getRole()))
             throw new IllegalArgumentException("角色不匹配：需要" + requiredRole);
 
+        // 检查用户状态
+        if (u.getStatus() == null || u.getStatus() != 1) {
+            if (u.getStatus() == 2) {
+                throw new IllegalArgumentException("账号已注销，无法登录");
+            } else if (u.getStatus() == 0) {
+                throw new IllegalArgumentException("账号已被禁用，无法登录");
+            } else {
+                throw new IllegalArgumentException("账号状态异常，无法登录");
+            }
+        }
+
         LoginResp resp = new LoginResp();
         resp.role = u.getRole();
         resp.token = jwtService.issueToken(String.valueOf(u.getId()), u.getRole());
