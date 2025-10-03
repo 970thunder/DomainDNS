@@ -231,29 +231,28 @@ const refreshAll = async () => {
 // 加载统计数据
 const loadStats = async () => {
 	try {
-		console.log('开始加载统计数据...')
-		console.log('当前管理员token:', authStore.adminToken ? '已设置' : '未设置')
-		
+		// 调试日志已移除
+
 		// 调用新的统计API
 		const response = await apiGet('/api/admin/stats/dashboard', { token: authStore.adminToken })
-		console.log('统计API响应:', response)
+		// 调试日志已移除
 
 		const data = response.data || {}
-		
+
 		// 更新统计数据
 		stats.value[0].value = data.totalUsers?.toString() || '0'
 		stats.value[0].badge = `本周 +${data.weeklyNewUsers || 0}`
-		
+
 		stats.value[1].value = data.activeZones?.toString() || '0'
 		stats.value[1].badge = `总域名 ${data.totalZones || 0}`
-		
+
 		stats.value[2].value = data.totalDnsRecords?.toString() || '0'
 		stats.value[2].badge = `今日新增 ${data.dailyNewRecords || 0}`
-		
+
 		stats.value[3].value = data.totalPoints?.toString() || '0'
 		stats.value[3].badge = `活跃用户 ${data.activeUsers || 0}`
 
-		console.log('统计数据更新完成:', stats.value)
+		// 调试日志已移除
 
 	} catch (error) {
 		console.error('加载统计数据失败:', error)
@@ -264,21 +263,21 @@ const loadStats = async () => {
 // 加载Top Zones数据
 const loadTopZones = async () => {
 	try {
-		console.log('加载Top Zones数据...')
-		const response = await apiGet('/api/admin/zones', { 
-			token: authStore.adminToken, 
-			params: { page: 1, size: 5 } 
+		// 调试日志已移除
+		const response = await apiGet('/api/admin/zones', {
+			token: authStore.adminToken,
+			params: { page: 1, size: 5 }
 		})
-		
-		console.log('Zones响应:', response)
-		
+
+		// 调试日志已移除
+
 		topZones.value = response.data?.list?.map(zone => ({
 			name: zone.name,
 			count: Math.floor(Math.random() * 500), // 临时随机数，实际应该从DNS记录统计
 			status: zone.status === 1 ? '启用' : '禁用'
 		})) || []
 
-		console.log('Top Zones数据:', topZones.value)
+		// 调试日志已移除
 
 	} catch (error) {
 		console.error('加载Top Zones失败:', error)
@@ -289,14 +288,14 @@ const loadTopZones = async () => {
 // 加载最近操作
 const loadRecentActions = async () => {
 	try {
-		console.log('加载最近操作数据...')
-		const response = await apiGet('/api/admin/audit', { 
-			token: authStore.adminToken, 
-			params: { page: 1, size: 10 } 
+		// 调试日志已移除
+		const response = await apiGet('/api/admin/audit', {
+			token: authStore.adminToken,
+			params: { page: 1, size: 10 }
 		})
-		
-		console.log('Audit响应:', response)
-		
+
+		// 调试日志已移除
+
 		recentActions.value = response.data?.list?.map(log => ({
 			user: log.username || 'system',
 			action: log.action,
@@ -304,7 +303,7 @@ const loadRecentActions = async () => {
 			time: formatTime(log.createdAt)
 		})) || []
 
-		console.log('最近操作数据:', recentActions.value)
+		// 调试日志已移除
 
 	} catch (error) {
 		console.error('加载最近操作失败:', error)
@@ -315,11 +314,11 @@ const loadRecentActions = async () => {
 // 格式化时间
 const formatTime = (timestamp) => {
 	if (!timestamp) return '未知时间'
-	
+
 	const now = new Date()
 	const time = new Date(timestamp)
 	const diff = now - time
-	
+
 	if (diff < 60000) return '刚刚'
 	if (diff < 3600000) return `${Math.floor(diff / 60000)} 分钟前`
 	if (diff < 86400000) return `${Math.floor(diff / 3600000)} 小时前`

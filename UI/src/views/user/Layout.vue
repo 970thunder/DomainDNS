@@ -268,7 +268,7 @@ const loadUserInfo = async () => {
 		const response = await apiGet('/api/user/info', { token: authStore.token })
 		if (response.data) {
 			userInfo.value = response.data
-			console.log('加载用户信息成功:', response.data)
+			// 调试日志已移除
 		}
 	} catch (error) {
 		console.error('加载用户信息失败:', error)
@@ -309,7 +309,7 @@ const handleAnnouncementConfirm = () => {
 	// 记录今天已经显示过公告
 	const today = new Date().toDateString()
 	localStorage.setItem('announcement_last_shown', today)
-	console.log('用户已确认查看公告')
+	// 调试日志已移除
 }
 
 const toggleMobileMenu = () => {
@@ -372,7 +372,7 @@ onMounted(() => {
 
 	// 监听token过期事件
 	const handleTokenExpired = () => {
-		console.log('用户界面收到token过期事件')
+		// 调试日志已移除
 		// 显示提示信息
 		ElMessage.warning('登录已过期，请重新登录')
 		// 跳转到登录页

@@ -169,8 +169,7 @@ const loadAccounts = async () => {
 		isLoading.value = true
 
 		// 调试信息
-		console.log('当前管理员token:', authStore.adminToken)
-		console.log('管理员登录状态:', authStore.isAdminLoggedIn)
+		// 调试日志已移除
 
 		const response = await apiGet('/api/admin/cf-accounts', { token: authStore.adminToken })
 		accounts.value = response.data || []

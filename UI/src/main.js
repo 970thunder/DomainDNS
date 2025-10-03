@@ -20,7 +20,7 @@ authStore.init()
 
 // 监听token过期事件
 window.addEventListener('token-expired', () => {
-    console.log('收到token过期事件，执行自动登出')
+    // 调试日志已移除
 
     // 判断当前是用户还是管理员页面
     if (window.location.pathname.startsWith('/user')) {

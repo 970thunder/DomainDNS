@@ -51,20 +51,12 @@ router.beforeEach((to, from, next) => {
         authStore.loadFromStorage()
     }
 
-    console.log('路由守卫检查:', {
-        path: to.path,
-        from: from.path,
-        isAdminLoggedIn: authStore.isAdminLoggedIn,
-        adminToken: authStore.adminToken ? '已设置' : '未设置',
-        isLoggedIn: authStore.isLoggedIn,
-        userToken: authStore.token ? '已设置' : '未设置',
-        user: authStore.user ? '已设置' : '未设置'
-    })
+    // 调试日志已移除
 
     // 管理员路由需要认证
     if (to.path.startsWith('/admin') && to.path !== '/admin/login') {
         if (!authStore.isAdminLoggedIn || !authStore.adminToken) {
-            console.log('管理员未登录，重定向到登录页')
+            // 调试日志已移除
             next('/admin/login')
             return
         }
@@ -73,7 +65,7 @@ router.beforeEach((to, from, next) => {
     // 用户路由需要认证
     if (to.path.startsWith('/user') && to.path !== '/user/login' && to.path !== '/user/register' && to.path !== '/user/forgot') {
         if (!authStore.isLoggedIn || !authStore.token) {
-            console.log('用户未登录，重定向到登录页')
+            // 调试日志已移除
             next('/user/login')
             return
         }

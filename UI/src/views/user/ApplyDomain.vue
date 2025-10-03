@@ -181,22 +181,14 @@ const loadSystemSettings = async () => {
 			// 从后端获取实际的系统设置
 			defaultTtl.value = parseInt(response.data.default_ttl) || 120
 			baseCost.value = parseInt(response.data.domain_cost_points) || 10
-			console.log('加载系统设置成功:', {
-				defaultTtl: defaultTtl.value,
-				baseCost: baseCost.value,
-				allSettings: response.data
-			})
+			// 调试日志已移除
 		}
 	} catch (error) {
 		console.error('加载系统设置失败:', error)
 		// 如果接口失败，使用默认值
 		defaultTtl.value = 120
 		baseCost.value = 10
-		console.log('使用默认系统设置:', {
-			defaultTtl: defaultTtl.value,
-			baseCost: baseCost.value,
-			note: '接口调用失败，使用默认值'
-		})
+		// 调试日志已移除
 	}
 }
 
@@ -288,12 +280,7 @@ const calculateCost = () => {
 	}
 
 	const cost = Math.floor(baseCost.value * multiplier)
-	console.log('积分计算:', {
-		domain: domain,
-		baseCost: baseCost.value,
-		multiplier: multiplier,
-		finalCost: cost
-	})
+	// 调试日志已移除
 
 	return cost
 }

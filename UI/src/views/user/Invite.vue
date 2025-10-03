@@ -144,11 +144,7 @@ const loadSystemSettings = async () => {
 				inviterPoints: parseInt(response.data.inviter_points) || 3,
 				inviteePoints: parseInt(response.data.invitee_points) || 3
 			}
-			console.log('加载系统设置成功:', {
-				inviterPoints: systemSettings.value.inviterPoints,
-				inviteePoints: systemSettings.value.inviteePoints,
-				allSettings: response.data
-			})
+			// 调试日志已移除
 		}
 	} catch (error) {
 		console.error('加载系统设置失败:', error)
@@ -157,11 +153,7 @@ const loadSystemSettings = async () => {
 			inviterPoints: 3,
 			inviteePoints: 3
 		}
-		console.log('使用默认系统设置:', {
-			inviterPoints: systemSettings.value.inviterPoints,
-			inviteePoints: systemSettings.value.inviteePoints,
-			note: '接口调用失败，使用默认值'
-		})
+		// 调试日志已移除
 	}
 }
 
@@ -248,7 +240,7 @@ const loadInviteDetails = async () => {
 		const response = await apiGet('/api/user/invite/details', { token: authStore.token })
 		if (response.data) {
 			inviteDetails.value = response.data.list || []
-			console.log('加载邀请明细成功:', response.data)
+			// 调试日志已移除
 		}
 	} catch (error) {
 		console.error('加载邀请明细失败:', error)

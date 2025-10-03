@@ -56,7 +56,7 @@ export const useAuthStore = defineStore('auth', {
         // 从本地存储加载状态
         loadFromStorage() {
             try {
-                console.log('loadFromStorage 开始加载本地存储')
+                // 调试日志已移除
 
                 // 加载用户信息
                 const userToken = localStorage.getItem(STORAGE_CONFIG.USER_TOKEN_KEY)
@@ -67,16 +67,9 @@ export const useAuthStore = defineStore('auth', {
                     this.user = JSON.parse(userInfo)
                     this.role = 'USER'
                     this.isLoggedIn = true
-                    console.log('用户信息已从localStorage加载:', {
-                        user: this.user,
-                        token: this.token ? this.token.substring(0, 20) + '...' : null,
-                        isLoggedIn: this.isLoggedIn
-                    })
+                    // 调试日志已移除
                 } else {
-                    console.log('用户信息加载条件不满足:', {
-                        hasUserToken: !!userToken,
-                        hasUserInfo: !!userInfo
-                    })
+                    // 调试日志已移除
                 }
 
                 // 加载管理员信息
@@ -89,13 +82,9 @@ export const useAuthStore = defineStore('auth', {
                     this.adminRole = adminRole
                     this.admin = { username: adminUsername }
                     this.isAdminLoggedIn = true
-                    console.log('管理员信息已从localStorage加载')
+                    // 调试日志已移除
                 } else {
-                    console.log('管理员信息加载条件不满足:', {
-                        hasAdminToken: !!adminToken,
-                        hasAdminRole: !!adminRole,
-                        hasAdminUsername: !!adminUsername
-                    })
+                    // 调试日志已移除
                 }
 
                 // 加载记住我设置
@@ -114,7 +103,7 @@ export const useAuthStore = defineStore('auth', {
                 const response = await apiPost('/api/auth/login', credentials)
 
                 if (response.code === 0) {
-                    console.log('用户登录成功:', response.data)
+                    // 调试日志已移除
 
                     this.user = response.data.user
                     this.token = response.data.token
@@ -124,14 +113,10 @@ export const useAuthStore = defineStore('auth', {
                     // 保存到本地存储
                     this.saveToStorage()
 
-                    console.log('用户登录后状态:', {
-                        user: this.user,
-                        token: this.token ? this.token.substring(0, 20) + '...' : null,
-                        isLoggedIn: this.isLoggedIn
-                    })
+                    // 调试日志已移除
 
                     // 确保状态立即生效，避免路由守卫读取到旧状态
-                    console.log('用户登录完成，状态已保存')
+                    // 调试日志已移除
 
                     return { success: true, data: response.data }
                 } else {
@@ -149,37 +134,29 @@ export const useAuthStore = defineStore('auth', {
                 const response = await apiPost('/api/auth/admin/login', credentials)
 
                 if (response.code === 0) {
-                    console.log('设置管理员状态前:', {
-                        adminToken: this.adminToken,
-                        admin: this.admin,
-                        isAdminLoggedIn: this.isAdminLoggedIn
-                    })
+                    // 调试日志已移除
 
                     // 分步设置，每步都检查
                     this.admin = { username: credentials.username }
-                    console.log('设置admin后:', { adminToken: this.adminToken, admin: this.admin })
+                    // 调试日志已移除
 
                     this.adminToken = response.data.token
-                    console.log('设置adminToken后:', { adminToken: this.adminToken, admin: this.admin })
+                    // 调试日志已移除
 
                     this.adminRole = response.data.role
-                    console.log('设置adminRole后:', { adminToken: this.adminToken, admin: this.admin, adminRole: this.adminRole })
+                    // 调试日志已移除
 
                     this.isAdminLoggedIn = true
-                    console.log('设置isAdminLoggedIn后:', { adminToken: this.adminToken, admin: this.admin, adminRole: this.adminRole, isAdminLoggedIn: this.isAdminLoggedIn })
+                    // 调试日志已移除
 
                     // 保存到本地存储
                     this.saveToStorage()
 
-                    console.log('保存到本地存储后:', {
-                        adminToken: this.adminToken,
-                        admin: this.admin,
-                        isAdminLoggedIn: this.isAdminLoggedIn
-                    })
+                    // 调试日志已移除
 
                     // 立即检查localStorage
                     const savedToken = localStorage.getItem(STORAGE_CONFIG.TOKEN_KEY)
-                    console.log('localStorage中的token:', savedToken ? savedToken.substring(0, 20) + '...' : 'null')
+                    // 调试日志已移除
 
                     return { success: true, data: response.data }
                 } else {
@@ -232,24 +209,15 @@ export const useAuthStore = defineStore('auth', {
         // 保存到本地存储
         saveToStorage() {
             try {
-                console.log('saveToStorage 开始:', {
-                    user: this.user,
-                    token: this.token ? this.token.substring(0, 20) + '...' : null,
-                    adminToken: this.adminToken,
-                    admin: this.admin,
-                    adminRole: this.adminRole
-                })
+                // 调试日志已移除
 
                 // 保存用户信息
                 if (this.token && this.user) {
                     localStorage.setItem(STORAGE_CONFIG.USER_TOKEN_KEY, this.token)
                     localStorage.setItem(STORAGE_CONFIG.USER_INFO_KEY, JSON.stringify(this.user))
-                    console.log('用户信息已保存到localStorage')
+                    // 调试日志已移除
                 } else {
-                    console.log('用户信息保存条件不满足:', {
-                        hasToken: !!this.token,
-                        hasUser: !!this.user
-                    })
+                    // 调试日志已移除
                 }
 
                 // 保存管理员信息
@@ -257,12 +225,9 @@ export const useAuthStore = defineStore('auth', {
                     localStorage.setItem(STORAGE_CONFIG.TOKEN_KEY, this.adminToken)
                     localStorage.setItem(STORAGE_CONFIG.ADMIN_ROLE_KEY, this.adminRole)
                     localStorage.setItem(STORAGE_CONFIG.ADMIN_USERNAME_KEY, this.admin.username)
-                    console.log('管理员信息已保存到localStorage')
+                    // 调试日志已移除
                 } else {
-                    console.log('管理员信息保存条件不满足:', {
-                        hasAdminToken: !!this.adminToken,
-                        hasAdmin: !!this.admin
-                    })
+                    // 调试日志已移除
                 }
 
                 // 保存记住我设置
@@ -351,7 +316,7 @@ export const useAuthStore = defineStore('auth', {
 
         // 处理token过期
         handleTokenExpired() {
-            console.log('处理token过期，清除用户状态')
+            // 调试日志已移除
 
             // 清除用户状态
             this.user = null
@@ -371,7 +336,7 @@ export const useAuthStore = defineStore('auth', {
 
         // 处理管理员token过期
         handleAdminTokenExpired() {
-            console.log('处理管理员token过期，清除管理员状态')
+            // 调试日志已移除
 
             // 清除管理员状态
             this.admin = null

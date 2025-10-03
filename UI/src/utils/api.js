@@ -24,16 +24,7 @@ const createApiUrl = (endpoint) => {
 
     const finalUrl = `${baseUrl}${endpointPath}`
 
-    // 开发环境调试日志
-    if (APP_CONFIG.IS_DEV) {
-        console.log('API URL构建:', {
-            baseUrl,
-            endpoint,
-            normalizedEndpoint,
-            endpointPath,
-            finalUrl
-        })
-    }
+    // 开发环境调试日志已移除，避免生产环境暴露敏感信息
 
     return finalUrl
 }
@@ -60,14 +51,7 @@ const handleResponse = async (response) => {
     try {
         const data = await response.json()
 
-        // 开发环境日志
-        if (DEBUG_CONFIG.SHOW_API_DETAILS) {
-            console.log('API Response:', {
-                url: response.url,
-                status: response.status,
-                data: data
-            })
-        }
+        // 开发环境日志已移除，避免生产环境暴露敏感信息
 
         // 检查JWT token过期 - 只检查特定的token过期消息
         // 排除登录相关的API调用，避免在登录过程中误触发
@@ -117,12 +101,17 @@ const handleError = (errorData) => {
         console.error('API Error:', errorData)
     }
 
-    // 根据错误码返回对应消息
+    // 优先使用后端返回的具体错误消息，提供更好的用户体验
+    if (message && message.trim()) {
+        return message
+    }
+
+    // 如果没有具体消息，再使用预定义的错误消息
     if (ERROR_MESSAGES[code]) {
         return ERROR_MESSAGES[code]
     }
 
-    return message || ERROR_MESSAGES.UNKNOWN_ERROR
+    return ERROR_MESSAGES.UNKNOWN_ERROR
 }
 
 /**
@@ -171,15 +160,7 @@ const apiRequest = async (endpoint, options = {}) => {
         requestConfig.body = JSON.stringify(data)
     }
 
-    // 开发环境日志
-    if (DEBUG_CONFIG.SHOW_API_DETAILS) {
-        console.log('API Request:', {
-            url,
-            method,
-            headers,
-            data
-        })
-    }
+    // 开发环境日志已移除，避免生产环境暴露敏感信息
 
     try {
         // 创建超时控制器

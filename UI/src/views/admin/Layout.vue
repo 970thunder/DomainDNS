@@ -73,7 +73,7 @@ const logout = async () => {
 onMounted(() => {
 	// 监听token过期事件
 	const handleTokenExpired = () => {
-		console.log('管理员界面收到token过期事件')
+		// 调试日志已移除
 		// 显示提示信息
 		ElMessage.warning('登录已过期，请重新登录')
 		// 跳转到管理员登录页

@@ -87,23 +87,22 @@ const onSubmit = async () => {
 			password: password.value
 		})
 
-		console.log('登录结果:', result)
-		console.log('登录后管理员token:', authStore.adminToken)
-		console.log('登录后管理员状态:', authStore.isAdminLoggedIn)
+		// 调试日志已移除
+		// 调试日志已移除
 
 		if (result.success) {
 			// 设置记住我
 			authStore.setRememberMe(remember.value)
-			console.log('设置记住我状态:', remember.value)
-			
+			// 调试日志已移除
+
 			// 如果选择了记住我，保存用户名
 			if (remember.value) {
 				authStore.setRememberedUsername(email.value)
-				console.log('已保存用户名:', email.value)
-				console.log('localStorage中的记住用户名:', localStorage.getItem('remembered_username'))
+				// 调试日志已移除
+				// 调试日志已移除
 			} else {
 				authStore.clearRememberedUsername()
-				console.log('已清除记住的用户名')
+				// 调试日志已移除
 			}
 
 			// 跳转到管理后台
@@ -124,37 +123,32 @@ const goForgot = () => { }
 
 // 测试记住我功能
 const testRememberMe = () => {
-	console.log('=== 测试记住我功能 ===')
-	console.log('当前用户名:', email.value)
-	console.log('当前记住我状态:', remember.value)
-	console.log('localStorage中的记住用户名:', localStorage.getItem('remembered_username'))
-	console.log('localStorage中的记住我状态:', localStorage.getItem('remember_me'))
-	
+	// 调试日志已移除
+	// 调试日志已移除
+
 	// 测试保存
 	if (email.value) {
 		authStore.setRememberedUsername(email.value)
-		console.log('已保存用户名到localStorage')
+		// 调试日志已移除
 	}
-	
+
 	// 测试获取
 	const savedUsername = authStore.getRememberedUsername()
-	console.log('从localStorage获取的用户名:', savedUsername)
+	// 调试日志已移除
 }
 
 // 组件挂载时恢复记住的用户名
 onMounted(() => {
 	// 恢复记住的用户名
 	const rememberedUsername = authStore.getRememberedUsername()
-	console.log('恢复记住的用户名:', rememberedUsername)
-	console.log('localStorage中的记住用户名:', localStorage.getItem('remembered_username'))
-	console.log('localStorage中的记住我状态:', localStorage.getItem('remember_me'))
-	
+	// 调试日志已移除
+
 	if (rememberedUsername) {
 		email.value = rememberedUsername
 		remember.value = true
-		console.log('已恢复用户名:', email.value, '记住我状态:', remember.value)
+		// 调试日志已移除
 	} else {
-		console.log('没有找到记住的用户名')
+		// 调试日志已移除
 	}
 })
 </script>

@@ -103,12 +103,7 @@ const onSubmit = async () => {
 				authStore.clearRememberedUsername()
 			}
 
-			console.log('用户登录成功，当前状态:', {
-				user: authStore.user,
-				token: authStore.token ? authStore.token.substring(0, 20) + '...' : null,
-				isLoggedIn: authStore.isLoggedIn,
-				rememberMe: authStore.rememberMe
-			})
+			// 调试日志已移除
 
 			ElMessage.success('登录成功')
 

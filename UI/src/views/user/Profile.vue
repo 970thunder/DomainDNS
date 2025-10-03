@@ -258,7 +258,7 @@ const loadUserInfo = async () => {
             userInfo.value = response.data
             // 设置重置密码表单的邮箱
             resetForm.value.email = response.data.email
-            console.log('加载用户信息成功:', response.data)
+            // 调试日志已移除
         }
     } catch (error) {
         console.error('加载用户信息失败:', error)
@@ -377,7 +377,14 @@ const checkDeletionEligibility = async () => {
         }
     } catch (error) {
         console.error('检查注销资格失败:', error)
-        ElMessage.error('检查注销资格失败')
+
+        // 设置默认的错误状态
+        deletionEligibility.value = false
+        eligibilityMessage.value = error.message || '检查注销资格失败'
+        userDomains.value = []
+        userPoints.value = 0
+
+        ElMessage.error(error.message || '检查注销资格失败')
     } finally {
         isCheckingEligibility.value = false
     }
@@ -420,7 +427,7 @@ const handleDeleteAccount = async () => {
     } catch (error) {
         if (error !== 'cancel') {
             console.error('账号注销失败:', error)
-            ElMessage.error('账号注销失败')
+            ElMessage.error(error.message || '账号注销失败')
         }
     } finally {
         isDeleting.value = false
@@ -458,7 +465,7 @@ const sendResetCode = async () => {
         }
     } catch (error) {
         console.error('发送验证码失败:', error)
-        ElMessage.error('发送验证码失败')
+        ElMessage.error(error.message || '发送验证码失败')
     } finally {
         isSendingCode.value = false
     }
@@ -485,7 +492,7 @@ const handleResetPassword = async () => {
         }
     } catch (error) {
         console.error('密码重置失败:', error)
-        ElMessage.error('密码重置失败')
+        ElMessage.error(error.message || '密码重置失败')
     } finally {
         isResetting.value = false
     }
