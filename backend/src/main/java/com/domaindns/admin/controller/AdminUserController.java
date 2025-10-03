@@ -6,6 +6,9 @@ import com.domaindns.auth.mapper.UserMapper;
 import com.domaindns.auth.service.JwtService;
 import com.domaindns.common.ApiResponse;
 import com.domaindns.user.mapper.PointsMapper;
+import com.domaindns.user.mapper.UserDomainMapper;
+import com.domaindns.user.model.UserDomain;
+import com.domaindns.user.service.UserDomainService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import org.springframework.web.bind.annotation.*;
@@ -21,13 +24,17 @@ public class AdminUserController {
     private final AdminUserMapper mapper;
     private final PointsMapper pointsMapper;
     private final UserMapper userMapper;
+    private final UserDomainMapper userDomainMapper;
+    private final UserDomainService userDomainService;
     private final JwtService jwtService;
 
     public AdminUserController(AdminUserMapper mapper, PointsMapper pointsMapper, UserMapper userMapper,
-            JwtService jwtService) {
+            UserDomainMapper userDomainMapper, UserDomainService userDomainService, JwtService jwtService) {
         this.mapper = mapper;
         this.pointsMapper = pointsMapper;
         this.userMapper = userMapper;
+        this.userDomainMapper = userDomainMapper;
+        this.userDomainService = userDomainService;
         this.jwtService = jwtService;
     }
 
@@ -192,5 +199,98 @@ public class AdminUserController {
         } catch (Exception e) {
             throw new RuntimeException("Token无效或已过期");
         }
+    }
+
+    /**
+     * 管理员注销用户账号
+     * 需要先释放用户的所有域名，然后软删除（status=2）
+     */
+    @PostMapping("/{id}/delete")
+    public ApiResponse<Map<String, Object>> deleteUser(@RequestHeader("Authorization") String authorization,
+            @PathVariable Long id, @RequestBody Map<String, Object> body) {
+        validateAdminAuth(authorization);
+
+        // 验证确认信息
+        Boolean confirmDeletion = (Boolean) body.get("confirmDeletion");
+        Boolean confirmDnsRelease = (Boolean) body.get("confirmDnsRelease");
+
+        if (confirmDeletion == null || !confirmDeletion) {
+            return ApiResponse.error(40001, "请确认注销操作");
+        }
+
+        if (confirmDnsRelease == null || !confirmDnsRelease) {
+            return ApiResponse.error(40002, "请确认释放DNS域名");
+        }
+
+        AdminUser user = mapper.findById(id);
+        if (user == null) {
+            return ApiResponse.error(40001, "用户不存在");
+        }
+
+        // 检查用户状态
+        if (user.getStatus() == null || user.getStatus() != 1) {
+            return ApiResponse.error(40003, "用户状态异常，无法注销");
+        }
+
+        // 获取用户的所有域名
+        List<UserDomain> domains = userDomainMapper.listByUser(id, 0, 1000);
+        int releasedDomains = 0;
+        int failedDomains = 0;
+
+        // 释放用户的所有域名
+        for (UserDomain domain : domains) {
+            try {
+                userDomainService.releaseDomain(id, domain.getId());
+                releasedDomains++;
+            } catch (Exception e) {
+                System.err.println("释放域名失败: " + domain.getFullDomain() + ", 错误: " + e.getMessage());
+                failedDomains++;
+                // 继续释放其他域名，不因为单个域名失败而停止整个流程
+            }
+        }
+
+        // 软删除：将状态设置为2（已注销）
+        int rows = mapper.updateStatus(id, 2);
+        if (rows == 0) {
+            return ApiResponse.error(50000, "用户注销失败");
+        }
+
+        Map<String, Object> m = new HashMap<>();
+        m.put("deleted", rows);
+        m.put("username", user.getUsername());
+        m.put("deletedAt", java.time.LocalDateTime.now());
+        m.put("releasedDomains", releasedDomains);
+        m.put("failedDomains", failedDomains);
+        m.put("totalDomains", domains.size());
+
+        return ApiResponse.ok(m);
+    }
+
+    /**
+     * 获取用户的域名信息（用于注销确认）
+     */
+    @GetMapping("/{id}/domains")
+    public ApiResponse<Map<String, Object>> getUserDomains(@RequestHeader("Authorization") String authorization,
+            @PathVariable Long id) {
+        validateAdminAuth(authorization);
+
+        AdminUser user = mapper.findById(id);
+        if (user == null) {
+            return ApiResponse.error(40001, "用户不存在");
+        }
+
+        // 查询用户的域名信息
+        List<UserDomain> domains = userDomainMapper.listByUser(id, 0, 1000); // 获取所有域名
+        int domainCount = userDomainMapper.countByUser(id);
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("userId", user.getId());
+        result.put("username", user.getUsername());
+        result.put("displayName", user.getDisplayName());
+        result.put("points", user.getPoints());
+        result.put("domains", domains);
+        result.put("domainCount", domainCount);
+
+        return ApiResponse.ok(result);
     }
 }

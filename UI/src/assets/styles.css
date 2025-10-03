@@ -166,15 +166,12 @@ body::before {
 
 /* Cards */
 .card {
-    background: rgba(255, 255, 255, 0.6);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: 16px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
     padding: 20px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-    transition: transform 0.2s ease, background-color 0.2s ease, padding 0.3s ease;
-    will-change: transform;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.2s ease;
     width: 100%;
     max-width: 100%;
 }
@@ -244,32 +241,30 @@ body::before {
 .table {
     width: 100%;
     border-collapse: collapse;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
     overflow: hidden;
-    background: rgba(255, 255, 255, 0.5);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    background: #ffffff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .table th,
 .table td {
     text-align: left;
     padding: 16px 12px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid #e2e8f0;
     font-size: 14px;
 }
 
 .table th {
-    background: rgba(255, 255, 255, 0.4);
+    background: #f8fafc;
     color: #0f172a;
     font-weight: 600;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    border-bottom: 1px solid #e2e8f0;
 }
 
 .table tr:hover td {
-    background: rgba(255, 255, 255, 0.3);
+    background: #f8fafc;
 }
 
 /* Forms */
@@ -294,25 +289,20 @@ body::before {
 .textarea {
     width: 100%;
     padding: 12px 16px;
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    border-radius: 12px;
-    background: rgba(255, 255, 255, 0.6);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #ffffff;
     color: #0f172a;
     outline: none;
-    transition: border-color 0.2s ease, background-color 0.2s ease, transform 0.2s ease;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-    will-change: transform;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .input:focus,
 .select:focus,
 .textarea:focus {
     border-color: #6366f1;
-    background: rgba(255, 255, 255, 0.7);
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15), 0 4px 12px rgba(0, 0, 0, 0.08);
-    transform: translateY(-1px);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
 }
 
 .textarea {
@@ -325,85 +315,78 @@ body::before {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 12px 18px;
-    border-radius: 12px;
+    padding: 10px 16px;
+    border-radius: 8px;
     border: 1px solid transparent;
     text-decoration: none;
     font-weight: 600;
     cursor: pointer;
-    transition: transform 0.2s ease, background-color 0.2s ease;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    will-change: transform;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
 .btn.primary {
-    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    background: #6366f1;
     color: #fff;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid #6366f1;
 }
 
 .btn.primary:hover {
-    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    background: #4f46e5;
 }
 
 .btn.outline {
-    background: rgba(255, 255, 255, 0.6);
-    border-color: rgba(255, 255, 255, 0.4);
+    background: #ffffff;
+    border-color: #cbd5e1;
     color: #0f172a;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
 }
 
 .btn.outline:hover {
-    background: rgba(255, 255, 255, 0.7);
-    border-color: rgba(255, 255, 255, 0.5);
+    background: #f8fafc;
+    border-color: #94a3b8;
 }
 
 .btn.danger {
-    background: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
+    background: #ef4444;
     color: #fff;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid #ef4444;
 }
 
 .btn.danger:hover {
-    background: linear-gradient(135deg, #dc2626 0%, #f56565 100%);
+    background: #dc2626;
 }
 
 /* Badges */
 .badge {
     display: inline-flex;
     align-items: center;
-    padding: 6px 12px;
-    border-radius: 20px;
+    padding: 4px 8px;
+    border-radius: 4px;
     font-size: 12px;
     font-weight: 500;
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    border: 1px solid transparent;
 }
 
 .badge.success {
-    background: rgba(16, 185, 129, 0.1);
+    background: #ecfdf5;
     color: #065f46;
-    border-color: rgba(16, 185, 129, 0.3);
+    border-color: #a7f3d0;
 }
 
 .badge.warning {
-    background: rgba(245, 158, 11, 0.1);
-    color: #9a3412;
-    border-color: rgba(245, 158, 11, 0.3);
+    background: #fef3c7;
+    color: #92400e;
+    border-color: #fbbf24;
 }
 
 .badge.danger {
-    background: rgba(239, 68, 68, 0.1);
+    background: #fee2e2;
     color: #991b1b;
-    border-color: rgba(239, 68, 68, 0.3);
+    border-color: #f87171;
 }
 
 /* Modal/Dialog Styles */
@@ -413,29 +396,23 @@ body::before {
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
+    background: rgba(0, 0, 0, 0.5);
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 1000;
     animation: modalFadeIn 0.2s ease;
-    will-change: opacity;
 }
 
 .modal-content {
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    border-radius: 20px;
-    padding: 32px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 24px;
     width: 90%;
     max-width: 500px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
     animation: modalSlideIn 0.2s ease;
-    will-change: transform, opacity;
 }
 
 .modal-content h3 {
