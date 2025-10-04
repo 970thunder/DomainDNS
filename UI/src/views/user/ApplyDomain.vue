@@ -1,5 +1,7 @@
 <template>
 	<div class="apply-domain-container" v-loading="isLoading">
+		<!-- SEO组件 -->
+		<SEOHead pageName="applyDomain" />
 		<div class="card">
 			<div class="card-header">
 				<h3>申请二级域名</h3>
@@ -90,6 +92,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useAuthStore } from '@/stores/auth.js'
 import { apiGet, apiPost } from '@/utils/api.js'
 import { ElMessage } from 'element-plus'
+import SEOHead from '@/components/SEOHead.vue'
 
 const authStore = useAuthStore()
 

@@ -2,7 +2,7 @@
 	<div>
 		<header class="app-header">
 			<div class="app-header-inner container">
-				<div class="brand">HyperNym</div>
+				<div class="brand">HyFreeDom</div>
 				<div class="spacer"></div>
 				<button class="mobile-menu-toggle" @click="toggleMobileMenu" v-if="isMobile">
 					<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -20,7 +20,7 @@
 		<!-- Mobile Sidebar -->
 		<div class="mobile-sidebar" :class="{ active: mobileMenuOpen }">
 			<div class="mobile-sidebar-header">
-				<div class="brand">HyperNym</div>
+				<div class="brand">HyFreeDom</div>
 				<button class="close-btn" @click="closeMobileMenu">
 					<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
 						<line x1="18" y1="6" x2="6" y2="18"></line>
@@ -217,7 +217,7 @@
 			</div>
 		</div>
 		<footer class="footer container">
-			<span>© 2025 HyperNym-DomainDNS</span>
+			<span>© 2025 HyFreeDom</span>
 			<a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer" class="beian-link">
 				桂ICP备2024034221号-2
 			</a>

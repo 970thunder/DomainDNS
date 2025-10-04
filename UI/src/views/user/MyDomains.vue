@@ -1,5 +1,7 @@
 <template>
 	<div class="domains-container" v-loading="isLoading">
+		<!-- SEO组件 -->
+		<SEOHead pageName="myDomains" />
 		<div class="card">
 			<div class="card-header">
 				<h3>我的域名</h3>
@@ -90,6 +92,7 @@ import { ref, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth.js'
 import { apiGet, apiDelete, apiPut } from '@/utils/api.js'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import SEOHead from '@/components/SEOHead.vue'
 
 const authStore = useAuthStore()
 

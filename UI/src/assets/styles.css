@@ -164,16 +164,44 @@ body::before {
     }
 }
 
-/* Cards */
+/* Cards - 高性能毛玻璃效果 */
 .card {
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
+    position: relative;
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 16px;
     padding: 20px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    transition: box-shadow 0.2s ease;
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.1),
+        0 2px 8px rgba(0, 0, 0, 0.05),
+        inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
     width: 100%;
     max-width: 100%;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    will-change: transform;
+}
+
+.card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.1) 100%);
+    border-radius: 16px;
+    pointer-events: none;
+    z-index: -1;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow:
+        0 12px 40px rgba(0, 0, 0, 0.15),
+        0 4px 12px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 
 /* 响应式卡片 */
@@ -237,15 +265,35 @@ body::before {
     font-size: 12px;
 }
 
-/* Tables */
+/* Tables - 高性能毛玻璃效果 */
 .table {
+    position: relative;
     width: 100%;
     border-collapse: collapse;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 12px;
     overflow: hidden;
-    background: #ffffff;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.1),
+        0 2px 8px rgba(0, 0, 0, 0.05),
+        inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    will-change: transform;
+}
+
+.table::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.1) 100%);
+    border-radius: 12px;
+    pointer-events: none;
+    z-index: -1;
 }
 
 .table th,
@@ -257,14 +305,18 @@ body::before {
 }
 
 .table th {
-    background: #f8fafc;
+    background: rgba(255, 255, 255, 0.4);
     color: #0f172a;
     font-weight: 600;
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
 }
 
 .table tr:hover td {
-    background: #f8fafc;
+    background: rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
 }
 
 /* Forms */
@@ -287,22 +339,49 @@ body::before {
 .input,
 .select,
 .textarea {
+    position: relative;
     width: 100%;
     padding: 12px 16px;
-    border: 1px solid #cbd5e1;
-    border-radius: 8px;
-    background: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
     color: #0f172a;
     outline: none;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+    box-shadow:
+        0 4px 16px rgba(0, 0, 0, 0.05),
+        inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    will-change: background-color, box-shadow;
+}
+
+.input::before,
+.select::before,
+.textarea::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.1) 100%);
+    border-radius: 12px;
+    pointer-events: none;
+    z-index: -1;
 }
 
 .input:focus,
 .select:focus,
 .textarea:focus {
     border-color: #6366f1;
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+    background: rgba(255, 255, 255, 0.8);
+    box-shadow:
+        0 0 0 3px rgba(99, 102, 241, 0.15),
+        0 6px 20px rgba(0, 0, 0, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
 }
 
 .textarea {
@@ -310,7 +389,7 @@ body::before {
     resize: vertical;
 }
 
-/* Buttons */
+/* Buttons - 简洁美观样式 */
 .btn {
     display: inline-flex;
     align-items: center;
@@ -321,12 +400,13 @@ body::before {
     text-decoration: none;
     font-weight: 600;
     cursor: pointer;
-    transition: background-color 0.2s ease, border-color 0.2s ease;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .btn:hover {
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .btn.primary {
@@ -360,7 +440,7 @@ body::before {
     background: #dc2626;
 }
 
-/* Badges */
+/* Badges - 简洁美观样式 */
 .badge {
     display: inline-flex;
     align-items: center;
@@ -389,30 +469,53 @@ body::before {
     border-color: #f87171;
 }
 
-/* Modal/Dialog Styles */
+/* Modal/Dialog Styles - 高性能毛玻璃效果 */
 .modal {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 1000;
     animation: modalFadeIn 0.2s ease;
+    will-change: opacity;
 }
 
 .modal-content {
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 24px;
+    position: relative;
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 20px;
+    padding: 32px;
     width: 90%;
     max-width: 500px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-    animation: modalSlideIn 0.2s ease;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.2),
+        0 8px 32px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    animation: modalSlideIn 0.3s ease;
+    will-change: transform, opacity;
+}
+
+.modal-content::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.1) 100%);
+    border-radius: 20px;
+    pointer-events: none;
+    z-index: -1;
 }
 
 .modal-content h3 {

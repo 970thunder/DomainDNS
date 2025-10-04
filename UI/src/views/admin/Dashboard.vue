@@ -1,5 +1,7 @@
 <template>
 	<div class="dashboard">
+		<!-- SEO组件 -->
+		<SEOHead pageName="adminDashboard" />
 		<!-- 页面头部 -->
 		<div class="dashboard-header">
 			<h1>控制台</h1>
@@ -109,6 +111,7 @@ import { ref, onMounted, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useAuthStore } from '@/stores/auth.js'
 import { apiGet } from '@/utils/api.js'
+import SEOHead from '@/components/SEOHead.vue'
 
 // 认证store
 const authStore = useAuthStore()

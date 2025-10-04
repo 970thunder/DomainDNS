@@ -1,8 +1,8 @@
-# DomainDNS 前端项目
+# HyFreeDom 前端项目
 
 ## 项目简介
 
-DomainDNS 是一个基于 Vue 3 + Vite 的现代化前端应用，提供域名管理和 DNS 记录配置功能。
+HyFreeDom 是一个基于 Vue 3 + Vite 的现代化前端应用，提供免费二级域名申请和 DNS 记录配置功能。
 
 ## 技术栈
 
@@ -90,14 +90,14 @@ UI/
 ### 开发环境 (.env.development)
 ```bash
 VITE_API_BASE_URL=http://localhost:8080
-VITE_APP_TITLE=DomainDNS - 开发环境
+VITE_APP_TITLE=HyFreeDom - 开发环境
 VITE_APP_ENV=development
 ```
 
 ### 生产环境 (.env.production)
 ```bash
 VITE_API_BASE_URL=https://your-domain.com
-VITE_APP_TITLE=DomainDNS
+VITE_APP_TITLE=HyFreeDom
 VITE_APP_ENV=production
 ```
 

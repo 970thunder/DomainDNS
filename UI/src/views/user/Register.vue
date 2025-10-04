@@ -1,5 +1,7 @@
 <template>
 	<div class="container" style="display:grid;place-items:center;min-height:100vh;">
+		<!-- SEO组件 -->
+		<SEOHead pageName="userRegister" />
 		<!-- 注册表单 -->
 		<form class="form" @submit.prevent="onSubmit" v-if="!showEmailVerification">
 			<h2 class="form-title">注册账号</h2>
@@ -130,6 +132,7 @@
 import { ref, computed, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.js'
+import SEOHead from '@/components/SEOHead.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()

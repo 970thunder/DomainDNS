@@ -44,7 +44,7 @@ cors:
 jwt:
   secret: ${JWT_SECRET}
   issuer: "domaindns"
-  expire-minutes: 120
+  expire-minutes: 1440
 
 secrets:
   aes-key: ${SECRETS_AES_KEY}

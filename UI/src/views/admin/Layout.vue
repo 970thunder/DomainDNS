@@ -2,7 +2,7 @@
 	<div class="admin-layout">
 		<header class="app-header">
 			<div class="app-header-inner container">
-				<div class="brand">HyperNym</div>
+				<div class="brand">HyFreeDom</div>
 				<nav class="nav">
 					<el-menu mode="horizontal" :router="true" :default-active="$route.path" :ellipsis="false"
 						class="nav-menu">
@@ -26,7 +26,7 @@
 			<router-view />
 		</main>
 		<footer class="footer container">
-			<span>© 2025 HyperNym-DomainDNS</span>
+			<span>© 2025 HyFreeDom</span>
 			<a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer" class="beian-link">
 				桂ICP备2024034221号-2
 			</a>

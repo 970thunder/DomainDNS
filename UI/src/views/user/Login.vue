@@ -1,5 +1,7 @@
 <template>
 	<div class="container" style="display:grid;place-items:center;min-height:100vh;">
+		<!-- SEO组件 -->
+		<SEOHead pageName="userLogin" />
 		<form class="form" @submit.prevent="onSubmit">
 			<div class="flex-column">
 				<label>用户名/邮箱</label>
@@ -67,6 +69,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.js'
 import { ElMessage } from 'element-plus'
+import SEOHead from '@/components/SEOHead.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()

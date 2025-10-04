@@ -11,7 +11,7 @@ const getEnvVar = (key, defaultValue = '') => {
 // 应用配置
 export const APP_CONFIG = {
     // 应用标题
-    TITLE: getEnvVar('VITE_APP_TITLE', 'DomainDNS'),
+    TITLE: getEnvVar('VITE_APP_TITLE', 'HyFreeDom'),
 
     // 当前环境
     ENV: getEnvVar('VITE_APP_ENV', 'development'),

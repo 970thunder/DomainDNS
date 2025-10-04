@@ -39,7 +39,7 @@
 							<th>角色</th>
 							<th>状态</th>
 							<th>注册时间</th>
-							<th>操作</th>
+							<th class="col-actions">操作</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -88,6 +88,12 @@
 				<div v-if="!isLoading && users.length === 0" class="empty-state">
 					<p>暂无用户数据</p>
 				</div>
+
+				<!-- 分页 -->
+				<el-pagination v-if="!isLoading && total > 0" class="pagination" background
+					layout="prev, pager, next, sizes, total" :total="total" :page-size="filters.size"
+					:current-page="filters.page" :page-sizes="[10, 20, 30, 50]" @current-change="onPageChange"
+					@size-change="onSizeChange" />
 			</div>
 		</div>
 
@@ -203,6 +209,7 @@ const authStore = useAuthStore()
 // 响应式数据
 const isLoading = ref(false)
 const users = ref([])
+const total = ref(0)
 const pointsDialogVisible = ref(false)
 const pointsFormRef = ref()
 
@@ -315,6 +322,7 @@ const loadUsers = async () => {
 
 		const response = await apiGet(`/api/admin/users?${params.toString()}`, { token: authStore.adminToken })
 		users.value = response.data?.list || []
+		total.value = response.data?.total || users.value.length
 	} catch (error) {
 		ElMessage.error('加载用户列表失败: ' + error.message)
 	} finally {
@@ -330,6 +338,18 @@ const onSearchInput = () => {
 	searchTimeout = setTimeout(() => {
 		loadUsers()
 	}, 500)
+}
+
+// 分页变更
+const onPageChange = (p) => {
+	filters.page = p
+	loadUsers()
+}
+
+const onSizeChange = (s) => {
+	filters.size = s
+	filters.page = 1
+	loadUsers()
 }
 
 // 调整积分
@@ -683,6 +703,11 @@ onMounted(() => {
 	padding: 12px 10px;
 	border-bottom: 1px solid #e2e8f0;
 	font-size: 14px;
+}
+
+.col-actions {
+	width: 360px;
+	/* 固定操作列宽度，避免按钮换行 */
 }
 
 .table th {

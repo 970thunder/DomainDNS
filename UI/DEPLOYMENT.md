@@ -1,4 +1,4 @@
-# DomainDNS 前端部署指南
+# HyFreeDom 前端部署指南
 
 ## 环境配置
 
@@ -21,7 +21,7 @@
 ```bash
 # 生产环境配置
 VITE_API_BASE_URL=https://your-api-domain.com
-VITE_APP_TITLE=DomainDNS
+VITE_APP_TITLE=HyFreeDom
 VITE_APP_ENV=production
 ```
 
@@ -193,7 +193,7 @@ server {
 | 变量名 | 说明 | 开发环境 | 生产环境 |
 |--------|------|----------|----------|
 | `VITE_API_BASE_URL` | API 基础地址 | `http://localhost:8080` | `https://your-api-domain.com` |
-| `VITE_APP_TITLE` | 应用标题 | `DomainDNS - 开发环境` | `DomainDNS` |
+| `VITE_APP_TITLE` | 应用标题 | `HyFreeDom - 开发环境` | `HyFreeDom` |
 | `VITE_APP_ENV` | 环境标识 | `development` | `production` |
 
 ## 开发命令
