@@ -20,5 +20,8 @@ public interface UserDomainMapper {
 
         int updateDnsRecordId(@Param("id") Long id, @Param("dnsRecordId") Long dnsRecordId);
 
+        int updateRecordInfo(@Param("id") Long id, @Param("type") String type, @Param("value") String value,
+                        @Param("ttl") Integer ttl, @Param("remark") String remark);
+
         int deleteByIdAndUser(@Param("id") Long id, @Param("userId") Long userId);
 }

@@ -96,6 +96,42 @@ public class UserDomainService {
     }
 
     @Transactional
+    public void updateDomainRecord(Long userId, Long id, String type, String value, Integer ttl, String remark) {
+        com.domaindns.user.model.UserDomain ud = userDomainMapper.findByIdAndUser(id, userId);
+        if (ud == null)
+            throw new IllegalArgumentException("记录不存在");
+
+        // 验证记录类型和值
+        validateRecord(type, value);
+
+        // 获取DNS记录
+        com.domaindns.cf.model.DnsRecord dnsRecord = null;
+        if (ud.getDnsRecordId() != null) {
+            dnsRecord = dnsRecordMapper.findById(ud.getDnsRecordId());
+        }
+        if (dnsRecord == null) {
+            Zone z = zoneMapper.findById(ud.getZoneId());
+            if (z != null) {
+                dnsRecord = dnsRecordMapper.findOneByZoneAndName(z.getId(), ud.getFullDomain());
+            }
+        }
+
+        if (dnsRecord != null) {
+            // 更新Cloudflare记录
+            int ttlToUse = ttl != null ? ttl : getDefaultTtl();
+            String bodyJson = buildCfRecordJson(ud.getFullDomain(), type, value, ttlToUse);
+            try {
+                dnsRecordService.update(dnsRecord.getZoneId(), dnsRecord.getCfRecordId(), bodyJson);
+            } catch (Exception e) {
+                throw new IllegalStateException("更新DNS记录失败: " + e.getMessage());
+            }
+        }
+
+        // 更新本地记录
+        userDomainMapper.updateRecordInfo(id, type, value, ttl, remark);
+    }
+
+    @Transactional
     public void releaseDomain(Long userId, Long id) {
         com.domaindns.user.model.UserDomain ud = userDomainMapper.findByIdAndUser(id, userId);
         if (ud == null)

@@ -42,6 +42,18 @@ public class UserDomainController {
         return ApiResponse.ok(service.listUserDomains(userId, page, size));
     }
 
+    @PutMapping("/{id}")
+    public ApiResponse<Map<String, Object>> update(@RequestHeader("Authorization") String authorization,
+            @PathVariable("id") Long id, @RequestBody Map<String, Object> body) {
+        long userId = currentUserId(authorization);
+        String type = String.valueOf(body.get("type"));
+        String value = String.valueOf(body.get("value"));
+        Integer ttl = body.get("ttl") == null ? null : Integer.valueOf(body.get("ttl").toString());
+        String remark = body.get("remark") == null ? null : String.valueOf(body.get("remark"));
+        service.updateDomainRecord(userId, id, type, value, ttl, remark);
+        return ApiResponse.ok(Map.of("status", "ok"));
+    }
+
     @DeleteMapping("/{id}")
     public ApiResponse<Map<String, Object>> release(@RequestHeader("Authorization") String authorization,
             @PathVariable("id") Long id) {

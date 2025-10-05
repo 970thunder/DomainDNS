@@ -11,6 +11,9 @@ public class UserDomain {
     private String fullDomain;
     private String status;
     private String remark;
+    private String recordType;
+    private String recordValue;
+    private Integer recordTtl;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -76,6 +79,30 @@ public class UserDomain {
 
     public void setRemark(String remark) {
         this.remark = remark;
+    }
+
+    public String getRecordType() {
+        return recordType;
+    }
+
+    public void setRecordType(String recordType) {
+        this.recordType = recordType;
+    }
+
+    public String getRecordValue() {
+        return recordValue;
+    }
+
+    public void setRecordValue(String recordValue) {
+        this.recordValue = recordValue;
+    }
+
+    public Integer getRecordTtl() {
+        return recordTtl;
+    }
+
+    public void setRecordTtl(Integer recordTtl) {
+        this.recordTtl = recordTtl;
     }
 
     public LocalDateTime getCreatedAt() {

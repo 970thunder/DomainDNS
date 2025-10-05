@@ -10,6 +10,9 @@
         <result property="fullDomain" column="full_domain" />
         <result property="status" column="status" />
         <result property="remark" column="remark" />
+        <result property="recordType" column="record_type" />
+        <result property="recordValue" column="record_value" />
+        <result property="recordTtl" column="record_ttl" />
         <result property="createdAt" column="created_at" />
         <result property="updatedAt" column="updated_at" />
     </resultMap>
@@ -23,8 +26,11 @@
     </select>
 
     <select id="listByUser" resultMap="UDMap">
-        SELECT * FROM user_domains WHERE user_id=#{userId}
-        ORDER BY id DESC
+        SELECT ud.*, dr.type as record_type, dr.content as record_value, dr.ttl as record_ttl
+        FROM user_domains ud
+        LEFT JOIN dns_records dr ON ud.dns_record_id = dr.id
+        WHERE ud.user_id=#{userId}
+        ORDER BY ud.id DESC
         <if test="size!=null"> LIMIT #{offset}, #{size}</if>
     </select>
 
@@ -38,6 +44,12 @@
 
     <update id="updateDnsRecordId">
         UPDATE user_domains SET dns_record_id=#{dnsRecordId} WHERE id=#{id}
+    </update>
+
+    <update id="updateRecordInfo">
+        UPDATE user_domains 
+        SET remark=#{remark}, updated_at=NOW()
+        WHERE id=#{id}
     </update>
 
     <delete id="deleteByIdAndUser">
