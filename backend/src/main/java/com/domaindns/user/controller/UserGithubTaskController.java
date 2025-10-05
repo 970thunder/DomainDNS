@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map;
 
 /**
  * 用户GitHub任务控制器
@@ -94,19 +93,8 @@ public class UserGithubTaskController {
             }
 
             // 验证并奖励
-            boolean success = githubTaskService.verifyAndRewardStar(
+            Map<String, Object> result = githubTaskService.verifyAndRewardStar(
                     userId, id, request.getGithubUsername().trim());
-
-            Map<String, Object> result = new HashMap<>();
-            result.put("success", success);
-
-            if (success) {
-                GithubTask task = githubTaskService.getTaskById(id);
-                result.put("message", "验证成功！您已获得 " + task.getRewardPoints() + " 积分奖励");
-                result.put("pointsAwarded", task.getRewardPoints());
-            } else {
-                result.put("message", "验证失败，请确保您已Star该仓库");
-            }
 
             return ApiResponse.ok(result);
 

@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -98,19 +99,43 @@ public class GithubTaskService {
      * 验证用户Star状态并奖励积分
      */
     @Transactional
-    public boolean verifyAndRewardStar(Long userId, Long taskId, String githubUsername) {
+    public Map<String, Object> verifyAndRewardStar(Long userId, Long taskId, String githubUsername) {
+        Map<String, Object> result = new HashMap<>();
         try {
             // 获取任务信息
             GithubTask task = githubTaskMapper.findById(taskId);
             if (task == null) {
                 logger.error("任务不存在: {}", taskId);
-                return false;
+                result.put("success", false);
+                result.put("message", "任务不存在");
+                return result;
             }
 
             // 验证GitHub用户名
             if (!githubApiService.validateGithubUsername(githubUsername)) {
                 logger.error("GitHub用户名不存在: {}", githubUsername);
-                return false;
+                result.put("success", false);
+                result.put("message", "GitHub用户名不存在或无效");
+                return result;
+            }
+
+            // 检查该GitHub用户名是否已经被其他用户用于完成该任务
+            UserGithubTask existingTask = githubTaskMapper.findUserTaskByGithubUsername(githubUsername, taskId);
+            if (existingTask != null && !existingTask.getUserId().equals(userId)) {
+                logger.info("GitHub用户名 {} 已被其他用户用于完成任务 {}", githubUsername, taskId);
+                result.put("success", false);
+                result.put("message", "该GitHub用户名已被其他用户使用，每个GitHub用户名只能用于完成一次任务");
+                return result;
+            }
+
+            // 检查用户是否已经完成过该任务
+            UserGithubTask userTask = githubTaskMapper.findUserTask(userId, taskId);
+
+            if (userTask != null && userTask.getIsStarred()) {
+                logger.info("用户 {} 已经完成过任务 {}", userId, taskId);
+                result.put("success", false);
+                result.put("message", "您已经完成过该任务");
+                return result;
             }
 
             // 检查用户是否已Star该仓库
@@ -119,15 +144,9 @@ public class GithubTaskService {
 
             if (!isStarred) {
                 logger.info("用户 {} 未Star仓库 {}/{}", githubUsername, task.getRepositoryOwner(), task.getRepositoryName());
-                return false;
-            }
-
-            // 检查用户是否已经完成过该任务
-            UserGithubTask userTask = githubTaskMapper.findUserTask(userId, taskId);
-
-            if (userTask != null && userTask.getIsStarred()) {
-                logger.info("用户 {} 已经完成过任务 {}", userId, taskId);
-                return false;
+                result.put("success", false);
+                result.put("message", "请先Star该仓库后再进行验证");
+                return result;
             }
 
             // 创建或更新用户任务记录
@@ -152,11 +171,16 @@ public class GithubTaskService {
                     "完成GitHub Star任务: " + task.getTitle(), null);
 
             logger.info("用户 {} 完成GitHub Star任务 {}，获得 {} 积分", userId, taskId, task.getRewardPoints());
-            return true;
+            result.put("success", true);
+            result.put("message", "验证成功！您已获得 " + task.getRewardPoints() + " 积分奖励");
+            result.put("pointsAwarded", task.getRewardPoints());
+            return result;
 
         } catch (Exception e) {
             logger.error("验证GitHub Star状态失败: {}", e.getMessage(), e);
-            return false;
+            result.put("success", false);
+            result.put("message", "验证失败: " + e.getMessage());
+            return result;
         }
     }
 

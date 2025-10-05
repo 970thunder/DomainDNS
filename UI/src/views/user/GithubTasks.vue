@@ -137,6 +137,16 @@
                             <li>返回此页面，输入您的GitHub用户名</li>
                             <li>点击"验证"按钮完成验证</li>
                         </ol>
+
+                        <div class="important-notice">
+                            <h5>⚠️ 重要提示：</h5>
+                            <ul>
+                                <li>每个GitHub用户名只能用于完成一次任务</li>
+                                <li>如果您的GitHub用户名已被其他用户使用，请使用其他GitHub账号</li>
+                                <li>请确保您输入的GitHub用户名准确无误</li>
+                                <li>验证前请确保您已经Star了目标仓库</li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -265,7 +275,35 @@ const verifyStar = async () => {
             // 重新加载任务列表
             await loadTasks()
         } else {
-            ElMessage.error(response.data?.message || '验证失败')
+            // 根据不同的错误类型显示不同的提示
+            const errorMessage = response.data?.message || '验证失败'
+
+            if (errorMessage.includes('已被其他用户使用')) {
+                ElMessageBox.alert(
+                    '该GitHub用户名已被其他用户使用，每个GitHub用户名只能用于完成一次任务。请使用其他GitHub用户名或创建新的GitHub账号。',
+                    '用户名已被使用',
+                    {
+                        confirmButtonText: '我知道了',
+                        type: 'warning',
+                        dangerouslyUseHTMLString: false
+                    }
+                )
+            } else if (errorMessage.includes('您已经完成过该任务')) {
+                ElMessage.warning('您已经完成过该任务，无法重复提交')
+            } else if (errorMessage.includes('请先Star该仓库')) {
+                ElMessageBox.alert(
+                    '请先Star该仓库后再进行验证。请确保您已经点击了仓库右上角的"Star"按钮。',
+                    '请先Star仓库',
+                    {
+                        confirmButtonText: '我知道了',
+                        type: 'info'
+                    }
+                )
+            } else if (errorMessage.includes('GitHub用户名不存在')) {
+                ElMessage.error('GitHub用户名不存在或无效，请检查用户名是否正确')
+            } else {
+                ElMessage.error(errorMessage)
+            }
         }
     } catch (error) {
         console.error('验证失败:', error)
@@ -583,6 +621,60 @@ onMounted(() => {
 .verify-form .el-button {
     border-radius: 6px;
     font-weight: 500;
+}
+
+.verify-tips {
+    margin-top: 20px;
+    padding: 16px;
+    background: #f8fafc;
+    border-radius: 8px;
+    border-left: 4px solid #6366f1;
+}
+
+.verify-tips h5 {
+    margin: 0 0 12px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+}
+
+.verify-tips ol {
+    margin: 0 0 16px 0;
+    padding-left: 20px;
+}
+
+.verify-tips li {
+    margin-bottom: 6px;
+    font-size: 13px;
+    color: #6b7280;
+    line-height: 1.5;
+}
+
+.important-notice {
+    margin-top: 16px;
+    padding: 12px;
+    background: #fef3c7;
+    border-radius: 6px;
+    border-left: 4px solid #f59e0b;
+}
+
+.important-notice h5 {
+    margin: 0 0 8px 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: #92400e;
+}
+
+.important-notice ul {
+    margin: 0;
+    padding-left: 16px;
+}
+
+.important-notice li {
+    margin-bottom: 4px;
+    font-size: 12px;
+    color: #92400e;
+    line-height: 1.4;
 }
 
 /* 响应式设计 */

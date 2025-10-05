@@ -83,4 +83,10 @@ public interface GithubTaskMapper {
      * 查询用户任务详情（包含任务信息）
      */
     List<Map<String, Object>> findUserTaskDetails(@Param("userId") Long userId);
+
+    /**
+     * 根据GitHub用户名和任务ID查询用户任务记录
+     */
+    UserGithubTask findUserTaskByGithubUsername(@Param("githubUsername") String githubUsername,
+            @Param("taskId") Long taskId);
 }
