@@ -15,4 +15,12 @@ public interface CardMapper {
 
     int insert(@Param("code") String code, @Param("points") Integer points,
             @Param("expiredAt") LocalDateTime expiredAt);
+
+    int batchDelete(@Param("ids") List<Long> ids);
+
+    int deleteById(@Param("id") Long id);
+
+    Card findByCode(@Param("code") String code);
+
+    int markAsUsed(@Param("id") Long id, @Param("usedBy") Long usedBy, @Param("usedAt") LocalDateTime usedAt);
 }

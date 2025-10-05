@@ -52,4 +52,8 @@
 	<update id="updateStatus">
 		UPDATE users SET status = #{status} WHERE id = #{id}
 	</update>
+
+	<update id="updatePoints">
+		UPDATE users SET points = #{points} WHERE id = #{id}
+	</update>
 </mapper>

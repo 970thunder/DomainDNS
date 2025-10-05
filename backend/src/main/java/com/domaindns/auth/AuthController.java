@@ -11,6 +11,7 @@ import com.domaindns.auth.dto.AuthDtos.AdminRegisterReq;
 import com.domaindns.auth.service.AuthService;
 import com.domaindns.auth.service.JwtService;
 import com.domaindns.common.ApiResponse;
+import com.domaindns.common.EmailWhitelistService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import jakarta.validation.Valid;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.Duration;
 import java.util.Date;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -26,11 +28,23 @@ public class AuthController {
     private final AuthService authService;
     private final JwtService jwtService;
     private final StringRedisTemplate redis;
+    private final EmailWhitelistService emailWhitelistService;
 
-    public AuthController(AuthService authService, JwtService jwtService, StringRedisTemplate redis) {
+    public AuthController(AuthService authService, JwtService jwtService, StringRedisTemplate redis,
+            EmailWhitelistService emailWhitelistService) {
         this.authService = authService;
         this.jwtService = jwtService;
         this.redis = redis;
+        this.emailWhitelistService = emailWhitelistService;
+    }
+
+    // ---------------- 邮箱白名单 ----------------
+    @GetMapping("/email-whitelist")
+    public ApiResponse<EmailWhitelistInfo> getEmailWhitelist() {
+        EmailWhitelistInfo info = new EmailWhitelistInfo(
+                emailWhitelistService.getAllowedDomains(),
+                emailWhitelistService.getAllowedEduSuffixes());
+        return ApiResponse.ok(info);
     }
 
     // ---------------- 注册验证码 ----------------
@@ -96,5 +110,24 @@ public class AuthController {
             }
         }
         return ApiResponse.ok(null);
+    }
+
+    // 邮箱白名单信息类
+    public static class EmailWhitelistInfo {
+        private final List<String> allowedDomains;
+        private final List<String> allowedEduSuffixes;
+
+        public EmailWhitelistInfo(List<String> allowedDomains, List<String> allowedEduSuffixes) {
+            this.allowedDomains = allowedDomains;
+            this.allowedEduSuffixes = allowedEduSuffixes;
+        }
+
+        public List<String> getAllowedDomains() {
+            return allowedDomains;
+        }
+
+        public List<String> getAllowedEduSuffixes() {
+            return allowedEduSuffixes;
+        }
     }
 }

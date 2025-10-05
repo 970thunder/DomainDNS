@@ -19,7 +19,14 @@
 			</div>
 
 			<div class="flex-column">
-				<label>邮箱</label>
+				<label>邮箱
+					<span class="email-help" @click="openEmailWhitelistDialog" title="点击查看支持的邮箱">
+						<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+							<path
+								d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z" />
+						</svg>
+					</span>
+				</label>
 			</div>
 			<div class="inputForm">
 				<svg xmlns="http://www.w3.org/2000/svg" width="20" viewBox="0 0 24 24" height="20">
@@ -27,7 +34,9 @@
 						d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"
 						fill="currentColor" />
 				</svg>
-				<input v-model="formData.email" placeholder="name@example.com" class="input" type="email" required>
+				<input v-model="formData.email" placeholder="name@example.com" class="input" type="email" required
+					@blur="validateEmail" @input="clearEmailError">
+				<div v-if="emailError" class="error-message">{{ emailError }}</div>
 			</div>
 
 			<div class="flex-column">
@@ -125,6 +134,57 @@
 				</div>
 			</div>
 		</div>
+
+		<!-- 邮箱白名单说明弹窗 -->
+		<div v-if="showEmailWhitelistDialog" class="modal-overlay" @click="showEmailWhitelistDialog = false">
+			<div class="modal-content" @click.stop>
+				<div class="modal-header">
+					<h3>支持的邮箱服务</h3>
+					<button class="modal-close" @click="showEmailWhitelistDialog = false">×</button>
+				</div>
+				<div class="modal-body">
+					<p class="modal-description">
+						为了确保账号安全和防止滥用，我们只支持以下主流邮箱服务：
+					</p>
+
+					<div class="email-categories">
+						<div class="email-category">
+							<h4>国际邮箱服务</h4>
+							<div class="email-list">
+								<span v-for="domain in getEmailDomains().slice(0, 4)" :key="domain"
+									class="email-domain">
+									@{{ domain }}
+								</span>
+							</div>
+						</div>
+
+						<div class="email-category">
+							<h4>国内邮箱服务</h4>
+							<div class="email-list">
+								<span v-for="domain in getEmailDomains().slice(4)" :key="domain"
+									class="email-domain">
+									@{{ domain }}
+								</span>
+							</div>
+						</div>
+
+						<div class="email-category">
+							<h4>教育邮箱</h4>
+							<div class="email-list">
+								<span v-for="suffix in getEduSuffixes()" :key="suffix"
+									class="email-domain">
+									*{{ suffix }}
+								</span>
+							</div>
+						</div>
+					</div>
+
+					<div class="modal-footer">
+						<button class="btn primary" @click="showEmailWhitelistDialog = false">我知道了</button>
+					</div>
+				</div>
+			</div>
+		</div>
 	</div>
 </template>
 
@@ -152,6 +212,33 @@ const showEmailVerification = ref(false)
 const errorMessage = ref('')
 const verificationError = ref('')
 const isVerifying = ref(false)
+
+// 邮箱验证相关
+const emailError = ref('')
+const showEmailWhitelistDialog = ref(false)
+const emailWhitelist = ref(null)
+
+// 静态邮箱白名单数据（作为备用）
+const staticEmailWhitelist = {
+	allowedDomains: [
+		'gmail.com',
+		'googlemail.com', 
+		'outlook.com',
+		'icloud.com',
+		'qq.com',
+		'vip.qq.com',
+		'163.com',
+		'vip.163.com',
+		'sina.com',
+		'sina.cn',
+		'139.com',
+		'189.cn'
+	],
+	allowedEduSuffixes: [
+		'.edu.cn',
+		'.edu'
+	]
+}
 
 // 验证码相关
 const verificationCode = ref(['', '', '', '', '', ''])
@@ -181,6 +268,12 @@ const validateForm = () => {
 	const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 	if (!emailRegex.test(formData.value.email)) {
 		errorMessage.value = '请输入有效的邮箱地址'
+		return false
+	}
+
+	// 检查邮箱错误
+	if (emailError.value) {
+		errorMessage.value = emailError.value
 		return false
 	}
 
@@ -311,6 +404,73 @@ const verifyAndRegister = async () => {
 	} finally {
 		isVerifying.value = false
 	}
+}
+
+// 邮箱验证方法
+const validateEmail = async () => {
+	if (!formData.value.email) {
+		emailError.value = ''
+		return
+	}
+	
+	// 获取邮箱白名单数据
+	await loadEmailWhitelist()
+	
+	// 简单的客户端验证
+	const email = formData.value.email.toLowerCase()
+	const allowedDomains = getEmailDomains()
+	const allowedEduSuffixes = getEduSuffixes()
+	
+	const domain = email.split('@')[1]
+	if (!domain) {
+		emailError.value = '邮箱格式不正确'
+		return
+	}
+	
+	// 检查是否在允许的域名列表中
+	const isAllowed = allowedDomains.includes(domain) || 
+					  allowedEduSuffixes.some(suffix => domain.endsWith(suffix))
+	
+	if (!isAllowed) {
+		emailError.value = '该邮箱域名不在允许列表中，请使用主流邮箱服务'
+	}
+}
+
+// 加载邮箱白名单数据
+const loadEmailWhitelist = async () => {
+	if (emailWhitelist.value) return // 已经加载过了
+	
+	try {
+		const response = await fetch('/api/auth/email-whitelist')
+		if (response.ok) {
+			const data = await response.json()
+			emailWhitelist.value = data.data || data
+		}
+	} catch (error) {
+		console.error('获取邮箱白名单失败:', error)
+		// 使用静态数据作为备用
+		emailWhitelist.value = staticEmailWhitelist
+	}
+}
+
+const clearEmailError = () => {
+	emailError.value = ''
+}
+
+// 获取邮箱域名列表
+const getEmailDomains = () => {
+	return emailWhitelist.value?.allowedDomains || staticEmailWhitelist.allowedDomains
+}
+
+// 获取教育邮箱后缀
+const getEduSuffixes = () => {
+	return emailWhitelist.value?.allowedEduSuffixes || staticEmailWhitelist.allowedEduSuffixes
+}
+
+// 打开邮箱白名单弹窗
+const openEmailWhitelistDialog = async () => {
+	await loadEmailWhitelist()
+	showEmailWhitelistDialog.value = true
 }
 
 // 表单提交
@@ -645,6 +805,164 @@ const goLogin = () => {
 
 	.code-input-container {
 		gap: 4px;
+	}
+}
+
+/* 邮箱帮助图标样式 */
+.email-help {
+	cursor: pointer;
+	color: #6b7280;
+	margin-left: 8px;
+	display: inline-flex;
+	align-items: center;
+	transition: color 0.2s;
+}
+
+.email-help:hover {
+	color: #3b82f6;
+}
+
+/* 邮箱白名单弹窗样式 */
+.modal-overlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background-color: rgba(0, 0, 0, 0.5);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 1000;
+}
+
+.modal-content {
+	background: white;
+	border-radius: 12px;
+	width: 90%;
+	max-width: 500px;
+	max-height: 80vh;
+	overflow-y: auto;
+	box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.modal-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 20px 24px;
+	border-bottom: 1px solid #e5e7eb;
+}
+
+.modal-header h3 {
+	margin: 0;
+	font-size: 18px;
+	font-weight: 600;
+	color: #111827;
+}
+
+.modal-close {
+	background: none;
+	border: none;
+	font-size: 24px;
+	color: #6b7280;
+	cursor: pointer;
+	padding: 0;
+	width: 32px;
+	height: 32px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 6px;
+	transition: background-color 0.2s;
+}
+
+.modal-close:hover {
+	background-color: #f3f4f6;
+}
+
+.modal-body {
+	padding: 24px;
+}
+
+.modal-description {
+	margin: 0 0 20px 0;
+	color: #6b7280;
+	line-height: 1.5;
+}
+
+.email-categories {
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+}
+
+.email-category h4 {
+	margin: 0 0 12px 0;
+	font-size: 16px;
+	font-weight: 600;
+	color: #374151;
+}
+
+.email-list {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+
+.email-domain {
+	background-color: #f3f4f6;
+	color: #374151;
+	padding: 6px 12px;
+	border-radius: 6px;
+	font-size: 14px;
+	font-weight: 500;
+	border: 1px solid #e5e7eb;
+}
+
+.modal-footer {
+	margin-top: 24px;
+	display: flex;
+	justify-content: flex-end;
+}
+
+.modal-footer .btn {
+	padding: 10px 20px;
+	border-radius: 8px;
+	font-weight: 500;
+	cursor: pointer;
+	transition: all 0.2s;
+}
+
+.modal-footer .btn.primary {
+	background-color: #3b82f6;
+	color: white;
+	border: none;
+}
+
+.modal-footer .btn.primary:hover {
+	background-color: #2563eb;
+}
+
+/* 响应式设计 */
+@media (max-width: 640px) {
+	.modal-content {
+		width: 95%;
+		margin: 20px;
+	}
+
+	.modal-header,
+	.modal-body {
+		padding: 16px;
+	}
+
+	.email-list {
+		gap: 6px;
+	}
+
+	.email-domain {
+		font-size: 13px;
+		padding: 4px 8px;
 	}
 }
 </style>

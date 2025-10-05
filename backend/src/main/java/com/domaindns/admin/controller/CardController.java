@@ -63,6 +63,38 @@ public class CardController {
         return ApiResponse.ok(m);
     }
 
+    @DeleteMapping("/batch")
+    public ApiResponse<Map<String, Object>> batchDelete(@RequestHeader("Authorization") String authorization,
+            @RequestBody Map<String, Object> body) {
+        // 验证管理员权限
+        validateAdminAuth(authorization);
+
+        @SuppressWarnings("unchecked")
+        List<Long> ids = (List<Long>) body.get("ids");
+        if (ids == null || ids.isEmpty()) {
+            throw new IllegalArgumentException("请选择要删除的卡密");
+        }
+
+        int deleted = mapper.batchDelete(ids);
+        Map<String, Object> result = new HashMap<>();
+        result.put("deleted", deleted);
+        result.put("message", "成功删除 " + deleted + " 张卡密");
+        return ApiResponse.ok(result);
+    }
+
+    @DeleteMapping("/{id}")
+    public ApiResponse<Map<String, Object>> delete(@RequestHeader("Authorization") String authorization,
+            @PathVariable Long id) {
+        // 验证管理员权限
+        validateAdminAuth(authorization);
+
+        int deleted = mapper.deleteById(id);
+        Map<String, Object> result = new HashMap<>();
+        result.put("deleted", deleted);
+        result.put("message", deleted > 0 ? "卡密删除成功" : "卡密不存在或已被删除");
+        return ApiResponse.ok(result);
+    }
+
     private String randomCode(int len) {
         final String dict = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
         StringBuilder sb = new StringBuilder();

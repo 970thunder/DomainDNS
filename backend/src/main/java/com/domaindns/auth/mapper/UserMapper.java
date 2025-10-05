@@ -23,4 +23,6 @@ public interface UserMapper {
     int updateInviterId(@Param("id") Long id, @Param("inviterId") Long inviterId);
 
     int updateStatus(@Param("id") Long id, @Param("status") Integer status);
+
+    int updatePoints(@Param("id") Long id, @Param("points") Integer points);
 }

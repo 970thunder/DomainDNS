@@ -63,8 +63,8 @@ const redeemCard = async () => {
 
 	loading.value = true
 	try {
-		const response = await apiPost('/api/user/cards/redeem', {
-			code: cardCode.value.trim()
+		const response = await apiPost('/api/user/card/redeem', {
+			cardCode: cardCode.value.trim()
 		}, {
 			token: authStore.token
 		})

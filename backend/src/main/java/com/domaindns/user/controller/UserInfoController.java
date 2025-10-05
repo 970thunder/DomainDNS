@@ -37,6 +37,7 @@ public class UserInfoController {
         userInfo.put("id", user.getId());
         userInfo.put("username", user.getUsername());
         userInfo.put("email", user.getEmail());
+        userInfo.put("points", user.getPoints());
         userInfo.put("createdAt", user.getCreatedAt());
         userInfo.put("status", getStatusText(user.getStatus()));
 

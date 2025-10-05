@@ -353,6 +353,36 @@ export const useAuthStore = defineStore('auth', {
             if (window.location.pathname.startsWith('/admin')) {
                 window.location.href = '/admin/login'
             }
+        },
+
+        // 刷新用户信息
+        async refreshUserInfo() {
+            try {
+                if (!this.token) {
+                    return { success: false, message: '未登录' }
+                }
+
+                const response = await fetch('/api/user/info', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${this.token}`,
+                        'Content-Type': 'application/json'
+                    }
+                })
+
+                const data = await response.json()
+
+                if (data.code === 0) {
+                    this.user = data.data
+                    this.saveToStorage()
+                    return { success: true, data: data.data }
+                } else {
+                    return { success: false, message: data.message }
+                }
+            } catch (error) {
+                console.error('刷新用户信息失败:', error)
+                return { success: false, message: error.message || '刷新失败' }
+            }
         }
     }
 })

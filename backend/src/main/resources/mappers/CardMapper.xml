@@ -32,4 +32,25 @@
 		INSERT INTO cards(code,points,status,expired_at)
 		VALUES(#{code},#{points},'ACTIVE',#{expiredAt})
 	</insert>
+
+	<delete id="batchDelete">
+		DELETE FROM cards WHERE id IN
+		<foreach collection="ids" item="id" open="(" separator="," close=")">
+			#{id}
+		</foreach>
+	</delete>
+
+	<delete id="deleteById">
+		DELETE FROM cards WHERE id = #{id}
+	</delete>
+
+	<select id="findByCode" resultMap="CardMap">
+		SELECT * FROM cards WHERE code = #{code}
+	</select>
+
+	<update id="markAsUsed">
+		UPDATE cards 
+		SET status = 'USED', used_by = #{usedBy}, used_at = #{usedAt}
+		WHERE id = #{id} AND status = 'ACTIVE'
+	</update>
 </mapper>

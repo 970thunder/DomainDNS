@@ -51,6 +51,9 @@
 							<option value="EXPIRED">已过期</option>
 						</select>
 					</div>
+					<button class="btn danger" @click="batchDelete" :disabled="selectedCards.length === 0 || isLoading">
+						批量删除 ({{ selectedCards.length }})
+					</button>
 				</div>
 			</div>
 
@@ -58,6 +61,9 @@
 				<table class="table">
 					<thead>
 						<tr>
+							<th>
+								<input type="checkbox" v-model="selectAll" @change="toggleSelectAll" />
+							</th>
 							<th>卡密</th>
 							<th>面值</th>
 							<th>状态</th>
@@ -65,10 +71,14 @@
 							<th>过期时间</th>
 							<th>使用者</th>
 							<th>使用时间</th>
+							<th>操作</th>
 						</tr>
 					</thead>
 					<tbody>
 						<tr v-for="card in cards" :key="card.id">
+							<td>
+								<input type="checkbox" v-model="selectedCards" :value="card.id" />
+							</td>
 							<td class="card-code">{{ card.code }}</td>
 							<td>{{ card.points }}</td>
 							<td>
@@ -80,6 +90,11 @@
 							<td>{{ formatDate(card.expiredAt) || '永不过期' }}</td>
 							<td>{{ card.usedByUsername || '-' }}</td>
 							<td>{{ formatDate(card.usedAt) || '-' }}</td>
+							<td>
+								<button class="btn danger small" @click="deleteCard(card.id)" :disabled="isLoading">
+									删除
+								</button>
+							</td>
 						</tr>
 					</tbody>
 				</table>
@@ -87,6 +102,19 @@
 				<div v-if="!isLoading && cards.length === 0" class="empty-state">
 					<p>暂无卡密数据</p>
 				</div>
+			</div>
+
+			<!-- 分页组件 -->
+			<div class="pagination-container" v-if="total > 0">
+				<el-pagination
+					v-model:current-page="filters.page"
+					v-model:page-size="filters.size"
+					:page-sizes="[10, 20, 50, 100]"
+					:total="total"
+					layout="total, sizes, prev, pager, next, jumper"
+					@size-change="handleSizeChange"
+					@current-change="handleCurrentChange"
+				/>
 			</div>
 		</div>
 	</main>
@@ -104,6 +132,9 @@ const authStore = useAuthStore()
 // 响应式数据
 const isLoading = ref(false)
 const cards = ref([])
+const total = ref(0)
+const selectedCards = ref([])
+const selectAll = ref(false)
 
 // 生成表单
 const form = reactive({
@@ -133,6 +164,7 @@ const loadCards = async () => {
 
 		const response = await apiGet(`/api/admin/cards?${params.toString()}`, { token: authStore.adminToken })
 		cards.value = response.data?.list || []
+		total.value = response.data?.total || 0
 	} catch (error) {
 		ElMessage.error('加载卡密列表失败: ' + error.message)
 	} finally {
@@ -238,6 +270,91 @@ const exportCsv = () => {
 	} catch (error) {
 		ElMessage.error('导出失败: ' + error.message)
 	}
+}
+
+// 删除单个卡密
+const deleteCard = async (cardId) => {
+	try {
+		await ElMessageBox.confirm('确定要删除这张卡密吗？', '确认删除', {
+			confirmButtonText: '确定',
+			cancelButtonText: '取消',
+			type: 'warning'
+		})
+
+		await fetch(`/api/admin/cards/${cardId}`, {
+			method: 'DELETE',
+			headers: {
+				'Authorization': `Bearer ${authStore.adminToken}`,
+				'Content-Type': 'application/json'
+			}
+		})
+		
+		ElMessage.success('卡密删除成功')
+		await loadCards()
+	} catch (error) {
+		if (error !== 'cancel') {
+			ElMessage.error('删除失败: ' + error.message)
+		}
+	}
+}
+
+// 批量删除卡密
+const batchDelete = async () => {
+	try {
+		if (selectedCards.value.length === 0) {
+			ElMessage.warning('请选择要删除的卡密')
+			return
+		}
+
+		await ElMessageBox.confirm(
+			`确定要删除选中的 ${selectedCards.value.length} 张卡密吗？`,
+			'确认批量删除',
+			{
+				confirmButtonText: '确定',
+				cancelButtonText: '取消',
+				type: 'warning'
+			}
+		)
+
+		await fetch('/api/admin/cards/batch', {
+			method: 'DELETE',
+			headers: {
+				'Authorization': `Bearer ${authStore.adminToken}`,
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({ ids: selectedCards.value })
+		})
+		
+		ElMessage.success('批量删除成功')
+		selectedCards.value = []
+		selectAll.value = false
+		await loadCards()
+	} catch (error) {
+		if (error !== 'cancel') {
+			ElMessage.error('批量删除失败: ' + error.message)
+		}
+	}
+}
+
+// 全选/取消全选
+const toggleSelectAll = () => {
+	if (selectAll.value) {
+		selectedCards.value = cards.value.map(card => card.id)
+	} else {
+		selectedCards.value = []
+	}
+}
+
+// 分页处理
+const handleSizeChange = (newSize) => {
+	filters.size = newSize
+	filters.page = 1
+	loadCards()
+}
+
+const handleCurrentChange = (newPage) => {
+	filters.page = newPage
+	loadCards()
 }
 
 // 获取状态样式类

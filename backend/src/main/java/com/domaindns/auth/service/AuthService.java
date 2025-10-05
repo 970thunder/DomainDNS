@@ -9,6 +9,7 @@ import com.domaindns.auth.entity.User;
 import com.domaindns.auth.mapper.UserMapper;
 import com.domaindns.common.RateLimiter;
 import com.domaindns.common.EmailService;
+import com.domaindns.common.EmailWhitelistService;
 import com.domaindns.settings.SettingsService;
 import com.domaindns.user.mapper.PointsMapper;
 import com.domaindns.admin.mapper.InviteMapper;
@@ -31,11 +32,12 @@ public class AuthService {
     private final SettingsService settingsService;
     private final PointsMapper pointsMapper;
     private final InviteMapper inviteMapper;
+    private final EmailWhitelistService emailWhitelistService;
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
     public AuthService(UserMapper userMapper, JwtService jwtService, EmailService emailService,
             StringRedisTemplate redis, RateLimiter rateLimiter, SettingsService settingsService,
-            PointsMapper pointsMapper, InviteMapper inviteMapper) {
+            PointsMapper pointsMapper, InviteMapper inviteMapper, EmailWhitelistService emailWhitelistService) {
         this.userMapper = userMapper;
         this.jwtService = jwtService;
         this.emailService = emailService;
@@ -44,6 +46,7 @@ public class AuthService {
         this.settingsService = settingsService;
         this.pointsMapper = pointsMapper;
         this.inviteMapper = inviteMapper;
+        this.emailWhitelistService = emailWhitelistService;
     }
 
     public void sendRegisterCode(String email) {
@@ -105,6 +108,14 @@ public class AuthService {
             throw new IllegalArgumentException("用户名已存在");
         if (email != null && !email.isBlank() && userMapper.findByEmail(email) != null)
             throw new IllegalArgumentException("邮箱已存在");
+
+        // 邮箱白名单验证
+        if (email != null && !email.isBlank()) {
+            EmailWhitelistService.EmailValidationResult validationResult = emailWhitelistService.validateEmail(email);
+            if (!validationResult.isValid()) {
+                throw new IllegalArgumentException(validationResult.getMessage());
+            }
+        }
 
         // 处理邀请码
         Long inviterId = null;
